@@ -40,20 +40,20 @@ const LoginPage = () => {
     <FormContainer>
       <h1> Login</h1>
       <Form onSubmit={submitHandler}>
-        <Form.Group className="" controlId="Email">
+        <Form.Group className="" controlId="email">
           <Form.Label>Email Address</Form.Label>
           <Form.Control
             type="email"
-            placeholder="Enter Email"
+            placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </Form.Group>
-        <Form.Group className="" controlId="Password">
+        <Form.Group className="" controlId="password">
           <Form.Label>Password</Form.Label>
           <Form.Control
             type="password"
-            placeholder="Enter Password"
+            placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
