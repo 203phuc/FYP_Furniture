@@ -1,6 +1,5 @@
-import { React, useState, useEffect } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Form, Button, Container, Row, Col } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import FormContainer from "../components/FormContainer.jsx";
 import { useLoginMutation } from "../Redux/slices/userApiSlice.js";
@@ -38,35 +37,55 @@ const LoginPage = () => {
 
   return (
     <FormContainer>
-      <h1> Login</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className="" controlId="email">
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
+      <h1 className="text-2xl font-bold mb-4">Login</h1>
+      <form onSubmit={submitHandler} className="space-y-4">
+        <div className="form-group">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email Address
+          </label>
+          <input
             type="email"
+            id="email"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </Form.Group>
-        <Form.Group className="" controlId="password">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
+        </div>
+        <div className="form-group">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <input
             type="password"
+            id="password"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </Form.Group>
-        <Button type="submit" variant="primary" className="mt-2">
-          submit
-        </Button>
-      </Form>
-      <Row className="py-3">
-        <Col>
-          New Customer? <Link to="/register">Register</Link>
-        </Col>
-      </Row>
+        </div>
+        <button
+          type="submit"
+          className="mt-2 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Submit
+        </button>
+      </form>
+      <div className="py-3">
+        <span>
+          New Customer?{" "}
+          <Link to="/register" className="text-blue-600 hover:underline">
+            Register
+          </Link>
+        </span>
+      </div>
     </FormContainer>
   );
 };

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Button, Col, Row } from "react-bootstrap";
 import FormContainer from "../components/FormContainer";
 import { useDispatch, useSelector } from "react-redux";
 import { useRegisterMutation } from "../Redux/slices/userApiSlice.js";
 import { setCredentials } from "../Redux/slices/authSlice";
 import Loader from "../components/Loader.jsx";
 import { toast } from "react-toastify";
+
 const RegisterScreen = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,6 +25,7 @@ const RegisterScreen = () => {
       navigate("/");
     }
   }, [userInfo, navigate]);
+
   const submitHandler = async (e) => {
     e.preventDefault();
 
@@ -42,56 +43,91 @@ const RegisterScreen = () => {
       }
     }
   };
+
   return (
     <FormContainer>
-      <h1>Sign Up</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group controlId="name">
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            type="name"
+      <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
+      <form onSubmit={submitHandler} className="space-y-4">
+        <div className="form-group">
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group controlId="email">
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
+          />
+        </div>
+        <div className="form-group">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email Address
+          </label>
+          <input
             type="email"
+            id="email"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group controlId="password">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
+          />
+        </div>
+        <div className="form-group">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <input
             type="password"
+            id="password"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group controlId="confirmPassword">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
+          />
+        </div>
+        <div className="form-group">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Confirm Password
+          </label>
+          <input
             type="password"
-            placeholder="Comnfirm password"
+            id="confirmPassword"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+          />
+        </div>
         {isLoading && <Loader />}
-        <Button type="submit" variant="primary" className="mt-3">
+        <button
+          type="submit"
+          className="mt-3 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
           Sign up
-        </Button>
-      </Form>
-      <Row className="py-3">
-        <Col>
-          Already have an account? <Link to="/login">Login</Link>
-        </Col>
-      </Row>
+        </button>
+      </form>
+      <div className="py-3">
+        <span>
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Login
+          </Link>
+        </span>
+      </div>
     </FormContainer>
   );
 };

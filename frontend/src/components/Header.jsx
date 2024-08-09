@@ -1,13 +1,8 @@
 import { useState } from "react";
-import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import { logout } from "../Redux/slices/authSlice.js";
 import { useDispatch, useSelector } from "react-redux";
-import { Row, Col } from "react-bootstrap";
 import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
 import { AiOutlineSearch } from "react-icons/ai";
 
@@ -28,9 +23,13 @@ const Header = () => {
     }
   };
 
+  // Dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   // Search section
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState(null);
+
   const handleSearchChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -44,83 +43,112 @@ const Header = () => {
   };
 
   return (
-    <Navbar expand="lg" bg="dark" variant="dark">
-      <Container>
-        <Row className="w-100 align-items-center">
-          <Col xs={6} lg={3} className="d-flex align-items-center">
-            <Nav.Link as={Link} to="/">
-              <Navbar.Brand>COZNITURE</Navbar.Brand>
-            </Nav.Link>
-          </Col>
-          <Col xs={12} lg={6} className="d-none d-lg-flex">
-            <div className="w-100 position-relative">
-              <input
-                type="text"
-                placeholder="Search Product..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-100 h-[40px] px-2 border-[#3957db] border-2 rounded-md"
+    <nav className="bg-dark text-white py-2">
+      <div className="container mx-auto flex flex-wrap items-center justify-between">
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className="text-white text-xl font-semibold no-underline"
+          >
+            COZNITURE
+          </Link>
+        </div>
+        <div className="hidden lg:flex lg:flex-grow lg:justify-center mx-4">
+          <div className="relative w-full max-w-lg">
+            <input
+              type="text"
+              placeholder="Search Product..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full h-10 px-4 border-2 border-blue-600 rounded-md"
+            />
+            <AiOutlineSearch
+              size={30}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            />
+            {searchData && searchData.length !== 0 && (
+              <div className="absolute bg-white shadow-lg mt-2 w-full max-h-60 overflow-auto z-10">
+                {searchData.map((i) => (
+                  <Link
+                    key={i._id}
+                    to={`/product/${i._id}`}
+                    className="block p-4 hover:bg-gray-100"
+                  >
+                    <div className="flex items-center">
+                      <img
+                        src={`${i.images[0]?.url}`}
+                        alt=""
+                        className="w-10 h-10 mr-2"
+                      />
+                      <h5>{i.name}</h5>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <button className="lg:hidden text-white">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"
               />
-              <AiOutlineSearch
-                size={30}
-                className="position-absolute end-2 top-50 translate-middle-y cursor-pointer"
-              />
-              {searchData && searchData.length !== 0 && (
-                <div className="position-absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-9 p-4 w-100 mt-2">
-                  {searchData.map((i) => (
-                    <Link key={i._id} to={`/product/${i._id}`}>
-                      <div className="w-full d-flex align-items-center py-3">
-                        <img
-                          src={`${i.images[0]?.url}`}
-                          alt=""
-                          className="w-[40px] h-[40px] me-2"
-                        />
-                        <h5>{i.name}</h5>
-                      </div>
-                    </Link>
-                  ))}
+            </svg>
+          </button>
+          {userInfo ? (
+            <div className="relative">
+              <button
+                className="text-white"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                {userInfo.name}
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 bg-white text-black shadow-lg z-10">
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={logoutHandler}
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
-          </Col>
-          <Col
-            xs={6}
-            lg={3}
-            className="d-flex align-items-center justify-content-end"
-          >
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="ms-auto">
-                {userInfo ? (
-                  <NavDropdown title={userInfo.name} id="basic-nav-dropdown">
-                    <NavDropdown.Item onClick={logoutHandler}>
-                      Logout
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                ) : (
-                  <>
-                    <Nav.Link
-                      as={Link}
-                      to="/login"
-                      className="d-flex align-items-center"
-                    >
-                      <FaUser className="me-2" /> Login
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      to="/register"
-                      className="d-flex align-items-center"
-                    >
-                      <FaUser className="me-2" /> Register
-                    </Nav.Link>
-                  </>
-                )}
-              </Nav>
-            </Navbar.Collapse>
-          </Col>
-        </Row>
-      </Container>
-    </Navbar>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="flex items-center text-white hover:text-gray-300"
+              >
+                <FaUser className="mr-2" /> Login
+              </Link>
+              <Link
+                to="/register"
+                className="flex items-center text-white hover:text-gray-300"
+              >
+                <FaUser className="mr-2" /> Register
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 };
 
