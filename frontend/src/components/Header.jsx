@@ -5,6 +5,7 @@ import { logout } from "../Redux/slices/authSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
 import { AiOutlineSearch } from "react-icons/ai";
+import { IoIosArrowForward } from "react-icons/io";
 
 const Header = () => {
   // User section
@@ -34,6 +35,7 @@ const Header = () => {
     const term = e.target.value;
     setSearchTerm(term);
 
+    // Assuming you have allProducts from Redux or props
     const filteredProducts =
       allProducts &&
       allProducts.filter((product) =>
@@ -88,7 +90,12 @@ const Header = () => {
             )}
           </div>
         </div>
+
         <div className="flex items-center space-x-4">
+          <Link to="/shop-create" className="text-white flex items-center">
+            Become Seller <IoIosArrowForward className="ml-1" />
+          </Link>
+
           <button className="lg:hidden text-white">
             <svg
               className="w-6 h-6"
@@ -105,6 +112,7 @@ const Header = () => {
               />
             </svg>
           </button>
+
           {userInfo ? (
             <div className="relative">
               <button
@@ -114,7 +122,7 @@ const Header = () => {
                 {userInfo.name}
               </button>
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 bg-white text-black shadow-lg z-10">
+                <div className="absolute mt-2 bg-white text-black shadow-lg z-10">
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-gray-100"

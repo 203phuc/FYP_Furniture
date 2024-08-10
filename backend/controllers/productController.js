@@ -13,7 +13,7 @@ const getProduct = asyncHandler(async (req, res) => {
 //@route   POST /api/products
 //@access  Private
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, brand, price, description, category } = req.body;
+  const { name, brand, price, description, category, stock } = req.body;
 
   const productExist = await Product.findOne({ name });
   if (productExist) {
@@ -26,6 +26,7 @@ const createProduct = asyncHandler(async (req, res) => {
     price,
     description,
     category,
+    stock,
   });
   if (product) {
     res.status(200).json({
@@ -35,6 +36,7 @@ const createProduct = asyncHandler(async (req, res) => {
       price: product.price,
       description: product.description,
       category: product.category,
+      stock: product.stock,
     });
   } else {
     res.status(400);
@@ -68,6 +70,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.price = req.body.price || product.price;
     product.description = req.body.description || product.description;
     product.category = req.body.category || product.category;
+    product.stock = req.body.stock || product.stock;
     const updatedProduct = await product.save();
     res.json({
       _id: updatedProduct._id,
@@ -76,6 +79,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       price: updatedProduct.price,
       description: updatedProduct.description,
       category: updatedProduct.category,
+      stock: updatedProduct.stock,
     });
   } else {
     res.status(404);
