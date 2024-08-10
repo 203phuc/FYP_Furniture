@@ -1,18 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
-import { logout } from "../Redux/slices/authSlice.js";
-import { useDispatch, useSelector } from "react-redux";
-import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
 import { AiOutlineSearch } from "react-icons/ai";
 import { IoIosArrowForward } from "react-icons/io";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../Redux/slices/authSlice.js";
+import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
 
-const Header = () => {
+const Header = ({ allProducts }) => {
   // User section
   const { userInfo } = useSelector((state) => state.auth);
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const logoutHandler = async () => {
     try {
@@ -24,9 +25,6 @@ const Header = () => {
     }
   };
 
-  // Dropdown state
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
   // Search section
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState(null);
@@ -35,7 +33,6 @@ const Header = () => {
     const term = e.target.value;
     setSearchTerm(term);
 
-    // Assuming you have allProducts from Redux or props
     const filteredProducts =
       allProducts &&
       allProducts.filter((product) =>
@@ -45,17 +42,20 @@ const Header = () => {
   };
 
   return (
-    <nav className="bg-dark text-white py-2">
-      <div className="container mx-auto flex flex-wrap items-center justify-between">
-        <div className="flex items-center">
-          <Link
-            to="/"
-            className="text-white text-xl font-semibold no-underline"
-          >
-            COZNITURE
-          </Link>
-        </div>
-        <div className="hidden lg:flex lg:flex-grow lg:justify-center mx-4">
+    <>
+      <div className="hidden lg:flex lg:h-[50px] lg:my-[20px] lg:items-center lg:justify-between py-2 border-2">
+        <div className="container mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link
+              to="/"
+              className="text-slate-950 text-xl font-semibold no-underline"
+            >
+              COZNITURE
+            </Link>
+          </div>
+
+          {/* Search Bar */}
           <div className="relative w-full max-w-lg">
             <input
               type="text"
@@ -70,93 +70,82 @@ const Header = () => {
             />
             {searchData && searchData.length !== 0 && (
               <div className="absolute bg-white shadow-lg mt-2 w-full max-h-60 overflow-auto z-10">
-                {searchData.map((i) => (
+                {searchData.map((product) => (
                   <Link
-                    key={i._id}
-                    to={`/product/${i._id}`}
+                    key={product._id}
+                    to={`/product/${product._id}`}
                     className="block p-4 hover:bg-gray-100"
                   >
                     <div className="flex items-center">
                       <img
-                        src={`${i.images[0]?.url}`}
-                        alt=""
+                        src={`${product.images[0]?.url}`}
+                        alt={product.name}
                         className="w-10 h-10 mr-2"
                       />
-                      <h5>{i.name}</h5>
+                      <h5>{product.name}</h5>
                     </div>
                   </Link>
                 ))}
               </div>
             )}
           </div>
-        </div>
 
-        <div className="flex items-center space-x-4">
-          <Link to="/shop-create" className="text-white flex items-center">
-            Become Seller <IoIosArrowForward className="ml-1" />
-          </Link>
-
-          <button className="lg:hidden text-white">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          {/* User and Navigation Links */}
+          <div className="flex items-center space-x-4 relative">
+            <Link
+              to="/shop-create"
+              className="flex items-center no-underline text-slate-950"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
-          </button>
+              Become Seller <IoIosArrowForward className="ml-1" />
+            </Link>
 
-          {userInfo ? (
-            <div className="relative">
-              <button
-                className="text-white"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                {userInfo.name}
-              </button>
-              {dropdownOpen && (
-                <div className="absolute mt-2 bg-white text-black shadow-lg z-10">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={logoutHandler}
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="flex items-center text-white hover:text-gray-300"
-              >
-                <FaUser className="mr-2" /> Login
-              </Link>
-              <Link
-                to="/register"
-                className="flex items-center text-white hover:text-gray-300"
-              >
-                <FaUser className="mr-2" /> Register
-              </Link>
-            </>
-          )}
+            {/* User Section */}
+            {userInfo ? (
+              <div>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center text-slate-950"
+                >
+                  <FaUser className="mr-2" /> {userInfo.name}
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                      onClick={logoutHandler}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center text-white hover:text-gray-300"
+                >
+                  <FaUser className="mr-2" /> Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="flex items-center text-white hover:text-gray-300"
+                >
+                  <FaUser className="mr-2" /> Register
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 };
 
