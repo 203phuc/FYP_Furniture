@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function (next) {
-  // this check if the password on the frontend when you update the password is the same as the one you entered before update it will not do anything to the password
+  // this check if the password on the frontend when you update the password is the same as the one you entered the last time you updated password it will not do anything to the password
   if (!this.isModified("password")) {
     next();
   }

@@ -22,5 +22,32 @@ const protect = asyncHandler(async (req, res, next) => {
     throw new Error("Not authorized, no token");
   }
 });
+// User must be an admin
+const isSeller = asyncHandler(async (req, res, next) => {
+  try {
+    const { seller_token } = req.cookies;
+    if (!seller_token) {
+      return next(new ErrorHandler("Please login to continue", 401));
+    }
 
-export { protect };
+    const decoded = jwt.verify(seller_token, process.env.JWT_SECRET_KEY);
+
+    req.seller = await Shop.findById(decoded.id);
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401);
+    throw new Error("Not authorized, invalid token");
+  }
+});
+const isAdmin = asyncHandler((req, res, next) => {
+  if (req.user.role.toUpperCase() === "ADMIN") {
+    next();
+  } else {
+    res.status(401);
+    throw new Error("Not authorized as an admin");
+  }
+});
+
+export { protect, isSeller, isAdmin };

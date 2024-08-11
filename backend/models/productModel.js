@@ -28,9 +28,17 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    // countInStock: { type: Number, required: true, default: 0 },
-    // rating: { type: Number, required: true, default: 0 },
-    // numReviews: { type: Number, required: true, default: 0 },
+    tags: {
+      type: String,
+    },
+    shopId: {
+      type: String,
+      required: true,
+    },
+    shop: {
+      type: Object,
+      required: true,
+    },
   },
   { timestamps: true }
 );
