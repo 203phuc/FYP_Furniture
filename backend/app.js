@@ -3,8 +3,9 @@ import express from "express";
 const app = express();
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import router from "./routes/userRoutes.js";
-import productRouter from "./routes/productRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import shopRoutes from "./routes/shopRoutes.js"; //this shopRouter is a variable for the shop routes because it export default
 
 // app.use(
 //   cors({
@@ -20,8 +21,9 @@ app.use(cookieParser());
 
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
-app.use("/api/users", router);
-app.use("/api/products", productRouter);
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/shops", shopRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

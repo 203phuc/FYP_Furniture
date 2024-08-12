@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
 const shopSchema = new mongoose.Schema(
   {
@@ -63,10 +62,10 @@ shopSchema.pre("save", async function (next) {
 });
 
 // comapre password
-userSchema.methods.matchPassword = async function (enteredPassword) {
+shopSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const Shop = mongoose.model("Shop", shopSchema);
 
-module.exports = Shop;
+export default Shop;

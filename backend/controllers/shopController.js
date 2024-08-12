@@ -88,6 +88,18 @@ const updateShop = asyncHandler(async (req, res) => {
   }
 });
 
+//generate a logoutshop
+//@desc    Logout shop
+//@route   POST /api/shops/logout
+//@access  Private
+const logoutShop = asyncHandler(async (req, res) => {
+  res.cookie("jwt", "logout", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: "seller Logged out" });
+});
+
 //@desc    Delete shop
 //@route   DELETE /api/shops/:id
 //@access  Private
@@ -124,4 +136,12 @@ const getShops = asyncHandler(async (req, res) => {
   res.json(shops);
 });
 
-export { authShop, registerShop, updateShop, deleteShop, getShop, getShops };
+export {
+  authShop,
+  registerShop,
+  updateShop,
+  deleteShop,
+  getShop,
+  getShops,
+  logoutShop,
+};

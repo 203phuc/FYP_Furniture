@@ -92,13 +92,6 @@ const Header = ({ allProducts }) => {
 
           {/* User and Navigation Links */}
           <div className="flex items-center space-x-4 relative">
-            <Link
-              to="/shop-create"
-              className="flex items-center no-underline text-slate-950"
-            >
-              Become Seller <IoIosArrowForward className="ml-1" />
-            </Link>
-
             {/* User Section */}
             {userInfo ? (
               <div>
@@ -130,15 +123,21 @@ const Header = ({ allProducts }) => {
               <>
                 <Link
                   to="/login"
-                  className="flex items-center text-white hover:text-gray-300"
+                  className="flex items-center text-slate-950 hover:text-gray-300"
                 >
                   <FaUser className="mr-2" /> Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center text-white hover:text-gray-300"
+                  className="flex items-center text-slate-950 hover:text-gray-300"
                 >
                   <FaUser className="mr-2" /> Register
+                </Link>
+                <Link
+                  to="/shop-create"
+                  className="flex items-center no-underline text-slate-950"
+                >
+                  Become Seller <IoIosArrowForward className="ml-1" />
                 </Link>
               </>
             )}

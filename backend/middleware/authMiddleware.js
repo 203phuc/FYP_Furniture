@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import Shop from "../models/shopModel.js";
 
 const protect = asyncHandler(async (req, res, next) => {
   let token; // get token from header
@@ -25,12 +26,12 @@ const protect = asyncHandler(async (req, res, next) => {
 // User must be an admin
 const isSeller = asyncHandler(async (req, res, next) => {
   try {
-    const { seller_token } = req.cookies;
+    const seller_token = req.cookies.jwt;
     if (!seller_token) {
-      return next(new ErrorHandler("Please login to continue", 401));
+      return next(new Error("Please login to continue", 401));
     }
 
-    const decoded = jwt.verify(seller_token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(seller_token, process.env.JWT_SECRET);
 
     req.seller = await Shop.findById(decoded.id);
 
