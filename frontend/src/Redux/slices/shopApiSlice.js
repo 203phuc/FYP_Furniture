@@ -24,6 +24,13 @@ export const shopApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    loginShop: builder.mutation({
+      query: (data) => ({
+        url: `${SHOP_URL}/auth`,
+        method: "POST",
+        body: data,
+      }),
+    }),
     updateShop: builder.mutation({
       query: (data) => ({
         url: `${SHOP_URL}/${data.id}`, //pass the id of the shop to be updated
@@ -46,4 +53,5 @@ export const {
   useRegisterShopMutation,
   useUpdateShopMutation,
   useDeleteShopMutation,
+  useLoginShopMutation,
 } = shopApiSlice;

@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import FormContainer from "../components/FormContainer";
 import { useDispatch, useSelector } from "react-redux";
+import FormContainer from "../components/FormContainer.jsx";
 import { useRegisterMutation } from "../Redux/slices/userApiSlice.js";
 import { setCredentials } from "../Redux/slices/authSlice";
 import Loader from "../components/Loader.jsx";
@@ -21,7 +21,6 @@ const RegisterScreen = () => {
 
   useEffect(() => {
     if (userInfo) {
-      console.log("nav things");
       navigate("/");
     }
   }, [userInfo, navigate]);
@@ -45,8 +44,7 @@ const RegisterScreen = () => {
   };
 
   return (
-    <FormContainer>
-      <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
+    <FormContainer title="Register">
       <form onSubmit={submitHandler} className="space-y-4">
         <div className="form-group">
           <label
@@ -117,7 +115,7 @@ const RegisterScreen = () => {
           type="submit"
           className="mt-3 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Sign up
+          Submit
         </button>
       </form>
       <div className="py-3">

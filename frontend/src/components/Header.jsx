@@ -6,6 +6,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Redux/slices/authSlice.js";
 import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
+import styles from "../styles/styles.jsx";
 
 const Header = ({ allProducts }) => {
   // User section
@@ -43,10 +44,10 @@ const Header = ({ allProducts }) => {
 
   return (
     <>
-      <div className="hidden lg:flex lg:h-[50px] lg:my-[20px] lg:items-center lg:justify-between py-2 border-2">
-        <div className="container mx-auto flex items-center justify-between">
+      <div className={`${styles.section}`}>
+        <div className="hidden lg:flex lg:h-[50px] lg:my-[20px] 800px:flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center">
+          <div>
             <Link
               to="/"
               className="text-slate-950 text-xl font-semibold no-underline"
@@ -56,7 +57,7 @@ const Header = ({ allProducts }) => {
           </div>
 
           {/* Search Bar */}
-          <div className="relative w-full max-w-lg">
+          <div className="w-[50%] relative ">
             <input
               type="text"
               placeholder="Search Product..."
@@ -138,6 +139,12 @@ const Header = ({ allProducts }) => {
                   className="flex items-center no-underline text-slate-950"
                 >
                   Become Seller <IoIosArrowForward className="ml-1" />
+                </Link>
+                <Link
+                  to="/shop-login"
+                  className="flex items-center text-slate-950 hover:text-gray-300"
+                >
+                  <FaUser className="mr-2" /> Login as seller
                 </Link>
               </>
             )}

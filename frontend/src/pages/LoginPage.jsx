@@ -18,7 +18,6 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (userInfo) {
-      console.log("nav things");
       navigate("/");
     }
   }, [userInfo, navigate]);
@@ -29,15 +28,13 @@ const LoginPage = () => {
       const res = await login({ email, password }).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/");
-      console.log("Credentials set:", res);
     } catch (err) {
       console.log("Login error:", err?.data?.message || err);
     }
   };
 
   return (
-    <FormContainer>
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+    <FormContainer title="Login">
       <form onSubmit={submitHandler} className="space-y-4">
         <div className="form-group">
           <label
