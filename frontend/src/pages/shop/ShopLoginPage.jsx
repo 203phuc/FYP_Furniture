@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useLoginShopMutation } from "../Redux/slices/shopApiSlice.js";
-import FormContainer from "../components/FormContainer.jsx";
-import { setCredentials } from "../Redux/slices/authSlice.js";
+import { useLoginShopMutation } from "../../Redux/slices/shopApiSlice.js";
+import FormContainer from "../../components/FormContainer.jsx";
+import { setCredentials } from "../../Redux/slices/authSlice.js";
 import { useDispatch, useSelector } from "react-redux"; // Adjust the import path as needed
 
 const ShopLoginPage = () => {

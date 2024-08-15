@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useRegisterShopMutation } from "../Redux/slices/shopApiSlice.js";
-import { setCredentials } from "../Redux/slices/authSlice";
-import FormContainer from "../components/FormContainer.jsx";
-import Loader from "../components/Loader.jsx";
+import { useRegisterShopMutation } from "../../Redux/slices/shopApiSlice.js";
+import { setCredentials } from "../../Redux/slices/authSlice.js";
+import FormContainer from "../../components/FormContainer.jsx";
+import Loader from "../../components/Loader.jsx";
 
 const ShopCreatePage = () => {
   const [email, setEmail] = useState("");

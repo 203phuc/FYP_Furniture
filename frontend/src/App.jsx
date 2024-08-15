@@ -7,7 +7,8 @@ const App = () => {
   const shouldShowHeader =
     location.pathname !== "/login" &&
     location.pathname !== "/register" &&
-    location.pathname !== "/shop-create";
+    location.pathname !== "/shop-create" &&
+    location.pathname !== "/shop-login";
   return (
     <>
       {shouldShowHeader && <Header />}
