@@ -16,8 +16,8 @@ import HomePage from "./pages/HomePage.jsx";
 import { Provider } from "react-redux";
 import store from "./Redux/store.js";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import ShopCreatePage from "./pages/ShopCreatePage.jsx";
-import ShopLoginPage from "./pages/ShopLoginPage.jsx";
+import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
+import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(

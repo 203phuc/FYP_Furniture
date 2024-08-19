@@ -28,7 +28,7 @@ const isSeller = asyncHandler(async (req, res, next) => {
   try {
     const seller_token = req.cookies.jwt;
     if (!seller_token) {
-      return next(new Error("Please login to continue", 401));
+      return next(new Error("Please login as seller to continue", 401));
     }
 
     const decoded = jwt.verify(seller_token, process.env.JWT_SECRET);
