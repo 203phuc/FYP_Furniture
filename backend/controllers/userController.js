@@ -15,6 +15,10 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phoneNumber: user.phoneNumber,
+      addresses: user.addresses,
+      role: user.role,
+      avatar: user.avatar,
       token: user.token,
     });
   } else {
@@ -27,8 +31,8 @@ const authUser = asyncHandler(async (req, res) => {
 //@route   POST /api/users
 //@access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  console.log(name);
+  const { name, email, password, phoneNumber, addresses, avatar } = req.body;
+
   const userExists = await User.findOne({ email });
 
   if (userExists) {
@@ -36,13 +40,36 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already exists");
   }
 
-  const user = await User.create({ name, email, password });
+  const userData = {
+    name,
+    email,
+    password,
+  };
+
+  if (phoneNumber) {
+    userData.phoneNumber = phoneNumber;
+  }
+
+  if (addresses) {
+    userData.addresses = addresses;
+  }
+
+  if (avatar) {
+    userData.avatar = avatar;
+  }
+
+  const user = await User.create(userData);
+
   if (user) {
     generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      phoneNumber: user.phoneNumber,
+      addresses: user.addresses,
+      role: user.role,
+      avatar: user.avatar,
       token: user.token,
     });
   } else {
@@ -51,7 +78,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc    Auth user/ set token
+//@desc    Logout user/ clear token
 //@route   POST /api/users/logout
 //@access  Public
 const logoutUser = asyncHandler(async (req, res) => {
@@ -63,8 +90,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "User logged out" });
 });
 
-//@desc    Auth user/ set token
-//@route   POST /api/users/profile
+//@desc    Get user profile
+//@route   GET /api/users/profile
 //@access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
   const user = {
@@ -73,7 +100,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
-//@desc    Auth user/ set token
+//@desc    Update user profile
 //@route   PUT /api/users/profile
 //@access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
@@ -82,15 +109,28 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
+    user.addresses = req.body.addresses || user.addresses;
+    user.avatar = req.body.avatar || user.avatar;
+
     if (req.body.password) {
       user.password = req.body.password;
     }
+
     const updatedUser = await user.save();
+
     res.status(200).json({
-      _id: updatedUser._id, // this is the id of the user that is logged in
+      _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+      addresses: updatedUser.addresses,
+      role: updatedUser.role,
+      avatar: updatedUser.avatar,
     });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
   }
 });
 

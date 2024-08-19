@@ -58,10 +58,6 @@ const shopSchema = new mongoose.Schema(
       default: 0,
       min: [0, "Available balance cannot be negative"],
     },
-    created_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true, // Automatically adds updatedAt field

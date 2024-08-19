@@ -24,34 +24,22 @@ const userSchema = new mongoose.Schema(
       {
         country: {
           type: String,
-          required: [true, "Please provide the country for the address"],
         },
         city: {
           type: String,
-          required: [true, "Please provide the city for the address"],
         },
         address1: {
           type: String,
-          required: [
-            true,
-            "Please provide the primary address line (address1)",
-          ],
         },
         address2: {
           type: String,
-          required: [false], // Optional field
         },
         zipCode: {
           type: Number,
-          required: [true, "Please provide the zipcode for the address"],
         },
         addressType: {
           type: String,
           enum: ["home", "work", "other"], // Example address types
-          required: [
-            true,
-            "Please specify the type of address (home, work, other)",
-          ],
         },
       },
     ],
@@ -59,6 +47,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "user",
       enum: ["user", "admin"], // Example roles
+    },
+    avatar: {
+      public_id: {
+        type: String,
+        required: [false], // Optional field
+      },
+      url: {
+        type: String,
+        required: [false], // Optional field
+      },
     },
   },
   { timestamps: true }

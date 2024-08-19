@@ -8,12 +8,14 @@ import generateToken from "../utils/generateToken.js";
 const authShop = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const shop = await Shop.findOne({ email });
+
   if (shop && (await shop.matchPassword(password))) {
     generateToken(res, shop._id);
     res.status(201).json({
       _id: shop._id,
       name: shop.name,
       email: shop.email,
+      role: shop.role,
       token: shop.token,
     });
   } else {
@@ -26,24 +28,53 @@ const authShop = asyncHandler(async (req, res) => {
 //@route   POST /api/shops
 //@access  Public
 const registerShop = asyncHandler(async (req, res) => {
-  const { name, email, password, description, address, phoneNumber, zipCode } =
-    req.body;
+  const {
+    name,
+    email,
+    password,
+    address,
+    phone_number,
+    zipcode,
+    image,
+    avatar,
+    withdraw_method,
+    available_balance,
+  } = req.body;
 
   const existingShop = await Shop.findOne({ email });
+
   if (existingShop) {
     res.status(400);
     throw new Error("Shop already exists");
   }
 
-  const newShop = await Shop.create({
+  const shopData = {
     name,
     email,
     password,
-    description,
     address,
-    phoneNumber,
-    zipCode,
-  });
+    phone_number,
+    zipcode,
+  };
+
+  // Optional fields
+  if (image) {
+    shopData.image = image;
+  }
+
+  if (avatar) {
+    shopData.avatar = avatar;
+  }
+
+  if (withdraw_method) {
+    shopData.withdraw_method = withdraw_method;
+  }
+
+  if (available_balance !== undefined) {
+    shopData.available_balance = available_balance;
+  }
+
+  const newShop = await Shop.create(shopData);
 
   if (newShop) {
     generateToken(res, newShop._id);
@@ -51,6 +82,7 @@ const registerShop = asyncHandler(async (req, res) => {
       _id: newShop._id,
       name: newShop.name,
       email: newShop.email,
+      role: newShop.role,
       token: newShop.token,
     });
   } else {
@@ -59,28 +91,38 @@ const registerShop = asyncHandler(async (req, res) => {
   }
 });
 
-//generate a update shop api
 //@desc    Update shop and seller
 //@route   PUT /api/shops/:id
 //@access  Private
 const updateShop = asyncHandler(async (req, res) => {
   const shop = await Shop.findById(req.params.id);
+
   if (shop) {
     shop.name = req.body.name || shop.name;
     shop.email = req.body.email || shop.email;
-    shop.description = req.body.description || shop.description;
     shop.address = req.body.address || shop.address;
-    shop.phoneNumber = req.body.phoneNumber || shop.phoneNumber;
-    shop.zipCode = req.body.zipCode || shop.zipCode;
+    shop.phone_number = req.body.phone_number || shop.phone_number;
+    shop.zipcode = req.body.zipcode || shop.zipcode;
+    shop.image = req.body.image || shop.image;
+    shop.avatar = req.body.avatar || shop.avatar;
+    shop.withdraw_method = req.body.withdraw_method || shop.withdraw_method;
+    shop.available_balance =
+      req.body.available_balance !== undefined
+        ? req.body.available_balance
+        : shop.available_balance;
+
     const updatedShop = await shop.save();
     res.status(200).json({
       _id: updatedShop._id,
       name: updatedShop.name,
       email: updatedShop.email,
-      description: updatedShop.description,
       address: updatedShop.address,
-      phoneNumber: updatedShop.phoneNumber,
-      zipCode: updatedShop.zipCode,
+      phone_number: updatedShop.phone_number,
+      zipcode: updatedShop.zipcode,
+      image: updatedShop.image,
+      avatar: updatedShop.avatar,
+      withdraw_method: updatedShop.withdraw_method,
+      available_balance: updatedShop.available_balance,
     });
   } else {
     res.status(404);
@@ -88,7 +130,6 @@ const updateShop = asyncHandler(async (req, res) => {
   }
 });
 
-//generate a logoutshop
 //@desc    Logout shop
 //@route   POST /api/shops/logout
 //@access  Private
@@ -97,7 +138,7 @@ const logoutShop = asyncHandler(async (req, res) => {
     httpOnly: true,
     expires: new Date(0),
   });
-  res.status(200).json({ message: "seller Logged out" });
+  res.status(200).json({ message: "Shop logged out" });
 });
 
 //@desc    Delete shop
@@ -105,6 +146,7 @@ const logoutShop = asyncHandler(async (req, res) => {
 //@access  Private
 const deleteShop = asyncHandler(async (req, res) => {
   const shop = await Shop.findById(req.params.id);
+
   if (shop) {
     await Shop.deleteOne({ _id: shop._id });
     res.json({ message: "Shop removed" });
@@ -114,11 +156,12 @@ const deleteShop = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc    Get shop
+//@desc    Get shop by ID
 //@route   GET /api/shops/:id
 //@access  Private
 const getShop = asyncHandler(async (req, res) => {
   const shop = await Shop.findById(req.params.id);
+
   if (shop) {
     res.json(shop);
   } else {
@@ -127,7 +170,6 @@ const getShop = asyncHandler(async (req, res) => {
   }
 });
 
-//get all shops
 //@desc    Get all shops
 //@route   GET /api/shops
 //@access  Private
