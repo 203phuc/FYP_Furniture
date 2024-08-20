@@ -59,15 +59,18 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please enter your product room type!"],
       enum: ["Living Room", "Bedroom", "Office", "Outdoor"], // Example room types
     },
-    images: {
-      type: [String],
-      validate: {
-        validator: function (v) {
-          return v.length > 0;
+    images: [
+      {
+        public_id: {
+          type: String,
+          required: true,
         },
-        message: "Please provide at least one image",
+        url: {
+          type: String,
+          required: true,
+        },
       },
-    },
+    ],
     specifications: {
       dimensions: {
         width: {

@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
+import Shop from "../models/shopModel.js";
 
 //@desc    Fetch all products
 //@route   GET /api/products
@@ -13,36 +14,47 @@ const getProducts = asyncHandler(async (req, res) => {
 //@route   POST /api/products
 //@access  Private
 const createProduct = asyncHandler(async (req, res) => {
-  const {
-    name,
-    description,
-    price,
-    stock_quantity,
-    category,
-    roomtype,
-    images,
-    specifications,
-  } = req.body;
+  try {
+    const shopId = req.body.shopId;
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return next(new Error("Shop Id is invalid!", 400));
+    } else {
+      let images = [];
 
-  const productExist = await Product.findOne({ name });
-  if (productExist) {
-    res.status(400);
-    throw new Error("Product already exists");
+      if (typeof req.body.images === "string") {
+        images.push(req.body.images);
+      } else {
+        images = req.body.images;
+      }
+
+      const imagesLinks = [];
+
+      for (let i = 0; i < images.length; i++) {
+        const result = await cloudinary.v2.uploader.upload(images[i], {
+          folder: "products",
+        });
+
+        imagesLinks.push({
+          public_id: result.public_id,
+          url: result.secure_url,
+        });
+      }
+
+      const productData = req.body;
+      productData.images = imagesLinks;
+      productData.shop = shop;
+
+      const product = await Product.create(productData);
+
+      res.status(201).json({
+        success: true,
+        product,
+      });
+    }
+  } catch (error) {
+    return next(new ErrorHandler(error, 400));
   }
-
-  const product = new Product({
-    name,
-    description,
-    price,
-    stock_quantity,
-    category,
-    roomtype,
-    images,
-    specifications,
-  });
-
-  const createdProduct = await product.save();
-  res.status(201).json(createdProduct);
 });
 
 //@desc    Delete a product
