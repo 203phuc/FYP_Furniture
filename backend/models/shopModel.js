@@ -19,15 +19,16 @@ const shopSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: [false], // Optional field
+      required: false, // Optional field
     },
     address: {
       type: String,
       required: [true, "Please provide the shop's address"],
     },
-    phone_number: {
+    phoneNumber: {
       type: Number,
       required: [true, "Please provide the shop's phone number"],
+      min: [0, "Phone number cannot be negative"],
     },
     role: {
       type: String,
@@ -35,25 +36,25 @@ const shopSchema = new mongoose.Schema(
       default: "Seller",
     },
     avatar: {
-      public_id: {
+      publicId: {
         type: String,
-        required: [false], // Optional field
+        required: false, // Optional field
       },
       url: {
         type: String,
-        required: [false], // Optional field
+        required: false, // Optional field
       },
     },
-    zipcode: {
+    zipCode: {
       type: Number,
       required: [true, "Please provide the shop's zipcode"],
     },
-    withdraw_method: {
+    withdrawMethod: {
       type: Object,
-      required: [false], // Optional field
+      required: false, // Optional field
       // Define the structure of this object if needed
     },
-    available_balance: {
+    availableBalance: {
       type: Number,
       default: 0,
       min: [0, "Available balance cannot be negative"],

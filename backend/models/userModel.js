@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide your email address"],
       unique: [true, "Email address must be unique"],
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please provide a valid email address",
+      ],
     },
     password: {
       type: String,
@@ -18,7 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: Number,
-      required: [false], // Optional field
+      required: [true, "Please provide your phone number"], // Optional field
     },
     addresses: [
       {
