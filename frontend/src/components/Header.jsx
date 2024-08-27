@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Redux/slices/authSlice.js";
 import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
 import styles from "../styles/styles.jsx";
+import logo from "../assets/cozniture-high-resolution-logo-transparent.png"; // Import your logo here
 
 const Header = ({ allProducts }) => {
   // User section
@@ -48,11 +49,12 @@ const Header = ({ allProducts }) => {
         <div className="hidden lg:flex lg:h-[50px] lg:my-[20px] 800px:flex items-center justify-between">
           {/* Logo */}
           <div>
-            <Link
-              to="/"
-              className="text-slate-950 text-xl font-semibold no-underline"
-            >
-              COZNITURE
+            <Link to="/">
+              <img
+                src={logo}
+                alt="Cozniture Logo"
+                className="h-10" // Adjust the height as needed
+              />
             </Link>
           </div>
 

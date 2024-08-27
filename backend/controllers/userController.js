@@ -55,8 +55,15 @@ const registerUser = asyncHandler(async (req, res) => {
     userData.addresses = addresses;
   }
 
-  if (avatar) {
-    userData.avatar = avatar;
+  if (avatar) { 
+    const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+      folder: "avatars",
+    });
+
+    userData.avatar = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
   }
 
   const user = await User.create(userData);

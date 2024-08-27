@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import FormContainer from "../components/FormContainer.jsx";
 import { useLoginMutation } from "../Redux/slices/userApiSlice.js";
 import { setCredentials } from "../Redux/slices/authSlice.js";
@@ -27,9 +29,12 @@ const LoginPage = () => {
     try {
       const res = await login({ email, password }).unwrap();
       dispatch(setCredentials({ ...res }));
+      toast.success("Login successful!");
       navigate("/");
     } catch (err) {
-      console.log("Login error:", err?.data?.message || err);
+      const errorMessage = err?.data?.message || err?.error || "Login failed!";
+      toast.error(errorMessage);
+      console.log("Login error:", errorMessage);
     }
   };
 
