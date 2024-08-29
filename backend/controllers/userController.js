@@ -20,6 +20,8 @@ const authUser = asyncHandler(async (req, res) => {
       addresses: user.addresses,
       role: user.role,
       avatar: user.avatar,
+      createdAt: user.createdAt, // Include createdAt field
+      updatedAt: user.updatedAt, // Include updatedAt field
       token: user.token,
     });
   } else {
@@ -55,7 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     userData.addresses = addresses;
   }
 
-  if (avatar) { 
+  if (avatar) {
     const myCloud = await cloudinary.v2.uploader.upload(avatar, {
       folder: "avatars",
     });
@@ -78,6 +80,8 @@ const registerUser = asyncHandler(async (req, res) => {
       addresses: user.addresses,
       role: user.role,
       avatar: user.avatar,
+      createdAt: user.createdAt, // Automatically included
+      updatedAt: user.updatedAt, // Automatically included
       token: user.token,
     });
   } else {
