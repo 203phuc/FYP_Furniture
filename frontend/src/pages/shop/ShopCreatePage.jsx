@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useRegisterShopMutation } from "../../Redux/slices/shopApiSlice.js";
 import { setCredentials } from "../../Redux/slices/authSlice.js";
-import FormContainer from "../../components/FormContainer.jsx";
-import Loader from "../../components/Loader.jsx";
+import FormContainer from "../../components/layout/FormContainer.jsx";
+import Loader from "../../components/layout/Loader.jsx";
 
 const ShopCreatePage = () => {
   const [email, setEmail] = useState("");

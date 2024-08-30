@@ -4,10 +4,10 @@ import { FaUser } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
 import { IoIosArrowForward } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../Redux/slices/authSlice.js";
-import { useLogoutMutation } from "../Redux/slices/userApiSlice.js";
-import styles from "../styles/styles.jsx";
-import logo from "../assets/cozniture-high-resolution-logo-transparent.png"; // Import your logo here
+import { logout } from "../../Redux/slices/authSlice.js";
+import { useLogoutMutation } from "../../Redux/slices/userApiSlice.js";
+import styles from "../../styles/styles.jsx";
+import logo from "../../assets/cozniture-high-resolution-logo-transparent.png"; // Import your logo here
 
 const Header = ({ allProducts }) => {
   // User section

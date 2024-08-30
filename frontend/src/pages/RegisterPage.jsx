@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import FormContainer from "../components/FormContainer.jsx";
+import FormContainer from "../components/layout/FormContainer.jsx";
 import { useRegisterMutation } from "../Redux/slices/userApiSlice.js";
 import { setCredentials } from "../Redux/slices/authSlice";
-import Loader from "../components/Loader.jsx";
+import Loader from "../components/layout/Loader.jsx";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
 

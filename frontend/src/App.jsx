@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import Header from "./components/Header.jsx";
+import Header from "./components/layout/Header.jsx";
 import "./index.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,7 +10,8 @@ const App = () => {
     location.pathname !== "/login" &&
     location.pathname !== "/register" &&
     location.pathname !== "/shop-create" &&
-    location.pathname !== "/shop-login";
+    location.pathname !== "/shop-login" &&
+    location.pathname !== "/profile";
   return (
     <>
       <ToastContainer />
