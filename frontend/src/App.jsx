@@ -10,8 +10,7 @@ const App = () => {
     location.pathname !== "/login" &&
     location.pathname !== "/register" &&
     location.pathname !== "/shop-create" &&
-    location.pathname !== "/shop-login" &&
-    location.pathname !== "/profile";
+    location.pathname !== "/shop-login";
   return (
     <>
       <ToastContainer />

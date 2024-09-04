@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Loader from "../components/layout/Loader.jsx";
 import ProfileSideBar from "../components/profile/ProfileSideBar.jsx";
 import ProfileContent from "../components/profile/ProfileContent.jsx";
 import { useSelector } from "react-redux";
@@ -8,17 +7,18 @@ const ProfilePage = () => {
   const [active, setActive] = useState(1);
 
   return (
-    <div>
-      <>
-        <div className="w-11/12 mx-auto flex bg-[#f5f5f5]">
-          <div className="w-[50px] 800px:w-[335px] sticky 800px:mt-0 mt-[18%]">
-            <ProfileSideBar active={active} setActive={setActive} />
-          </div>
-          <div className="w-full">
-            <ProfileContent active={active} />
-          </div>
+    <div className="w-full min-h-screen bg-[#f5f5f5] flex justify-center">
+      <div className="w-full flex flex-col 800px:flex-row bg-white">
+        {/* Sidebar */}
+        <div className="800px:w-[400px] w-full p-4 bg-gray-100">
+          <ProfileSideBar active={active} setActive={setActive} />
         </div>
-      </>
+
+        {/* Content */}
+        <div className="w-full">
+          <ProfileContent active={active} />
+        </div>
+      </div>
     </div>
   );
 };
