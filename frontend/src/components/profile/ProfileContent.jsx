@@ -154,6 +154,24 @@ const ProfileContent = () => {
               />
             </div>
           </div>
+          <div>
+            <label
+              htmlFor="createdDate"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Created Date
+            </label>
+            <div className="mt-1">
+              <input
+                id="createdDate"
+                name="createdDate"
+                type="text"
+                value={new Date(createdAt).toLocaleDateString()} // Format the date
+                readOnly // Prevent editing
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-end mt-4">

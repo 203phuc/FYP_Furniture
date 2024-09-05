@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Shop from "../models/shopModel.js";
 import generateToken from "../utils/generateToken.js";
+import cloudinary from "cloudinary";
 
 //@desc    Auth shop/ set token
 //@route   POST /api/shops/auth
@@ -33,12 +34,12 @@ const registerShop = asyncHandler(async (req, res) => {
     email,
     password,
     address,
-    phone_number,
-    zipcode,
-    image,
-    avatar,
-    withdraw_method,
-    available_balance,
+    phoneNumber,
+    zipCode,
+    image, // Brand image
+    avatar, // Shop owner or shop avatar
+    withdrawMethod,
+    availableBalance,
   } = req.body;
 
   const existingShop = await Shop.findOne({ email });
@@ -53,25 +54,39 @@ const registerShop = asyncHandler(async (req, res) => {
     email,
     password,
     address,
-    phone_number,
-    zipcode,
+    phoneNumber,
+    zipCode,
   };
 
   // Optional fields
+  if (withdrawMethod) {
+    shopData.withdrawMethod = withdrawMethod;
+  }
+
+  if (availableBalance !== undefined) {
+    shopData.availableBalance = availableBalance;
+  }
+
+  // Handle brand image upload if present
   if (image) {
-    shopData.image = image;
+    const uploadedImage = await cloudinary.v2.uploader.upload(image, {
+      folder: "brand_images", // Upload to brand_images folder
+    });
+    shopData.image = {
+      publicId: uploadedImage.public_id,
+      url: uploadedImage.secure_url,
+    };
   }
 
+  // Handle avatar upload if present
   if (avatar) {
-    shopData.avatar = avatar;
-  }
-
-  if (withdraw_method) {
-    shopData.withdraw_method = withdraw_method;
-  }
-
-  if (available_balance !== undefined) {
-    shopData.available_balance = available_balance;
+    const uploadedAvatar = await cloudinary.v2.uploader.upload(avatar, {
+      folder: "avatars",
+    });
+    shopData.avatar = {
+      publicId: uploadedAvatar.public_id,
+      url: uploadedAvatar.secure_url,
+    };
   }
 
   const newShop = await Shop.create(shopData);
@@ -82,7 +97,16 @@ const registerShop = asyncHandler(async (req, res) => {
       _id: newShop._id,
       name: newShop.name,
       email: newShop.email,
+      address: newShop.address,
+      phoneNumber: newShop.phoneNumber,
+      zipCode: newShop.zipCode,
+      withdrawMethod: newShop.withdrawMethod,
+      availableBalance: newShop.availableBalance,
+      image: newShop.image, // Brand image
+      avatar: newShop.avatar, // Shop or owner avatar
       role: newShop.role,
+      createdAt: newShop.createdAt,
+      updatedAt: newShop.updatedAt,
       token: newShop.token,
     });
   } else {
@@ -101,15 +125,15 @@ const updateShop = asyncHandler(async (req, res) => {
     shop.name = req.body.name || shop.name;
     shop.email = req.body.email || shop.email;
     shop.address = req.body.address || shop.address;
-    shop.phone_number = req.body.phone_number || shop.phone_number;
-    shop.zipcode = req.body.zipcode || shop.zipcode;
+    shop.phoneNumber = req.body.phoneNumber || shop.phoneNumber;
+    shop.zipCode = req.body.zipCode || shop.zipCode;
     shop.image = req.body.image || shop.image;
     shop.avatar = req.body.avatar || shop.avatar;
-    shop.withdraw_method = req.body.withdraw_method || shop.withdraw_method;
-    shop.available_balance =
-      req.body.available_balance !== undefined
-        ? req.body.available_balance
-        : shop.available_balance;
+    shop.withdrawMethod = req.body.withdrawMethod || shop.withdrawMethod;
+    shop.availableBalance =
+      req.body.availableBalance !== undefined
+        ? req.body.availableBalance
+        : shop.availableBalance;
 
     const updatedShop = await shop.save();
     res.status(200).json({
@@ -117,12 +141,12 @@ const updateShop = asyncHandler(async (req, res) => {
       name: updatedShop.name,
       email: updatedShop.email,
       address: updatedShop.address,
-      phone_number: updatedShop.phone_number,
-      zipcode: updatedShop.zipcode,
+      phoneNumber: updatedShop.phoneNumber,
+      zipCode: updatedShop.zipCode,
       image: updatedShop.image,
       avatar: updatedShop.avatar,
-      withdraw_method: updatedShop.withdraw_method,
-      available_balance: updatedShop.available_balance,
+      withdrawMethod: updatedShop.withdrawMethod,
+      availableBalance: updatedShop.availableBalance,
     });
   } else {
     res.status(404);

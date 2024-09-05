@@ -6,6 +6,7 @@ import { useRegisterShopMutation } from "../../Redux/slices/shopApiSlice.js";
 import { setCredentials } from "../../Redux/slices/authSlice.js";
 import FormContainer from "../../components/layout/FormContainer.jsx";
 import Loader from "../../components/layout/Loader.jsx";
+import { toast } from "react-toastify";
 
 const ShopCreatePage = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ const ShopCreatePage = () => {
   const [address, setAddress] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
   const navigate = useNavigate();
@@ -28,8 +30,24 @@ const ShopCreatePage = () => {
     }
   }, [userInfo, navigate]);
 
+  const validatePhoneNumber = (number) => {
+    const phoneRegex = /^[0-9]{10,15}$/; // Adjust the length as needed
+    return phoneRegex.test(number);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+
     try {
       const res = await register({
         name,
@@ -43,7 +61,7 @@ const ShopCreatePage = () => {
       navigate("/");
     } catch (err) {
       console.log(err?.data?.message || err.error);
-      // toast.error(err?.data?.message || err.error);
+      toast.error(err?.data?.message || err.error);
     }
   };
 
@@ -71,15 +89,15 @@ const ShopCreatePage = () => {
 
         <div>
           <label
-            htmlFor="phone-number"
+            htmlFor="phoneNumber"
             className="block text-sm font-medium text-gray-700"
           >
             Phone Number
           </label>
           <div className="mt-1">
             <input
-              type="number"
-              name="phone-number"
+              type="text"
+              name="phoneNumber"
               required
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
@@ -93,7 +111,7 @@ const ShopCreatePage = () => {
             htmlFor="email"
             className="block text-sm font-medium text-gray-700"
           >
-            Email address
+            Email Address
           </label>
           <div className="mt-1">
             <input
@@ -103,24 +121,6 @@ const ShopCreatePage = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-        </div>
-        <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Description
-          </label>
-          <div className="mt-1">
-            <input
-              type="text"
-              name="address"
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
@@ -147,15 +147,15 @@ const ShopCreatePage = () => {
 
         <div>
           <label
-            htmlFor="zipcode"
+            htmlFor="zipCode"
             className="block text-sm font-medium text-gray-700"
           >
             Zip Code
           </label>
           <div className="mt-1">
             <input
-              type="number"
-              name="zipcode"
+              type="text"
+              name="zipCode"
               required
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
@@ -179,6 +179,39 @@ const ShopCreatePage = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            {visible ? (
+              <AiOutlineEye
+                className="absolute right-2 top-2 cursor-pointer"
+                size={25}
+                onClick={() => setVisible(false)}
+              />
+            ) : (
+              <AiOutlineEyeInvisible
+                className="absolute right-2 top-2 cursor-pointer"
+                size={25}
+                onClick={() => setVisible(true)}
+              />
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Confirm Password
+          </label>
+          <div className="mt-1 relative">
+            <input
+              type={visible ? "text" : "password"}
+              name="confirmPassword"
+              autoComplete="current-password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             {visible ? (

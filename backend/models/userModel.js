@@ -21,8 +21,9 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please provide a password"],
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: [true, "Please provide your phone number"], // Optional field
+      min: [0, "Phone number cannot be negative"],
     },
     addresses: [
       {

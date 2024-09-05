@@ -8,7 +8,7 @@ import Loader from "../components/layout/Loader.jsx";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
 
-const RegisterScreen = () => {
+const RegisterPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -205,4 +205,4 @@ const RegisterScreen = () => {
   );
 };
 
-export default RegisterScreen;
+export default RegisterPage;

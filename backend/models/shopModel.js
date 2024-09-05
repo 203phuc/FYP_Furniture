@@ -26,7 +26,7 @@ const shopSchema = new mongoose.Schema(
       required: [true, "Please provide the shop's address"],
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: [true, "Please provide the shop's phone number"],
       min: [0, "Phone number cannot be negative"],
     },
