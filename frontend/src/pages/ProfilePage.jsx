@@ -14,7 +14,7 @@ const ProfilePage = () => {
           <ProfileSideBar active={active} setActive={setActive} />
         </div>
 
-        {/* Content */}
+        {/* Content ofprofile*/}
         <div className="w-full">
           <ProfileContent active={active} />
         </div>
