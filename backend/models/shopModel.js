@@ -32,8 +32,8 @@ const shopSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Seller", "Admin"], // Example roles
-      default: "Seller",
+      enum: ["seller", "admin"], // Example roles
+      default: "seller",
     },
     avatar: {
       publicId: {

@@ -18,7 +18,7 @@ const ShopLoginPage = () => {
   const { userInfo } = useSelector((state) => state.auth); // Adjust the state path as needed
 
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo && userInfo.role === "seller") {
       navigate("/");
     }
   }, [userInfo, navigate]);

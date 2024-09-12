@@ -16,6 +16,7 @@ const Header = ({ allProducts }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdown1Open, setIsDropdown1Open] = useState(false);
 
   const logoutHandler = async () => {
     try {
@@ -46,7 +47,7 @@ const Header = ({ allProducts }) => {
   return (
     <>
       <div className={`${styles.section}`}>
-        <div className="hidden lg:flex lg:h-[50px] lg:my-[20px] 800px:flex items-center justify-between">
+        <div className="hidden 800px:h-[50px] 800px:my-[20px] 800px:flex items-center justify-between">
           {/* Logo */}
           <div>
             <Link to="/">
@@ -93,10 +94,30 @@ const Header = ({ allProducts }) => {
             )}
           </div>
 
+          <div className={`${styles.button}`}>
+            <Link
+              to={`${
+                userInfo && userInfo.role === "seller"
+                  ? "/dashboard"
+                  : "/shop-create"
+              }`}
+            >
+              <h1 className="text-[#fff] flex items-center">
+                {userInfo && userInfo.role === "seller"
+                  ? "Go Dashboard"
+                  : "Become Seller"}{" "}
+                <IoIosArrowForward className="ml-1" />
+              </h1>
+            </Link>
+          </div>
+          {/* seller logout */}
+
           {/* User and Navigation Links */}
           <div className="flex items-center space-x-4 relative">
+            {/* seller Section */}
+
             {/* User Section */}
-            {userInfo ? (
+            {userInfo && userInfo.role === "user" ? (
               <div>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -123,32 +144,49 @@ const Header = ({ allProducts }) => {
                 )}
               </div>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="flex items-center text-slate-950 hover:text-gray-300"
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdown1Open(!isDropdown1Open)}
+                  className="flex items-center text-slate-950"
                 >
-                  <FaUser className="mr-2" /> Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="flex items-center text-slate-950 hover:text-gray-300"
-                >
-                  <FaUser className="mr-2" /> Register
-                </Link>
-                <Link
-                  to="/shop-create"
-                  className="flex items-center no-underline text-slate-950"
-                >
-                  Become Seller <IoIosArrowForward className="ml-1" />
-                </Link>
-                <Link
-                  to="/shop-login"
-                  className="flex items-center text-slate-950 hover:text-gray-300"
-                >
-                  <FaUser className="mr-2" /> Login as seller
-                </Link>
-              </>
+                  <FaUser className="mr-2" /> Account
+                </button>
+                {isDropdown1Open && !userInfo ? (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                    <Link
+                      to="/login"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                    >
+                      Register
+                    </Link>
+                    <Link
+                      to="/shop-create"
+                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left flex items-center justify-between"
+                    >
+                      Shop register <IoIosArrowForward className="ml-1" />
+                    </Link>
+                    <Link
+                      to="/shop-login"
+                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                    >
+                      Login as seller
+                    </Link>
+                  </div>
+                ) : (
+                  <button
+                    className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                    onClick={logoutHandler}
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

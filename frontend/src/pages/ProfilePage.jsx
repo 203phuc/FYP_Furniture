@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 
 const ProfilePage = () => {
   const [active, setActive] = useState(1);
+  console.log(active);
 
   return (
     <div className="w-full min-h-screen bg-[#f5f5f5] flex justify-center">

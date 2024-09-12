@@ -25,7 +25,7 @@ const ShopCreatePage = () => {
   const [register, { isLoading }] = useRegisterShopMutation();
 
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo && userInfo.role === "seller") {
       navigate("/");
     }
   }, [userInfo, navigate]);

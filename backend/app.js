@@ -5,6 +5,7 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import shopRoutes from "./routes/shopRoutes.js"; //this shopRouter is a variable for the shop routes because it export default
+import bodyParser from "body-parser";
 
 const app = express();
 
@@ -17,12 +18,12 @@ const app = express();
 // );
 
 // Built-in middleware to parse incoming JSON requests
-app.use(express.json());
-
-// Built-in middleware to parse URL-encoded data (replaces bodyParser)
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cookieParser());
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);

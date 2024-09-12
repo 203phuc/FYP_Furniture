@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "bootstrap/dist/css/bootstrap.min.css";
 import {
   BrowserRouter,
   Routes,
@@ -19,6 +18,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
 import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,6 +29,7 @@ const router = createBrowserRouter(
       <Route path="/shop-create" element={<ShopCreatePage />} />
       <Route path="/shop-login" element={<ShopLoginPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dashboard" element={<ShopDashboardPage />} />
     </Route>
   )
 );

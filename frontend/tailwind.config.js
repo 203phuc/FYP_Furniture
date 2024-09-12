@@ -1,7 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: ["./src/**/*.{html,js,jsx}"],
+  mode: "jit",
   theme: {
+    fontFamily: {
+      Roboto: ["Roboto", "sans-serif"],
+      Poppins: ["Poppins", "sans-serif"],
+    },
     extend: {
       screens: {
         "1000px": "1050px",
