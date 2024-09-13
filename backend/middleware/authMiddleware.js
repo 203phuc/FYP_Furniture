@@ -23,12 +23,12 @@ const protect = asyncHandler(async (req, res, next) => {
     throw new Error("Not authorized, no token");
   }
 });
-// User must be an admin
+// User must be a seller
 const isSeller = asyncHandler(async (req, res, next) => {
   try {
     const seller_token = req.cookies.jwt;
     if (!seller_token) {
-      return next(new Error("Please login as seller to continue", 401));
+      return next(new Error("Please login to continue", 401));
     }
 
     const decoded = jwt.verify(seller_token, process.env.JWT_SECRET);
@@ -42,6 +42,8 @@ const isSeller = asyncHandler(async (req, res, next) => {
     throw new Error("Not authorized, invalid token");
   }
 });
+
+// User must be an admin
 const isAdmin = asyncHandler((req, res, next) => {
   if (req.user.role.toUpperCase() === "ADMIN") {
     next();
