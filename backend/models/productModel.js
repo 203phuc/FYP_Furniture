@@ -16,11 +16,6 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please enter your product price!"],
       min: [0, "Price cannot be negative"],
     },
-    stock_quantity: {
-      type: Number,
-      required: [true, "Please enter your product stock!"],
-      min: [0, "Stock quantity cannot be negative"],
-    },
     category: {
       type: String,
       required: [true, "Please enter your product category!"],
@@ -37,6 +32,16 @@ const productSchema = new mongoose.Schema(
       default: false,
     },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection
+    image: {
+      public_id: {
+        type: String,
+        required: true,
+      },
+      url: {
+        type: String,
+        required: true,
+      },
+    },
   },
   {
     timestamps: true,

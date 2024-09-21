@@ -29,24 +29,31 @@ const variantSchema = new mongoose.Schema(
       type: Number,
       min: [0, "Weight cannot be negative"],
     },
-    colors: [
+    price: {
+      type: Number,
+      required: [true, "Please enter your product price!"],
+      min: [0, "Price cannot be negative"],
+    },
+    stock_quantity: {
+      type: Number,
+      required: [true, "Please enter your product stock!"],
+      min: [0, "Stock quantity cannot be negative"],
+    },
+
+    color: {
+      type: String,
+      required: true,
+    },
+    images: [
       {
-        color: {
+        public_id: {
           type: String,
           required: true,
         },
-        images: [
-          {
-            public_id: {
-              type: String,
-              required: true,
-            },
-            url: {
-              type: String,
-              required: true,
-            },
-          },
-        ],
+        url: {
+          type: String,
+          required: true,
+        },
       },
     ],
     material: {
