@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema(
       default: false,
     },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection
-    image: {
+    mainImage: {
       public_id: {
         type: String,
         required: true,

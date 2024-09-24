@@ -27,7 +27,7 @@ const App = () => {
   return (
     <>
       <ToastContainer />
-      {shouldShowHeader && <Header />}
+      {shouldShowHeader && <Header/>}
       <Outlet />
     </>
   );

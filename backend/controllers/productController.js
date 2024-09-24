@@ -45,40 +45,31 @@ const getProducts = asyncHandler(async (req, res, next) => {
   }
 });
 
-// @desc    Create a new product with variants
+// @desc    Create a new product (without variants initially)
 // @route   POST /api/products
 // @access  Private
 const createProduct = asyncHandler(async (req, res, next) => {
   try {
-    const { shopId, variants, ...productData } = req.body;
+    const { shopId, ...productData } = req.body;
 
     // Validate Shop ID
     const shop = await Shop.findById(shopId);
     if (!shop) {
       return res.status(400).json({ message: "Invalid Shop ID" });
     }
+    const myCloud = await cloudinary.v2.uploader.upload(productData.mainImage, {
+      folder: "products",
+    });
+
+    productData.mainImage = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
 
     productData.shop = shop._id;
 
-    // Create the product
+    // Create the product without variants
     const product = await Product.create(productData);
-
-    // Handle variant creation and updates
-    if (variants && variants.length > 0) {
-      const variantDocs = await Promise.all(
-        variants.map(async (variant) => {
-          if (variant.colors && variant.colors.length > 0) {
-            variant.colors = await processColorImages(variant.colors);
-          }
-          variant.product = product._id; // Link variant to product
-          return await Variant.create(variant); // Create each variant
-        })
-      );
-
-      // Add the created variants to the product's `variants` field
-      product.variants = variantDocs.map((variant) => variant._id);
-      await product.save(); // Save the updated product with variants
-    }
 
     res.status(201).json({ success: true, product });
   } catch (error) {

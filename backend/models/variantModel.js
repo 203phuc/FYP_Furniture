@@ -39,11 +39,22 @@ const variantSchema = new mongoose.Schema(
       required: [true, "Please enter your product stock!"],
       min: [0, "Stock quantity cannot be negative"],
     },
-
     color: {
       type: String,
       required: true,
     },
+    // Main image field for faster access
+    main_image: {
+      public_id: {
+        type: String,
+        required: true,
+      },
+      url: {
+        type: String,
+        required: true,
+      },
+    },
+    // Array of additional images
     images: [
       {
         public_id: {
@@ -67,7 +78,7 @@ const variantSchema = new mongoose.Schema(
 );
 
 // Compound index: If you frequently query by product and color
-variantSchema.index({ product: 1, "colors.color": 1 });
+variantSchema.index({ product: 1, color: 1 });
 
 const Variant = mongoose.model("Variant", variantSchema);
 
