@@ -16,6 +16,8 @@ const Header = ({ allProducts }) => {
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [inputStatus, setInputStatus] = useState(false);
+  const [placeholder, setPlaceholder] = useState("Search products...");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdown1Open, setIsDropdown1Open] = useState(false);
   //active
@@ -51,18 +53,16 @@ const Header = ({ allProducts }) => {
     <>
       <div className="border-b border-[#EFEEEB]">
         <div className={`${styles.section} `}>
-          <div
-            className="hidden 800px:h-[70px] 800px:py-[20px] 800px:flex items-center justify-between 
-"
-          >
+          <div className="hidden 800px:h-[70px] 800px:py-[20px] 800px:flex items-center flex-row justify-evenly">
             {/* Search Bar */}
             <div className="w-[20%] relative ">
               <input
                 type="text"
-                placeholder="Search Product..."
+                placeholder={placeholder}
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full h-10 px-4 border-2 border-blue-600 rounded-md"
+                className="w-full h-10 px-4 "
+                onClick={() => setPlaceholder("hello")}
               />
               <AiOutlineSearch
                 size={30}
@@ -99,7 +99,22 @@ const Header = ({ allProducts }) => {
                 />
               </Link>
             </div>
-
+            <div className={`${styles.button}`}>
+              <Link
+                to={`${
+                  userInfo && userInfo.role === "seller"
+                    ? "/dashboard"
+                    : "/shop-create"
+                }`}
+              >
+                <h1 className="text-[#fff] flex items-center">
+                  {userInfo && userInfo.role === "seller"
+                    ? "Go Dashboard"
+                    : "Become Seller"}{" "}
+                  <IoIosArrowForward className="ml-1" />
+                </h1>
+              </Link>
+            </div>
             {/* seller logout */}
 
             {/* User and Navigation Links */}
@@ -161,7 +176,7 @@ const Header = ({ allProducts }) => {
                             </Link>
                             <Link
                               to="/shop-create"
-                              className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left flex items-center justify-between"
+                              className="w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left flex items-center justify-between"
                             >
                               Shop register{" "}
                               <IoIosArrowForward className="ml-1" />
@@ -202,22 +217,6 @@ const Header = ({ allProducts }) => {
           <div className={`${styles.normalFlex} h-full`}>
             <Navbar active={active} />
           </div>
-        </div>
-        <div className={`${styles.button}`}>
-          <Link
-            to={`${
-              userInfo && userInfo.role === "seller"
-                ? "/dashboard"
-                : "/shop-create"
-            }`}
-          >
-            <h1 className="text-[#fff] flex items-center">
-              {userInfo && userInfo.role === "seller"
-                ? "Go Dashboard"
-                : "Become Seller"}{" "}
-              <IoIosArrowForward className="ml-1" />
-            </h1>
-          </Link>
         </div>
       </div>
     </>
