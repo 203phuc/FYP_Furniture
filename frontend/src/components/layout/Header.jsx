@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
-import { AiOutlineSearch } from "react-icons/ai";
 import { IoIosArrowForward } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../Redux/slices/authSlice.js";
@@ -9,6 +8,13 @@ import { useLogoutMutation } from "../../Redux/slices/userApiSlice.js";
 import styles from "../../styles/styles.jsx";
 import logo from "../../assets/cozniture-high-resolution-logo-transparent.png";
 import Navbar from "./Navbar.jsx";
+import {
+  AiOutlineHeart,
+  AiOutlineSearch,
+  AiOutlineShoppingCart,
+} from "react-icons/ai";
+import { CgProfile } from "react-icons/cg";
+import "../../app.css";
 
 const Header = ({ allProducts }) => {
   // User section
@@ -115,15 +121,58 @@ const Header = ({ allProducts }) => {
                 </h1>
               </Link>
             </div>
+
             {/* seller logout */}
 
             {/* User and Navigation Links */}
-            <div className="flex items-center space-x-4 relative">
+            <div className="flex items-center relative">
               {/* seller Section */}
 
               {/* User Section */}
               {userInfo && userInfo.role === "user" ? (
                 <div>
+                  <div className="flex">
+                    <div className={`${styles.normalFlex}`}>
+                      <div
+                        className="relative cursor-pointer mr-[15px]"
+                        onClick={() => setOpenWishlist(true)}
+                      >
+                        <AiOutlineHeart size={25} color="black" />
+                        <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-3 h-3 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center"></span>
+                      </div>
+                    </div>
+
+                    <div className={`${styles.normalFlex}`}>
+                      <div
+                        className="relative cursor-pointer mr-[15px]"
+                        onClick={() => setOpenCart(true)}
+                      >
+                        <AiOutlineShoppingCart
+                          size={25}
+                          color="black"
+                          style={{ strokeWidth: 0.5 }}
+                        />
+                        <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-3 h-3 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center"></span>
+                      </div>
+                    </div>
+                    <div className={`${styles.normalFlex}`}>
+                      <div className="relative cursor-pointer mr-[15px]">
+                        {userInfo.role === "user" ? (
+                          <Link to="/profile">
+                            <img
+                              src={`${userInfo?.avatar?.url}`}
+                              className="w-[35px] h-[35px] rounded-full"
+                              alt=""
+                            />
+                          </Link>
+                        ) : (
+                          <Link to="/login">
+                            <CgProfile size={25} color="black" />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center text-slate-950"

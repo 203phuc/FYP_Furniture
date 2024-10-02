@@ -1,9 +1,13 @@
-import React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
+import React, { useEffect, useRef } from "react";
+import { register } from "swiper/element/bundle";
 import "swiper/swiper-bundle.css";
-// Your custom styles if needed
 
-export default function App() {
+// Register the Swiper Web Components
+register();
+
+const Categories = () => {
+  const swiperRef = useRef(null);
+
   const slides = [
     {
       index: 1,
@@ -45,39 +49,95 @@ export default function App() {
       link: "/collections/dining",
       cta: "SHOP DINING",
     },
-    // Add more slides as needed...
   ];
 
+  useEffect(() => {
+    const swiperContainer = swiperRef.current;
+
+    // Custom Swiper parameters
+    const params = {
+      slidesPerView: 3,
+      spaceBetween: 30,
+      navigation: true,
+      autoplay: { delay: 3000 },
+      pagination: { clickable: true },
+      slidesOffsetBefore: 50,
+      slidesOffsetAfter: 50,
+      injectStyles: [
+        ` 
+          .swiper-button-next,
+          .swiper-button-prev {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            padding: 8px;
+            border-radius: 50%;
+            border: 2px solid black;
+            width: 40px;
+            height: 40px;
+            z-index: 10; /* Ensure buttons are above the slides */
+          }
+          .swiper-button-next {
+            background-image: url("../../assets/icons8-arrow.png"); /* Use your icon URL */
+            background-size: 60%; /* Adjust size */
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          .swiper-button-prev {
+            background-image: url("/path/to/your/left-arrow-icon.svg"); /* Use your icon URL */
+            background-size: 60%; /* Adjust size */
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          .swiper-button-next,
+          .swiper-button-prev {
+            content: "";
+          }
+        `,
+      ],
+    };
+
+    // Assign parameters to swiper-container
+    Object.assign(swiperContainer, params);
+
+    // Initialize swiper
+    swiperContainer.initialize();
+  }, []);
+
   return (
-    <Swiper
-      slidesPerView={3}
-      spaceBetween={30}
-      navigation
-      autoplay={{ delay: 3000 }}
-      pagination={{ clickable: true }}
-    >
-      {slides.map((slide) => (
-        <SwiperSlide key={slide.index} style={{ listStyle: "none" }}>
-          <div
-            onClick={() => (window.location.href = slide.link)}
-            className="cursor-pointer w-80"
-          >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="w-full h-auto"
-            />
-            <h5 className="text-lg font-semibold mt-4">{slide.title}</h5>
-            <p className="text-sm mt-2 text-gray-600">{slide.description}</p>
-            <a
-              href={slide.link}
-              className="text-blue-600 font-bold mt-2 block hover:underline"
+    <>
+      <div className="text-center m-11 ">
+        <h6 className="mb-4 xl:text-7xl capitalize font-thin">
+          A CELEBRATION OF PERSONAL STYLE
+        </h6>
+      </div>
+      <swiper-container ref={swiperRef} init="false" class="custom-swiper">
+        {slides.map((slide) => (
+          <swiper-slide key={slide.index} class="custom-slide">
+            <div
+              onClick={() => (window.location.href = slide.link)}
+              className="cursor-pointer w-full h-auto p-4 bg-white rounded-lg shadow-md"
             >
-              {slide.cta}
-            </a>
-          </div>
-        </SwiperSlide>
-      ))}
-    </Swiper>
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="w-full h-auto"
+              />
+              <h5 className="text-lg font-semibold mt-4">{slide.title}</h5>
+              <p className="text-sm mt-2 text-gray-600">{slide.description}</p>
+              <a
+                href={slide.link}
+                className="text-blue-600 font-bold mt-2 block hover:underline"
+              >
+                {slide.cta}
+              </a>
+            </div>
+          </swiper-slide>
+        ))}
+      </swiper-container>
+    </>
   );
-}
+};
+
+export default Categories;
