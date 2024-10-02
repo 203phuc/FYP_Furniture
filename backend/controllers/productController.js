@@ -21,26 +21,44 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Upload the image to Cloudinary without resizing or cropping
-    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-      folder: "products",
-      quality: "auto", // Automatically optimize quality while keeping original resolution
-    });
+    // Upload the image to Cloudinary
+    const uploadStream = cloudinary.v2.uploader.upload_stream(
+      { folder: "products", quality: "auto" },
+      (error, result) => {
+        if (error) {
+          return res
+            .status(500)
+            .json({ message: "Image upload failed!", error: error.message });
+        }
 
-    // Assign the uploaded image to the product data
-    productData.mainImage = {
-      public_id: result.public_id,
-      url: result.secure_url,
-    };
+        // Assign the uploaded image to the product data
+        productData.mainImage = {
+          public_id: result.public_id,
+          url: result.secure_url,
+        };
 
-    // Create the product
-    const product = await Product.create({
-      ...productData,
-      shop: shop._id, // Linking the product to the shop
-    });
+        // Create the product
+        Product.create({
+          ...productData,
+          shop: shop._id,
+        })
+          .then((product) => {
+            res.status(201).json({ success: true, product });
+          })
+          .catch((err) => {
+            res
+              .status(500)
+              .json({
+                message: "Product creation failed!",
+                error: err.message,
+              });
+          });
+      }
+    );
 
-    res.status(201).json({ success: true, product });
+    uploadStream.end(req.file.buffer); // End the upload stream with the image buffer
   } catch (error) {
+    console.error("Error during image upload:", error);
     res
       .status(500)
       .json({ message: "Image upload failed!", error: error.message });

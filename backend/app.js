@@ -5,13 +5,14 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import shopRoutes from "./routes/shopRoutes.js";
+import timeMiddleware from "./middleware/timeMiddleware.js"; // Corrected import name
 
 const app = express();
 
 // Optional: Enable CORS with specific origins if needed
 app.use(
   cors({
-    origin: ["https://localhost:3000", "http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://localhost:3000"], // Adjusted order of origins
     credentials: true,
   })
 );
@@ -22,10 +23,15 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cookieParser());
 
+// Use the timing middleware to measure request processing time
+app.use(timeMiddleware); // above all route handlers
+
+// Define route handlers
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/shops", shopRoutes);
 
+// Define error handling middleware after all routes
 app.use(notFound);
 app.use(errorHandler);
 
