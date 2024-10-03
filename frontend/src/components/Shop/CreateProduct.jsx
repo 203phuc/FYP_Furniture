@@ -26,6 +26,8 @@ const CreateProductPage = () => {
   });
 
   const [mainImage, setMainImage] = useState(null);
+  const [mainImagePreview, setMainImagePreview] = useState(null); // For image preview
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
@@ -49,12 +51,16 @@ const CreateProductPage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setMainImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setMainImagePreview(reader.result); // Set the preview image
+      };
+      reader.readAsDataURL(file);
+      setMainImage(file); // Save the file for upload
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!mainImage) {
       toast.error("Please upload an image!");
       return;
@@ -64,7 +70,6 @@ const CreateProductPage = () => {
     // Append product fields to formData
     formData.append("shopId", shopId);
 
-    // Logging each key-value pair being added to formData for debugging
     Object.keys(productData).forEach((key) => {
       if (key === "dimensions") {
         Object.keys(productData.dimensions).forEach((dimKey) => {
@@ -78,13 +83,7 @@ const CreateProductPage = () => {
       }
     });
 
-    // Append main image to formData
     formData.append("mainImage", mainImage);
-
-    // Log the individual entries of the FormData object
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
 
     try {
       await createProduct(formData).unwrap();
@@ -105,17 +104,28 @@ const CreateProductPage = () => {
         weight: "",
       });
       setMainImage(null); // Reset image after submission
+      setMainImagePreview(null); // Reset image preview
       toast.success("Product created successfully!");
+      setIsModalOpen(false); // Close modal after success
     } catch (err) {
       console.error(err);
       toast.error(err?.data?.message || err.error);
     }
   };
 
+  const openModal = (e) => {
+    e.preventDefault();
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Create Product</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={openModal} className="space-y-4">
         {/* Product Fields */}
         <input
           type="text"
@@ -206,6 +216,15 @@ const CreateProductPage = () => {
           className="border p-2 rounded w-full"
           required
         />
+        {/* Display image preview */}
+        {mainImagePreview && (
+          <img
+            src={mainImagePreview}
+            alt="Image Preview"
+            className="mt-4 border rounded"
+            style={{ maxWidth: "200px", maxHeight: "200px" }}
+          />
+        )}
         <select
           name="category"
           value={productData.category}
@@ -247,6 +266,30 @@ const CreateProductPage = () => {
           </p>
         )}
       </form>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Confirm Product Creation</h2>
+            <p>Are you sure you want to create this product?</p>
+            <div className="flex space-x-4 mt-4">
+              <button
+                onClick={handleSubmit}
+                className="bg-green-500 text-white p-2 rounded"
+              >
+                Yes, Create
+              </button>
+              <button
+                onClick={closeModal}
+                className="bg-red-500 text-white p-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
