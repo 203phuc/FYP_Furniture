@@ -72,6 +72,15 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please enter your product stock!"],
       min: [0, "Stock quantity cannot be negative"],
     },
+    // New fields added
+    shopId: {
+      type: String,
+      required: true, // Make this field required
+    },
+    shop: {
+      type: Object,
+      required: true, // Make this field required
+    },
   },
   {
     timestamps: true,
@@ -81,6 +90,7 @@ const productSchema = new mongoose.Schema(
 // Adding indexes to improve query performance
 productSchema.index({ category: 1 });
 productSchema.index({ roomtype: 1 });
+productSchema.index({ shopId: 1 }); // Optional: Add an index for shopId
 
 const Product = mongoose.model("Product", productSchema);
 

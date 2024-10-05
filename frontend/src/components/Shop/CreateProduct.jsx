@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useCreateProductMutation } from "../../Redux/slices/productSlice";
+import { useCreateProductMutation } from "../../Redux/slices/productApiSlice";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
@@ -7,7 +7,12 @@ const CreateProductPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [createProduct, { isLoading, isError, isSuccess, error }] =
     useCreateProductMutation();
-  const shopId = userInfo._id;
+  const shopId = userInfo._id; // Assuming userInfo._id is the shop ID
+  const shop = {
+    _id: shopId,
+    name: userInfo.shopName, // Adjust based on your userInfo structure
+    // Add other necessary fields as needed
+  };
 
   const [productData, setProductData] = useState({
     name: "",
@@ -68,7 +73,8 @@ const CreateProductPage = () => {
 
     const formData = new FormData();
     // Append product fields to formData
-    formData.append("shopId", shopId);
+    formData.append("shopId", shopId); // Add shopId
+    formData.append("shop", JSON.stringify(shop)); // Add shop as a JSON string
 
     Object.keys(productData).forEach((key) => {
       if (key === "dimensions") {

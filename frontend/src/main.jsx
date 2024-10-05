@@ -19,6 +19,7 @@ import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
 import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
+import ProductPage from "./pages/ProductPage.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,6 +31,7 @@ const router = createBrowserRouter(
       <Route path="/shop-login" element={<ShopLoginPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dashboard" element={<ShopDashboardPage />} />
+      <Route path="/product" element={<ProductPage />} />
     </Route>
   )
 );

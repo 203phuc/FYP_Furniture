@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import Cart from "../models/cartModel.js";
+import Product from "../models/productModel.js";
 
 // @desc    Create or update a cart
 // @route   POST /api/cart
@@ -12,7 +13,14 @@ const addToCart = asyncHandler(async (req, res) => {
 
   if (cart) {
     // If the cart exists, update it
-    items.forEach((newItem) => {
+    for (const newItem of items) {
+      const product = await Product.findById(newItem.product_id);
+
+      if (!product) {
+        res.status(404);
+        throw new Error("Product not found");
+      }
+
       const existingItemIndex = cart.items.findIndex(
         (item) => item.product_id.toString() === newItem.product_id
       );
@@ -20,17 +28,38 @@ const addToCart = asyncHandler(async (req, res) => {
       if (existingItemIndex >= 0) {
         // If item exists, update the quantity and price
         cart.items[existingItemIndex].quantity += newItem.quantity;
-        cart.items[existingItemIndex].price = newItem.price;
+        cart.items[existingItemIndex].price = product.price; // Update price from Product model
       } else {
-        // Otherwise, add the new item
-        cart.items.push(newItem);
+        // Otherwise, add the new item with the current price
+        cart.items.push({
+          product_id: newItem.product_id,
+          price: product.price,
+          quantity: newItem.quantity,
+        });
       }
-    });
+    }
   } else {
     // If the cart doesn't exist, create a new cart
+    const populatedItems = await Promise.all(
+      items.map(async (newItem) => {
+        const product = await Product.findById(newItem.product_id);
+
+        if (!product) {
+          res.status(404);
+          throw new Error("Product not found");
+        }
+
+        return {
+          product_id: newItem.product_id,
+          price: product.price, // Use the product's current price
+          quantity: newItem.quantity,
+        };
+      })
+    );
+
     cart = new Cart({
       user_id,
-      items,
+      items: populatedItems,
     });
   }
 
@@ -48,7 +77,10 @@ const getCart = asyncHandler(async (req, res) => {
   );
 
   if (cart) {
-    res.json(cart);
+    res.json({
+      cart,
+      totalPrice: cart.totalPrice, // Use the virtual field to return the total price
+    });
   } else {
     res.status(404);
     throw new Error("Cart not found");

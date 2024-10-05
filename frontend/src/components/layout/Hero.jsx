@@ -44,7 +44,7 @@ const Hero = () => {
           <h1 className="leading-[1.2] text-center text-3xl 800px:text-5xl lg:text-6xl xl:text-7xl capitalize">
             LET EVERY SPACE OF YOUR HOME REFLECT THE THINGS YOU LOVE
           </h1>
-          <Link to="/collections/new-arrivals" className="inline-block">
+          <Link to="/product" className="inline-block">
             <div
               className={`bg-indigo-50 hover:bg-blue-700 text-black font-Poppins text-lg py-2 px-10`}
             >

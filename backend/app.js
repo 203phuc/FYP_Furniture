@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import shopRoutes from "./routes/shopRoutes.js";
 import timeMiddleware from "./middleware/timeMiddleware.js"; // Corrected import name
+import cartRoutes from "./routes/cartRoutes.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(timeMiddleware); // above all route handlers
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/shops", shopRoutes);
+app.use("/api/carts", cartRoutes);
 
 // Define error handling middleware after all routes
 app.use(notFound);

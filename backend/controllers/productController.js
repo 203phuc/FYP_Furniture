@@ -24,7 +24,7 @@ const createProduct = asyncHandler(async (req, res) => {
     // Upload the image to Cloudinary
     const uploadStream = cloudinary.v2.uploader.upload_stream(
       { folder: "products", quality: "auto" },
-      (error, result) => {
+      async (error, result) => {
         if (error) {
           return res
             .status(500)
@@ -37,22 +37,20 @@ const createProduct = asyncHandler(async (req, res) => {
           url: result.secure_url,
         };
 
-        // Create the product
-        Product.create({
-          ...productData,
-          shop: shop._id,
-        })
-          .then((product) => {
-            res.status(201).json({ success: true, product });
-          })
-          .catch((err) => {
-            res
-              .status(500)
-              .json({
-                message: "Product creation failed!",
-                error: err.message,
-              });
+        try {
+          // Create the product
+          const product = await Product.create({
+            ...productData,
+            shopId, // Include shopId directly here
+            shop: shop, // Save the shop object directly
           });
+
+          res.status(201).json({ success: true, product });
+        } catch (err) {
+          res
+            .status(500)
+            .json({ message: "Product creation failed!", error: err.message });
+        }
       }
     );
 
@@ -65,7 +63,6 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 });
 
-// Other functions remain unchanged
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
@@ -105,6 +102,8 @@ const updateProduct = asyncHandler(async (req, res) => {
     weight,
     stock_quantity,
     color,
+    shopId,
+    shop,
   } = req.body;
 
   const product = await Product.findById(req.params.id);
@@ -123,6 +122,16 @@ const updateProduct = asyncHandler(async (req, res) => {
   product.weight = weight ?? product.weight;
   product.stock_quantity = stock_quantity ?? product.stock_quantity;
   product.color = color ?? product.color;
+
+  // Optionally update shopId and shop object
+  if (shopId) {
+    const shopExists = await Shop.findById(shopId);
+    if (!shopExists) {
+      return res.status(400).json({ message: "Invalid Shop ID" });
+    }
+    product.shopId = shopId; // Update shopId if provided
+    product.shop = shop; // Update shop object if provided
+  }
 
   // Save product updates
   await product.save();
@@ -143,7 +152,7 @@ const getProductsByShop = asyncHandler(async (req, res) => {
   }
 
   // Find all products associated with the shop
-  const products = await Product.find({ shop: shopId });
+  const products = await Product.find({ shopId });
 
   if (products.length === 0) {
     return res.status(404).json({ message: "No products found for this shop" });
