@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useCreateProductMutation } from "../../Redux/slices/productApiSlice";
-import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { useCreateProductMutation } from "../../Redux/slices/productApiSlice";
 
 const CreateProductPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -11,7 +11,6 @@ const CreateProductPage = () => {
   const shop = {
     _id: shopId,
     name: userInfo.shopName, // Adjust based on your userInfo structure
-    // Add other necessary fields as needed
   };
 
   const [productData, setProductData] = useState({
@@ -53,15 +52,35 @@ const CreateProductPage = () => {
     }));
   };
 
+  // Aspect ratio validation function for 4:3 ratio
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
+      const img = new Image();
       const reader = new FileReader();
+
       reader.onload = () => {
-        setMainImagePreview(reader.result); // Set the preview image
+        img.src = reader.result; // Set the image source to the uploaded file
+
+        img.onload = () => {
+          const aspectRatio = img.width / img.height;
+          if (Math.abs(aspectRatio - 4 / 3) < 0.01) {
+            // If the aspect ratio is close to 4:3, allow the image
+            setMainImage(file); // Save the file for upload
+            setMainImagePreview(reader.result); // Set the preview image
+          } else {
+            // Display an error message for invalid aspect ratio
+            toast.error(
+              "Image must have a 4:3 aspect ratio. Please upload a valid image."
+            );
+            setMainImage(null);
+            setMainImagePreview(null);
+          }
+        };
       };
-      reader.readAsDataURL(file);
-      setMainImage(file); // Save the file for upload
+
+      reader.readAsDataURL(file); // Read the file
     }
   };
 

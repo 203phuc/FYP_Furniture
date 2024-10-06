@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { register } from "swiper/element/bundle";
 import "swiper/swiper-bundle.css";
+import rightArrowIcon from "../../assets/icons8-arrow-50.png";
+import leftArrowIcon from "../../assets/left-arrow.png";
 
 // Register the Swiper Web Components
 register();
@@ -64,7 +66,7 @@ const Categories = () => {
       slidesOffsetBefore: 50,
       slidesOffsetAfter: 50,
       injectStyles: [
-        ` 
+        `
           .swiper-button-next,
           .swiper-button-prev {
             display: flex;
@@ -73,26 +75,25 @@ const Categories = () => {
             background-color: white;
             padding: 8px;
             border-radius: 50%;
-            border: 2px solid black;
             width: 40px;
             height: 40px;
             z-index: 10; /* Ensure buttons are above the slides */
           }
           .swiper-button-next {
-            background-image: url("../../assets/icons8-arrow.png"); /* Use your icon URL */
-            background-size: 60%; /* Adjust size */
+            background-image: url(${rightArrowIcon});
+            background-size: 60% auto;
             background-position: center;
             background-repeat: no-repeat;
           }
           .swiper-button-prev {
-            background-image: url("/path/to/your/left-arrow-icon.svg"); /* Use your icon URL */
-            background-size: 60%; /* Adjust size */
+            background-image: url(${leftArrowIcon}); /* Use your icon URL */
+            background-size: 60% auto; /* Adjust size */
             background-position: center;
             background-repeat: no-repeat;
           }
-          .swiper-button-next,
-          .swiper-button-prev {
-            content: "";
+          .swiper-button-next svg,
+          .swiper-button-prev svg {
+            display: none; /* This will hide the SVG */
           }
         `,
       ],

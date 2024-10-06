@@ -4,6 +4,7 @@ export default {
   mode: "jit",
   theme: {
     fontFamily: {
+      NeueHaasUnica: ["Neue Haas Unica", "sans-serif"],
       Roboto: ["Roboto", "sans-serif"],
       Poppins: ["Poppins", "sans-serif"],
     },

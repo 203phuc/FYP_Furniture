@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineShoppingCart } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -7,17 +7,20 @@ import {
   useAddToCartMutation,
   useGetCartQuery,
 } from "../../redux/slices/cartApiSlice"; // Adjust the import based on your file structure
-import styles from "../../styles/styles";
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
   const [addToCart, { isLoading }] = useAddToCartMutation(); // Get the mutation hook
+
+  const [dropdownOpen, setDropdownOpen] = useState(false); // State to toggle dropdown
 
   // Assuming you have a userInfo object in the redux state
   const userInfo = useSelector((state) => state.auth.userInfo); // Adjust based on your auth slice
   const { data: cartData } = userInfo
     ? useGetCartQuery(userInfo._id)
     : { data: null }; // Fetch the cart only if the userInfo is defined
+
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const addToCartHandler = async () => {
     if (!userInfo) {
@@ -62,52 +65,83 @@ const ProductCard = ({ data }) => {
   };
 
   return (
-    <div className="w-full h-[370px]  relative cursor-pointer">
-      <Link to={`/product/${data._id}`}>
-        <img
-          src={data.mainImage?.url}
-          alt={data.name}
-          className="w-full h-[220px] object-contain"
-        />
-      </Link>
-      <Link to={`/shop/preview/${data?.shop._id}`}>
-        <h5 className={styles.shop_name}>{data?.shop?.name}</h5>
-      </Link>
-      <Link to={`/product/${data._id}`}>
-        <p className="text-1xl">
-          {data.name.length > 40 ? `${data.name.slice(0, 40)}...` : data.name}
-        </p>
-        <div className=" flex items-center justify-between">
-          <div className="flex">
-            <h5 className="text-1xl">
-              {data.discountPrice ? data.discountPrice : data.price}$
-            </h5>
-            {data.discountPrice && (
-              <p className="text-1xl line-through">{data.price} $</p>
-            )}
-          </div>
-          <span className="font-[400] text-[17px] text-[#68d284]">
-            {data.sold_out || 0} sold
-          </span>
-        </div>
-      </Link>
+    <div className="w-full bg-white overflow-hidden relative">
+      {/* Aspect ratio container for maintaining box size */}
+      <div className="aspect-w-4 aspect-h-3 w-full">
+        {/* Image that scales while keeping aspect ratio */}
+        <Link to={`/product/${data._id}`}>
+          <img
+            src={data.mainImage?.url}
+            alt={data.name}
+            className="w-full h-full object-cover"
+          />
+        </Link>
+      </div>
 
-      {/* Bottom options */}
-      <div>
-        <AiOutlineEye
-          size={22}
-          className="cursor-pointer absolute right-2 top-14"
-          color="#333"
-          title="Quick view"
-        />
-        <AiOutlineShoppingCart
-          size={25}
-          className="cursor-pointer absolute right-2 top-24"
-          onClick={addToCartHandler}
-          color="#444"
-          title="Add to cart"
-          disabled={isLoading} // Disable the button while loading
-        />
+      {/* Product details */}
+      <div className="p-4">
+        <Link to={`/shop/preview/${data?.shop._id}`}>
+          <h5 className="text-lg font-semibold text-gray-800">
+            {data?.shop?.name}
+          </h5>
+        </Link>
+
+        <Link to={`/product/${data._id}`}>
+          <p className="text-md font-medium text-gray-600 mt-1">
+            {data.name.length > 40 ? `${data.name.slice(0, 40)}...` : data.name}
+          </p>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center">
+              <h5 className="text-lg font-bold text-gray-900">
+                {data.discountPrice ? data.discountPrice : data.price}$
+              </h5>
+              {data.discountPrice && (
+                <span className="ml-2 text-gray-500 line-through">
+                  {data.price}$
+                </span>
+              )}
+            </div>
+            <span className="text-sm text-green-600">
+              {data.sold_out || 0} sold
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Dropdown toggle button */}
+      <div className="absolute left-4 top-4">
+        <button
+          className=" text-white p-2 rounded-full"
+          onClick={toggleDropdown}
+        >
+          ⋮
+        </button>
+
+        {/* Dropdown menu */}
+        <div
+          className={`absolute top-10 left-0 z-10 w-10 flex flex-col items-center space-y-2 transition-transform duration-500 ease-in-out ${
+            dropdownOpen
+              ? "transform translate-y-0 opacity-100"
+              : "transform -translate-y-4 opacity-0"
+          }`}
+        >
+          <Link
+            to={`/product/${data._id}`}
+            className="block p-2 hover:bg-gray-100 rounded-full"
+          >
+            <AiOutlineEye className="text-gray-600" />
+          </Link>
+          {/* Conditionally hide Add to Cart for sellers */}
+          {userInfo?.role !== "seller" && (
+            <button
+              className="block p-2 hover:bg-gray-100 rounded-full"
+              onClick={addToCartHandler}
+              disabled={isLoading}
+            >
+              <AiOutlineShoppingCart className="text-gray-600" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
