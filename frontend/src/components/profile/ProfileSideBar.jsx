@@ -1,21 +1,14 @@
 import React from "react";
 import { AiOutlineLogin, AiOutlineMessage } from "react-icons/ai";
-import { RiLockPasswordLine } from "react-icons/ri";
 import { HiOutlineReceiptRefund, HiOutlineShoppingBag } from "react-icons/hi";
-import {
-  MdOutlineAdminPanelSettings,
-  MdOutlinePassword,
-  MdOutlineTrackChanges,
-} from "react-icons/md";
-import { TbAddressBook } from "react-icons/tb";
+import { MdOutlineTrackChanges } from "react-icons/md";
+import { RiLockPasswordLine } from "react-icons/ri";
 import { RxPerson } from "react-icons/rx";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import { logout } from "../../Redux/slices/authSlice.js";
-import { useLogoutMutation } from "../../Redux/slices/userApiSlice.js";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "../../Redux/slices/authSlice.js";
+import { TbAddressBook } from "react-icons/tb";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../redux/slices/authSlice.js";
+import { useLogoutMutation } from "../../redux/slices/userApiSlice.js";
 
 const ProfileSidebar = ({ setActive, active }) => {
   const { userInfo } = useSelector((state) => state.auth);

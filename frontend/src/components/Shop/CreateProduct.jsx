@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { useCreateProductMutation } from "../../Redux/slices/productApiSlice";
+import { useCreateProductMutation } from "../../redux/slices/productApiSlice";
 
 const CreateProductPage = () => {
   const { userInfo } = useSelector((state) => state.auth);

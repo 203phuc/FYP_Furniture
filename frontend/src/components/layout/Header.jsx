@@ -1,20 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
-import { IoIosArrowForward } from "react-icons/io";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../Redux/slices/authSlice.js";
-import { useLogoutMutation } from "../../Redux/slices/userApiSlice.js";
-import styles from "../../styles/styles.jsx";
-import logo from "../../assets/cozniture-high-resolution-logo-transparent.png";
-import Navbar from "./Navbar.jsx";
 import {
   AiOutlineHeart,
   AiOutlineSearch,
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
+import { FaUser } from "react-icons/fa";
+import { IoIosArrowForward } from "react-icons/io";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import "../../app.css";
+import logo from "../../assets/cozniture-high-resolution-logo-transparent.png";
+import { logout } from "../../redux/slices/authSlice.js";
+import { useLogoutMutation } from "../../redux/slices/userApiSlice.js";
+import styles from "../../styles/styles.jsx";
+import Navbar from "./Navbar.jsx";
 
 const Header = ({ allProducts }) => {
   // User section

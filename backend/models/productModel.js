@@ -81,6 +81,7 @@ const productSchema = new mongoose.Schema(
       type: Object,
       required: true, // Make this field required
     },
+    
   },
   {
     timestamps: true,

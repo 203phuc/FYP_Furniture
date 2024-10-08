@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Loader from "../components/layout/Loader.jsx";
 import ProductCard from "../components/product/ProductCard";
-import { useGetProductsQuery } from "../Redux/slices/productApiSlice.js";
+import { useGetProductsQuery } from "../redux/slices/productApiSlice.js";
 import styles from "../styles/styles";
 
 const ProductsPage = () => {

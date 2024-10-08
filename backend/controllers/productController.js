@@ -1,7 +1,7 @@
+import cloudinary from "cloudinary";
 import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
-import cloudinary from "cloudinary";
 
 // @desc    Create a new product (without variants)
 // @route   POST /api/products
@@ -61,6 +61,18 @@ const createProduct = asyncHandler(async (req, res) => {
       .status(500)
       .json({ message: "Image upload failed!", error: error.message });
   }
+});
+// @desc    Fetch single product by ID
+// @route   GET /api/products/:id
+// @access  Public
+const getProductDetails = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  res.status(200).json(product);
 });
 
 // @desc    Fetch all products
@@ -162,9 +174,10 @@ const getProductsByShop = asyncHandler(async (req, res) => {
 });
 
 export {
-  getProducts,
   createProduct,
   deleteProduct,
-  updateProduct,
+  getProductDetails,
+  getProducts,
   getProductsByShop,
+  updateProduct,
 };

@@ -1,7 +1,5 @@
-//make product slice
-
+import { PRODUCTS_URL } from "../constants.jsx"; // Import the product URL from constants.jsx
 import { apiSlice } from "./apiSlice.js";
-import { PRODUCTS_URL } from "../constants.jsx"; //import the product url from constants.jsx
 
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,11 +22,19 @@ export const productApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    // Add product details API call here
+    getProductDetails: builder.query({
+      query: (id) => ({
+        url: `${PRODUCTS_URL}/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
-}); //create a slice for product api endpoints
+});
 
 export const {
   useGetProductsQuery,
   useGetProductsByShopQuery,
   useCreateProductMutation,
+  useGetProductDetailsQuery, // Export the new hook for product details
 } = productApiSlice;

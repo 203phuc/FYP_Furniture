@@ -3,40 +3,36 @@ import { AiOutlineEye, AiOutlineShoppingCart } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  useAddToCartMutation,
-  useGetCartQuery,
-} from "../../redux/slices/cartApiSlice"; // Adjust the import based on your file structure
+import { useSyncCartMutation } from "../../redux/slices/cartApiSlice"; // Adjust the import based on your file structure
+import { addToCart } from "../../redux/slices/cartSlice";
+import ProductDetailCard from "./ProductDetailCard.jsx";
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
-  const [addToCart, { isLoading }] = useAddToCartMutation(); // Get the mutation hook
-
+  const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false); // State to toggle dropdown
 
-  // Assuming you have a userInfo object in the redux state
-  const userInfo = useSelector((state) => state.auth.userInfo); // Adjust based on your auth slice
-  const { data: cartData } = userInfo
-    ? useGetCartQuery(userInfo._id)
-    : { data: null }; // Fetch the cart only if the userInfo is defined
+  // Get user info from the Redux state
+  const userInfo = useSelector((state) => state.auth.userInfo);
+  const cart = useSelector((state) => state.cart.cart); // Cart from Redux state
+
+  const [syncCart] = useSyncCartMutation(); // Mutation for syncing cart with the backend
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  const addToCartHandler = async () => {
+  const addToCartHandler = () => {
     if (!userInfo) {
       toast.error("Please log in to add items to the cart.");
       return;
     }
 
-    // Check if cart is fetched and has items
-    if (cartData) {
-      const isItemExists = cartData.items.find(
-        (item) => item.product_id === data._id
-      );
-      if (isItemExists) {
-        toast.error("Item already in cart!");
-        return; // Stop execution if item already exists
-      }
+    // Check if the item is already in the local cart
+    const isItemExists = cart.items.find(
+      (item) => item.product_id === data._id
+    );
+    if (isItemExists) {
+      toast.error("Item already in cart!");
+      return;
     }
 
     if (data.stock_quantity < 1) {
@@ -44,24 +40,24 @@ const ProductCard = ({ data }) => {
       return; // Stop execution if stock is limited
     }
 
-    const cartDataPayload = {
-      user_id: userInfo._id, // Change this to match your backend's expected field name
-      items: [
-        {
-          product_id: data._id,
-          price: data.discountPrice || data.price, // Use discount price if available
-          quantity: 1,
-        },
-      ],
-    };
+    // Add to local cart first
+    dispatch(
+      addToCart({
+        product_id: data._id,
+        price: data.discountPrice || data.price,
+        quantity: 1,
+      })
+    );
+    toast.success("Item added to cart locally!");
 
-    try {
-      await addToCart(cartDataPayload).unwrap(); // Use the mutation to add the item to the cart
-      toast.success("Item added to cart successfully!");
-    } catch (error) {
-      toast.error("Failed to add item to cart.");
-      console.log(error?.data?.message || error.error);
-    }
+    // Sync cart with backend asynchronously
+    syncCart(cart)
+      .then(() => {
+        toast.success("Cart synced with server.");
+      })
+      .catch(() => {
+        toast.error("Failed to sync cart with server.");
+      });
   };
 
   return (
@@ -126,7 +122,7 @@ const ProductCard = ({ data }) => {
           }`}
         >
           <Link
-            to={`/product/${data._id}`}
+            onClick={() => setOpen(!open)}
             className="block p-2 hover:bg-gray-100 rounded-full"
           >
             <AiOutlineEye className="text-gray-600" />
@@ -136,13 +132,16 @@ const ProductCard = ({ data }) => {
             <button
               className="block p-2 hover:bg-gray-100 rounded-full"
               onClick={addToCartHandler}
-              disabled={isLoading}
+              disabled={false} // Disabled state can be added if necessary
             >
               <AiOutlineShoppingCart className="text-gray-600" />
             </button>
           )}
         </div>
       </div>
+
+      {/* Product Detail Card modal */}
+      {open ? <ProductDetailCard setOpen={setOpen} data={data} /> : null}
     </div>
   );
 };

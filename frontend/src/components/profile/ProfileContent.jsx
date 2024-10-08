@@ -1,16 +1,11 @@
-import {
-  AiOutlineArrowRight,
-  AiOutlineCamera,
-  AiOutlineDelete,
-} from "react-icons/ai";
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { AiOutlineCamera, AiOutlineDelete } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
-import FormContainer from "../layout/FormContainer.jsx";
-import { useProfileMutation } from "../../Redux/slices/userApiSlice.js";
-import { setCredentials } from "../../Redux/slices/authSlice";
-import Loader from "../layout/Loader.jsx";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { setCredentials } from "../../redux/slices/authSlice.js";
+import { useProfileMutation } from "../../redux/slices/userApiSlice.js";
+import FormContainer from "../layout/FormContainer.jsx";
 
 const ProfileContent = ({ active }) => {
   const [name, setName] = useState("");

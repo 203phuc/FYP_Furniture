@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useRegisterShopMutation } from "../../Redux/slices/shopApiSlice.js";
-import { setCredentials } from "../../Redux/slices/authSlice.js";
-import FormContainer from "../../components/layout/FormContainer.jsx";
-import Loader from "../../components/layout/Loader.jsx";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import FormContainer from "../../components/layout/FormContainer.jsx";
+import { setCredentials } from "../../redux/slices/authSlice.js";
+import { useRegisterShopMutation } from "../../redux/slices/shopApiSlice.js";
 
 const ShopCreatePage = () => {
   const [email, setEmail] = useState("");

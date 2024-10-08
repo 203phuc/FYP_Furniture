@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import FormContainer from "../components/layout/FormContainer.jsx";
-import { useRegisterMutation } from "../Redux/slices/userApiSlice.js";
-import { setCredentials } from "../Redux/slices/authSlice";
-import Loader from "../components/layout/Loader.jsx";
-import { toast } from "react-toastify";
+import React, { useEffect, useState } from "react";
 import { RxAvatar } from "react-icons/rx";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import FormContainer from "../components/layout/FormContainer.jsx";
+import Loader from "../components/layout/Loader.jsx";
+import { setCredentials } from "../redux/slices/authSlice.js";
+import { useRegisterMutation } from "../redux/slices/userApiSlice.js";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");

@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { apiSlice } from "./apiSlice.js";
 
 const initialState = {
   userInfo: localStorage.getItem("userInfo")

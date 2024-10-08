@@ -1,11 +1,12 @@
 import express from "express";
 import multer from "multer"; // Import multer
 import {
-  createProduct,
-  getProducts,
+  createProduct, // Import the product details controller
   deleteProduct,
-  updateProduct,
+  getProductDetails,
+  getProducts,
   getProductsByShop,
+  updateProduct,
 } from "../controllers/productController.js";
 import { isSeller } from "../middleware/authMiddleware.js";
 
@@ -20,6 +21,10 @@ router
   .route("/")
   .get(getProducts)
   .post(isSeller, upload.single("mainImage"), createProduct);
+
+// Route for fetching product details
+router.route("/:id").get(getProductDetails); // Add this line to handle product detail requests
+
 router
   .route("/:id")
   .delete(isSeller, deleteProduct) // delete product

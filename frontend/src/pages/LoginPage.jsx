@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FormContainer from "../components/layout/FormContainer.jsx";
-import { useLoginMutation } from "../Redux/slices/userApiSlice.js";
-import { setCredentials } from "../Redux/slices/authSlice.js";
+import { setCredentials } from "../redux/slices/authSlice.js";
+import { useLoginMutation } from "../redux/slices/userApiSlice.js";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

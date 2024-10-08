@@ -1,40 +1,19 @@
-import { apiSlice } from "./apiSlice.js";
-import { CART_URL } from "../constants.jsx"; // Make sure CART_URL is defined in your constants
+import { CART_URL } from "../constants";
+import { apiSlice } from "./apiSlice";
 
 export const cartApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getCart: builder.query({
-      query: (userId) => ({
-        url: `${CART_URL}/${userId}`,
-        method: "GET",
-      }),
-    }),
-    addToCart: builder.mutation({
+    syncCart: builder.mutation({
       query: (cartData) => ({
-        url: `${CART_URL}`,
+        url: CART_URL,
         method: "POST",
         body: cartData,
       }),
     }),
-    updateCartItem: builder.mutation({
-      query: ({ userId, productId, quantity }) => ({
-        url: `${CART_URL}/${userId}/${productId}`,
-        method: "PUT",
-        body: { quantity },
-      }),
-    }),
-    removeCartItem: builder.mutation({
-      query: ({ userId, productId }) => ({
-        url: `${CART_URL}/${userId}/${productId}`,
-        method: "DELETE",
-      }),
+    fetchCart: builder.query({
+      query: (userId) => `${CART_URL}/${userId}`,
     }),
   }),
 });
 
-export const {
-  useGetCartQuery,
-  useAddToCartMutation,
-  useUpdateCartItemMutation,
-  useRemoveCartItemMutation,
-} = cartApiSlice;
+export const { useSyncCartMutation, useFetchCartQuery } = cartApiSlice;

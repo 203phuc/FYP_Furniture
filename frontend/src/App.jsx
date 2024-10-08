@@ -1,11 +1,11 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Header from "./components/layout/Header.jsx";
-import "./app.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./app.css";
+import Header from "./components/layout/Header.jsx";
 import "./index.css";
-import { useGetProductsQuery } from "./Redux/slices/productApiSlice.js"; // Import the hook
+import { useGetProductsQuery } from "./redux/slices/productApiSlice"; // Import the hook
 
 const App = () => {
   const location = useLocation();

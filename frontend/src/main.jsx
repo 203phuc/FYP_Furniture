@@ -1,25 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import { Provider } from "react-redux";
 import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
   createBrowserRouter,
   createRoutesFromElements,
+  Route,
   RouterProvider,
 } from "react-router-dom";
-import LoginPage from "./pages/LoginPage.jsx";
+import App from "./App";
 import HomePage from "./pages/HomePage.jsx";
-import { Provider } from "react-redux";
-import store from "./Redux/store.js";
+import LoginPage from "./pages/LoginPage.jsx";
+import ProductDetailsPage from "./pages/ProductDetailsPage.jsx";
+import ProductPage from "./pages/ProductPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
-import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
 import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
-import ProductPage from "./pages/ProductPage.jsx";
+import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
+import store from "./redux/store.js";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,6 +30,7 @@ const router = createBrowserRouter(
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dashboard" element={<ShopDashboardPage />} />
       <Route path="/product" element={<ProductPage />} />
+      <Route path="/product/:id" element={<ProductDetailsPage />} />
     </Route>
   )
 );
