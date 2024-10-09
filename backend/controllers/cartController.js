@@ -3,10 +3,12 @@ import Cart from "../models/cartModel.js";
 import Product from "../models/productModel.js";
 
 // @desc    Create or update a cart
-// @route   POST /api/cart
+// @route   POST /api/carts
 // @access  Private
 const addToCart = asyncHandler(async (req, res) => {
-  const { user_id, items } = req.body;
+  const { items } = req.body;
+  const user_id = req.user._id;
+  console.log(user_id, items);
 
   // Find the cart by user ID
   let cart = await Cart.findOne({ user_id });
@@ -68,7 +70,7 @@ const addToCart = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get cart by user ID
-// @route   GET /api/cart/:user_id
+// @route   GET /api/carts/:user_id
 // @access  Private
 const getCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user_id: req.params.user_id }).populate(
@@ -88,7 +90,7 @@ const getCart = asyncHandler(async (req, res) => {
 });
 
 // @desc    Update cart item quantity
-// @route   PUT /api/cart/:user_id/:product_id
+// @route   PUT /api/carts/:user_id/:product_id
 // @access  Private
 const updateCartItem = asyncHandler(async (req, res) => {
   const { user_id, product_id } = req.params;
@@ -116,7 +118,7 @@ const updateCartItem = asyncHandler(async (req, res) => {
 });
 
 // @desc    Remove item from cart
-// @route   DELETE /api/cart/:user_id/:product_id
+// @route   DELETE /api/carts/:user_id/:product_id
 // @access  Private
 const removeCartItem = asyncHandler(async (req, res) => {
   const { user_id, product_id } = req.params;
@@ -141,4 +143,4 @@ const removeCartItem = asyncHandler(async (req, res) => {
   }
 });
 
-export { addToCart, getCart, updateCartItem, removeCartItem };
+export { addToCart, getCart, removeCartItem, updateCartItem };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   AiFillHeart,
   AiOutlineHeart,
@@ -35,6 +35,22 @@ const ProductDetailsPage = () => {
     setSelectedImage(isItemInWishlist ? 1 : 0);
   }, [data, wishlist]);
 
+  const prevCartRef = useRef(cart.items);
+
+  useEffect(() => {
+    // Check if cart items have changed
+    if (prevCartRef.current !== cart.items) {
+      if (cart.items.length > 0) {
+        // Sync the cart with the server
+        syncCart(cart).catch((error) => {
+          toast.error("Failed to sync cart with server");
+          console.error(error);
+        });
+      }
+      // Update the ref with the current cart items
+      prevCartRef.current = cart.items;
+    }
+  }, [cart.items, syncCart]); // Dependency array only includes cart.items
   // Increase or decrease item quantity
   const incrementCount = () => setCount(count + 1);
   const decrementCount = () => count > 1 && setCount(count - 1);
@@ -61,9 +77,7 @@ const ProductDetailsPage = () => {
       (item) => item.product_id === product._id
     );
 
-    if (isItemInCart) {
-      toast.error("Item already in cart!");
-    } else if (product.stock_quantity < 1) {
+    if (product.stock_quantity < 1) {
       toast.error("Product out of stock!");
     } else {
       dispatch(
@@ -74,11 +88,6 @@ const ProductDetailsPage = () => {
         })
       );
       toast.success("Item added to cart successfully!");
-
-      // Sync cart with database (lazy sync)
-      syncCart(cart).catch((error) => {
-        toast.error("Failed to sync cart with server");
-      });
     }
   };
 
