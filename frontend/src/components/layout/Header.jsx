@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import {
-  AiOutlineHeart,
-  AiOutlineSearch,
-  AiOutlineShoppingCart,
-} from "react-icons/ai";
-import { CgProfile } from "react-icons/cg";
+import { AiOutlineSearch } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
+import {
+  PiHeartThin,
+  PiShoppingCartSimpleThin,
+  PiUserThin,
+} from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import "../../app.css";
@@ -24,6 +24,8 @@ const Header = ({ allProducts }) => {
   const navigate = useNavigate();
   const [inputStatus, setInputStatus] = useState(false);
   const [placeholder, setPlaceholder] = useState("Search products...");
+  const { cart } = useSelector((state) => state.cart);
+  const { wishlist } = useSelector((state) => state.wishlist);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdown1Open, setIsDropdown1Open] = useState(false);
   //active
@@ -137,8 +139,10 @@ const Header = ({ allProducts }) => {
                         className="relative cursor-pointer mr-[15px]"
                         onClick={() => setOpenWishlist(true)}
                       >
-                        <AiOutlineHeart size={25} color="black" />
-                        <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-3 h-3 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center"></span>
+                        <PiHeartThin size={25} color="black" />
+                        <span className="absolute right-0 top-0 rounded-full bg-[#ffffff] w-3 h-3 top right p-0 m-0 text-black font-mono text-[9px] leading-tight text-center">
+                          {wishlist && wishlist.length}
+                        </span>
                       </div>
                     </div>
 
@@ -147,12 +151,10 @@ const Header = ({ allProducts }) => {
                         className="relative cursor-pointer mr-[15px]"
                         onClick={() => setOpenCart(true)}
                       >
-                        <AiOutlineShoppingCart
-                          size={25}
-                          color="black"
-                          style={{ strokeWidth: 0.5 }}
-                        />
-                        <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-3 h-3 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center"></span>
+                        <PiShoppingCartSimpleThin size={25} color="black" />
+                        <span className="absolute right-0 top-0 rounded-full bg-[#fcfcfc] w-3 h-3  right p-0 m-0 text-black font-mono text-[9px] leading-tight text-center font-light">
+                          {cart && cart.items.length}
+                        </span>
                       </div>
                     </div>
                     <div className={`${styles.normalFlex}`}>
@@ -167,7 +169,7 @@ const Header = ({ allProducts }) => {
                           </Link>
                         ) : (
                           <Link to="/login">
-                            <CgProfile size={25} color="black" />
+                            <PiUserThin size={25} color="black" />
                           </Link>
                         )}
                       </div>
@@ -177,7 +179,7 @@ const Header = ({ allProducts }) => {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center text-slate-950"
                   >
-                    <FaUser className="mr-2" /> {userInfo.name}
+                    <PiUserThin className="mr-2" /> {userInfo.name}
                   </button>
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">

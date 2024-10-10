@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 
 // Retrieve wishlist from local storage if available
 const wishlistFromStorage = localStorage.getItem("wishlistItems")
@@ -28,7 +29,7 @@ const wishlistSlice = createSlice({
     },
     removeFromWishlist: (state, action) => {
       state.wishlist = state.wishlist.filter(
-        (item) => item._id !== action.payload
+        (item) => item._id !== action.payload._id
       );
 
       toast.success("Removed from wishlist!");

@@ -5,73 +5,70 @@ import {
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom"; // To get the product ID from the URL
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSyncCartMutation } from "../redux/slices/cartApiSlice";
 import { addToCart as addToCartAction } from "../redux/slices/cartSlice";
-import { useGetProductDetailsQuery } from "../redux/slices/productApiSlice"; // Import the query
+import { useGetProductDetailsQuery } from "../redux/slices/productApiSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../redux/slices/wishlistSlice";
 import styles from "../styles/styles";
 
 const ProductDetailsPage = () => {
-  const { id } = useParams(); // Get product ID from URL params
+  const { id } = useParams();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const { wishlist } = useSelector((state) => state.wishlist);
   const { cart } = useSelector((state) => state.cart);
-  const { userInfo } = useSelector((state) => state.auth);
-
+  const [click, setClick] = useState(false);
   const [count, setCount] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Fetch product details using the product ID from the URL
   const { data, error, isLoading } = useGetProductDetailsQuery(id);
-
-  // Sync cart mutation
   const [syncCart] = useSyncCartMutation();
 
   useEffect(() => {
     const isItemInWishlist = wishlist?.find((item) => item._id === data?._id);
-    setSelectedImage(isItemInWishlist ? 1 : 0);
-  }, [data, wishlist]);
+    setClick(!!isItemInWishlist);
+  }, [wishlist, data]);
 
   const prevCartRef = useRef(cart.items);
 
   useEffect(() => {
-    // Check if cart items have changed
     if (prevCartRef.current !== cart.items) {
       if (cart.items.length > 0) {
-        // Sync the cart with the server
         syncCart(cart).catch((error) => {
           toast.error("Failed to sync cart with server");
           console.error(error);
         });
       }
-      // Update the ref with the current cart items
       prevCartRef.current = cart.items;
     }
-  }, [cart.items, syncCart]); // Dependency array only includes cart.items
-  // Increase or decrease item quantity
+  }, [cart.items, syncCart]);
+
   const incrementCount = () => setCount(count + 1);
   const decrementCount = () => count > 1 && setCount(count - 1);
 
   const addToWishlistHandler = async (product) => {
     try {
-      toast.success("Added to wishlist!");
+      setClick(!click);
+      dispatch(addToWishlist(product));
     } catch (error) {
-      toast.error("Failed to add to wishlist");
+      toast.error(error.message);
     }
   };
 
   const removeFromWishlistHandler = async (product) => {
     try {
-      toast.success("Removed from wishlist!");
+      setClick(!click);
+      dispatch(removeFromWishlist(product));
     } catch (error) {
       toast.error("Failed to remove from wishlist");
     }
   };
 
-  // Add item to local cart and sync it later
   const addToCartHandler = (product) => {
     const isItemInCart = cart.items.find(
       (item) => item.product_id === product._id
@@ -91,15 +88,6 @@ const ProductDetailsPage = () => {
     }
   };
 
-  const handleMessageSubmit = async () => {
-    if (userInfo) {
-      // Logic to handle message to the seller
-    } else {
-      toast.error("Please login to create a conversation");
-    }
-  };
-
-  // Handle loading and error states
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error fetching product details</div>;
 
@@ -110,7 +98,6 @@ const ProductDetailsPage = () => {
           <div className="w-full py-5">
             <div className="block w-full 800px:flex">
               <div className="w-full 800px:w-[50%]">
-                {/* Image section with 4:3 aspect ratio */}
                 <img
                   src={data.mainImage.url}
                   alt={data.name}
@@ -139,12 +126,30 @@ const ProductDetailsPage = () => {
                 <h1 className={`${styles.productTitle}`}>{data.name}</h1>
                 <p>{data.description}</p>
 
-                {/* Display additional product details */}
                 <p>
                   <strong>Category:</strong> {data.category}
                 </p>
                 <p>
+                  <strong>Room Type:</strong> {data.roomtype}
+                </p>
+                <p>
+                  <strong>Color:</strong> {data.color}
+                </p>
+                <p>
                   <strong>Price:</strong> ${data.price}
+                </p>
+                <p>
+                  <strong>Stock:</strong> {data.stock_quantity} items available
+                </p>
+                <p>
+                  <strong>Dimensions:</strong> {data.dimensions.width} x{" "}
+                  {data.dimensions.height} x {data.dimensions.depth} (W x H x D)
+                </p>
+                <p>
+                  <strong>Weight:</strong> {data.weight} kg
+                </p>
+                <p>
+                  <strong>Approved:</strong> {data.approved ? "Yes" : "No"}
                 </p>
 
                 <div className="flex pt-3">
@@ -174,8 +179,7 @@ const ProductDetailsPage = () => {
                   </span>
                 </div>
 
-                {/* Wishlist action */}
-                {selectedImage ? (
+                {click ? (
                   <AiFillHeart
                     size={30}
                     className="cursor-pointer"
