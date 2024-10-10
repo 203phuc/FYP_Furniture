@@ -34,7 +34,7 @@ const wishlistSlice = createSlice({
 
       toast.success("Removed from wishlist!");
 
-      // Update local storage fadsf
+      // Update local storage
       localStorage.setItem("wishlistItems", JSON.stringify(state.wishlist));
     },
   },
