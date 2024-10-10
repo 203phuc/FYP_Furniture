@@ -74,6 +74,19 @@ const getProductDetails = asyncHandler(async (req, res) => {
 
   res.status(200).json(product);
 });
+// @desc    Fetch all approved products
+// @route   GET /api/products/approved
+// @access  Public
+const getApprovedProducts = asyncHandler(async (req, res) => {
+  // Find products where approved is true
+  const approvedProducts = await Product.find({ approved: true });
+
+  if (!approvedProducts || approvedProducts.length === 0) {
+    return res.status(404).json({ message: "No approved products found" });
+  }
+
+  res.status(200).json(approvedProducts);
+});
 
 // @desc    Fetch all products
 // @route   GET /api/products
@@ -176,6 +189,7 @@ const getProductsByShop = asyncHandler(async (req, res) => {
 export {
   createProduct,
   deleteProduct,
+  getApprovedProducts,
   getProductDetails,
   getProducts,
   getProductsByShop,

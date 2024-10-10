@@ -29,10 +29,17 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getProductApproved: builder.query({
+      query: () => ({
+        url: `${PRODUCTS_URL}/approved`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
+  useGetProductApprovedQuery,
   useGetProductsQuery,
   useGetProductsByShopQuery,
   useCreateProductMutation,

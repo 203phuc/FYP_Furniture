@@ -1,33 +1,52 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import Loader from "../components/layout/Loader.jsx";
 import ProductCard from "../components/product/ProductCard";
-import { useGetProductsQuery } from "../redux/slices/productApiSlice.js";
+import {
+  useGetProductApprovedQuery,
+  useGetProductsQuery,
+} from "../redux/slices/productApiSlice";
 import styles from "../styles/styles";
 
 const ProductsPage = () => {
   const [searchParams] = useSearchParams();
   const categoryData = searchParams.get("category");
 
-  // Fetch products using RTK Query
-  const { data: products, isLoading } = useGetProductsQuery();
+  const { userInfo } = useSelector((state) => state.auth);
+
+  // Fetch products based on user role
+  const { data: sellerProducts, isLoading: isLoadingSeller } =
+    useGetProductsQuery(undefined, {
+      skip: userInfo?.role !== "seller",
+    });
+  const { data: approvedProducts, isLoading: isLoadingUser } =
+    useGetProductApprovedQuery(undefined, {
+      skip: userInfo?.role !== "user",
+    });
+
+  // Determine which data to use based on user role
+  const dataToUse =
+    userInfo?.role === "seller" ? sellerProducts : approvedProducts;
+  const isLoading =
+    userInfo?.role === "seller" ? isLoadingSeller : isLoadingUser;
 
   const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
-    if (products) {
+    if (dataToUse) {
       if (!categoryData) {
         // If no category filter, show all products
-        setFilteredData(products);
+        setFilteredData(dataToUse);
       } else {
         // Filter products by category
-        const filtered = products.filter(
+        const filtered = dataToUse.filter(
           (product) => product.category === categoryData
         );
         setFilteredData(filtered);
       }
     }
-  }, [products, categoryData]);
+  }, [dataToUse, categoryData]);
 
   return (
     <>

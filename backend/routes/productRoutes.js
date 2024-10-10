@@ -3,6 +3,7 @@ import multer from "multer"; // Import multer
 import {
   createProduct, // Import the product details controller
   deleteProduct,
+  getApprovedProducts,
   getProductDetails,
   getProducts,
   getProductsByShop,
@@ -21,6 +22,7 @@ router
   .route("/")
   .get(getProducts)
   .post(isSeller, upload.single("mainImage"), createProduct);
+router.route("/approved").get(getApprovedProducts);
 
 // Route for fetching product details
 router.route("/:id").get(getProductDetails); // Add this line to handle product detail requests
