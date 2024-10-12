@@ -16,17 +16,8 @@ const CreateProductPage = () => {
   const [productData, setProductData] = useState({
     name: "",
     description: "",
-    price: "",
-    stock_quantity: "",
     category: "",
     roomtype: "",
-    color: "",
-    dimensions: {
-      width: "",
-      height: "",
-      depth: "",
-    },
-    weight: "",
   });
 
   const [mainImage, setMainImage] = useState(null);
@@ -40,18 +31,6 @@ const CreateProductPage = () => {
       [name]: value,
     }));
   };
-
-  const handleDimensionChange = (e) => {
-    const { name, value } = e.target;
-    setProductData((prevData) => ({
-      ...prevData,
-      dimensions: {
-        ...prevData.dimensions,
-        [name]: value,
-      },
-    }));
-  };
-
   // Aspect ratio validation function for 4:3 ratio
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -116,17 +95,8 @@ const CreateProductPage = () => {
       setProductData({
         name: "",
         description: "",
-        price: "",
-        stock_quantity: "",
         category: "",
         roomtype: "",
-        color: "",
-        dimensions: {
-          width: "",
-          height: "",
-          depth: "",
-        },
-        weight: "",
       });
       setMainImage(null); // Reset image after submission
       setMainImagePreview(null); // Reset image preview
@@ -167,71 +137,6 @@ const CreateProductPage = () => {
           value={productData.description}
           onChange={handleProductChange}
           placeholder="Description"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <input
-          type="number"
-          name="price"
-          value={productData.price}
-          onChange={handleProductChange}
-          placeholder="Price"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <input
-          type="number"
-          name="stock_quantity"
-          value={productData.stock_quantity}
-          onChange={handleProductChange}
-          placeholder="Stock Quantity"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <input
-          type="text"
-          name="color"
-          value={productData.color}
-          onChange={handleProductChange}
-          placeholder="Color"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <div className="flex space-x-2">
-          <input
-            type="number"
-            name="width"
-            value={productData.dimensions.width}
-            onChange={handleDimensionChange}
-            placeholder="Width"
-            className="border p-2 rounded w-full"
-            required
-          />
-          <input
-            type="number"
-            name="height"
-            value={productData.dimensions.height}
-            onChange={handleDimensionChange}
-            placeholder="Height"
-            className="border p-2 rounded w-full"
-            required
-          />
-          <input
-            type="number"
-            name="depth"
-            value={productData.dimensions.depth}
-            onChange={handleDimensionChange}
-            placeholder="Depth"
-            className="border p-2 rounded w-full"
-            required
-          />
-        </div>
-        <input
-          type="number"
-          name="weight"
-          value={productData.weight}
-          onChange={handleProductChange}
-          placeholder="Weight"
           className="border p-2 rounded w-full"
           required
         />

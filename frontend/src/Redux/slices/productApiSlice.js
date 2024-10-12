@@ -35,6 +35,12 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    deleteProduct: builder.mutation({
+      query: (id) => ({
+        url: `${PRODUCTS_URL}/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -44,4 +50,5 @@ export const {
   useGetProductsByShopQuery,
   useCreateProductMutation,
   useGetProductDetailsQuery, // Export the new hook for product details
+  useDeleteProductMutation, // Export the delete product mutation hook
 } = productApiSlice;

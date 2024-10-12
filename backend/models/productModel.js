@@ -11,11 +11,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter your product description!"],
     },
-    price: {
-      type: Number,
-      required: [true, "Please enter your product price!"],
-      min: [0, "Price cannot be negative"],
-    },
+
     category: {
       type: String,
       required: [true, "Please enter your product category!"],
@@ -31,7 +27,7 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection// Main image field for faster access
     mainImage: {
       public_id: {
         type: String,
@@ -41,36 +37,6 @@ const productSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-    },
-    color: {
-      type: String,
-      required: [true, "Please enter your product color!"],
-    },
-    dimensions: {
-      width: {
-        type: Number,
-        min: [0, "Width cannot be negative"],
-        required: true,
-      },
-      height: {
-        type: Number,
-        min: [0, "Height cannot be negative"],
-        required: true,
-      },
-      depth: {
-        type: Number,
-        min: [0, "Depth cannot be negative"],
-        required: true,
-      },
-    },
-    weight: {
-      type: Number,
-      min: [0, "Weight cannot be negative"],
-    },
-    stock_quantity: {
-      type: Number,
-      required: [true, "Please enter your product stock!"],
-      min: [0, "Stock quantity cannot be negative"],
     },
     // New fields added
     shopId: {

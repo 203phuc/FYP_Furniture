@@ -3,11 +3,20 @@ import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
 
-// @desc    Create a new product (without variants)
+// @desc    Create a new product
 // @route   POST /api/products
 // @access  Private
 const createProduct = asyncHandler(async (req, res) => {
-  const { shopId, ...productData } = req.body;
+  const {
+    name,
+    description,
+    category,
+    roomtype,
+    shopId,
+    variants,
+    approved,
+    reviews,
+  } = req.body;
 
   // Validate Shop ID
   const shop = await Shop.findById(shopId);
@@ -15,7 +24,7 @@ const createProduct = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid Shop ID" });
   }
 
-  // Check for uploaded file
+  // Check for uploaded file (main image)
   if (!req.file) {
     return res.status(400).json({ message: "Please upload an image!" });
   }
@@ -31,18 +40,22 @@ const createProduct = asyncHandler(async (req, res) => {
             .json({ message: "Image upload failed!", error: error.message });
         }
 
-        // Assign the uploaded image to the product data
-        productData.mainImage = {
-          public_id: result.public_id,
-          url: result.secure_url,
-        };
-
+        // Create the product with the uploaded image details
         try {
-          // Create the product
           const product = await Product.create({
-            ...productData,
-            shopId, // Include shopId directly here
-            shop: shop, // Save the shop object directly
+            name,
+            description,
+            category,
+            roomtype,
+            shopId,
+            shop,
+            variants, // Optional: Add if variants are provided
+            approved: approved || false, // Default to false if not provided
+            reviews, // Optional
+            mainImage: {
+              public_id: result.public_id,
+              url: result.secure_url,
+            },
           });
 
           res.status(201).json({ success: true, product });
@@ -54,7 +67,8 @@ const createProduct = asyncHandler(async (req, res) => {
       }
     );
 
-    uploadStream.end(req.file.buffer); // End the upload stream with the image buffer
+    // End the upload stream with the image buffer from the request
+    uploadStream.end(req.file.buffer);
   } catch (error) {
     console.error("Error during image upload:", error);
     res
@@ -62,6 +76,7 @@ const createProduct = asyncHandler(async (req, res) => {
       .json({ message: "Image upload failed!", error: error.message });
   }
 });
+
 // @desc    Fetch single product by ID
 // @route   GET /api/products/:id
 // @access  Public
@@ -74,11 +89,11 @@ const getProductDetails = asyncHandler(async (req, res) => {
 
   res.status(200).json(product);
 });
+
 // @desc    Fetch all approved products
 // @route   GET /api/products/approved
 // @access  Public
 const getApprovedProducts = asyncHandler(async (req, res) => {
-  // Find products where approved is true
   const approvedProducts = await Product.find({ approved: true });
 
   if (!approvedProducts || approvedProducts.length === 0) {
@@ -100,17 +115,42 @@ const getProducts = asyncHandler(async (req, res) => {
 // @route   DELETE /api/products/:id
 // @access  Private
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  console.log(`Received request to delete product with ID: ${req.params.id}`);
 
+  const product = await Product.findById(req.params.id);
+  console.log("Product found:", product);
+  console.log(product.mainImage);
   if (!product) {
+    console.log("Product not found");
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Optionally delete associated images from Cloudinary
-  await cloudinary.v2.uploader.destroy(product.mainImage.public_id);
+  // Log the public ID before attempting to destroy the image on Cloudinary
+  console.log(
+    "Attempting to delete image from Cloudinary with public ID:",
+    product.mainImage.public_id
+  );
 
-  await product.remove();
-  res.status(200).json({ message: "Product removed" });
+  try {
+    await cloudinary.v2.uploader.destroy(product.mainImage.public_id);
+    console.log("Image deleted from Cloudinary successfully");
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+    return res
+      .status(500)
+      .json({ message: "Error deleting image from Cloudinary" });
+  }
+
+  // Optionally delete associated images from Cloudinary
+  try {
+    console.log("Removing product from database...");
+    await product.deleteOne();
+    console.log("Product removed successfully");
+
+    res.status(200).json({ message: "Product removed" });
+  } catch (error) {
+    console.error("Error removing product from database:", error);
+  }
 });
 
 // @desc    Update a product
@@ -120,33 +160,26 @@ const updateProduct = asyncHandler(async (req, res) => {
   const {
     name,
     description,
-    price,
     category,
     roomtype,
-    dimensions,
-    weight,
-    stock_quantity,
-    color,
+    variants,
+    approved,
     shopId,
     shop,
   } = req.body;
-
   const product = await Product.findById(req.params.id);
 
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Update product details
-  product.name = name ?? product.name;
-  product.description = description ?? product.description;
-  product.price = price ?? product.price;
-  product.category = category ?? product.category;
-  product.roomtype = roomtype ?? product.roomtype;
-  product.dimensions = dimensions ?? product.dimensions;
-  product.weight = weight ?? product.weight;
-  product.stock_quantity = stock_quantity ?? product.stock_quantity;
-  product.color = color ?? product.color;
+  // Update product fields
+  product.name = name || product.name;
+  product.description = description || product.description;
+  product.category = category || product.category;
+  product.roomtype = roomtype || product.roomtype;
+  product.variants = variants || product.variants;
+  product.approved = approved !== undefined ? approved : product.approved;
 
   // Optionally update shopId and shop object
   if (shopId) {
@@ -154,14 +187,44 @@ const updateProduct = asyncHandler(async (req, res) => {
     if (!shopExists) {
       return res.status(400).json({ message: "Invalid Shop ID" });
     }
-    product.shopId = shopId; // Update shopId if provided
-    product.shop = shop; // Update shop object if provided
+    product.shopId = shopId;
+    product.shop = shop || product.shop;
   }
 
-  // Save product updates
-  await product.save();
+  // Handle optional image upload
+  if (req.file) {
+    // Remove the old image from Cloudinary if a new one is uploaded
+    await cloudinary.v2.uploader.destroy(product.mainImage.public_id);
 
-  res.status(200).json({ success: true, product });
+    // Upload the new image to Cloudinary
+    const uploadStream = cloudinary.v2.uploader.upload_stream(
+      { folder: "products", quality: "auto" },
+      async (error, result) => {
+        if (error) {
+          return res
+            .status(500)
+            .json({ message: "Image upload failed!", error: error.message });
+        }
+
+        // Update the main image field
+        product.mainImage = {
+          public_id: result.public_id,
+          url: result.secure_url,
+        };
+
+        // Save product updates
+        await product.save();
+        res.status(200).json({ success: true, product });
+      }
+    );
+
+    // End the upload stream with the new image buffer from the request
+    uploadStream.end(req.file.buffer);
+  } else {
+    // Save product updates without changing the image
+    await product.save();
+    res.status(200).json({ success: true, product });
+  }
 });
 
 // @desc    Get all products from a specific shop

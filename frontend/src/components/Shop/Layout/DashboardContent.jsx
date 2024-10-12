@@ -1,12 +1,13 @@
 import React from "react";
-import DashboardHero from "../DashboardHero.jsx";
+import AllProducts from "../AllProducts.jsx";
 import CreateProduct from "../CreateProduct.jsx";
+import DashboardHero from "../DashboardHero.jsx";
 
 const DashboardContent = ({ active }) => {
   const content = {
     1: <DashboardHero />,
     2: <div>Content for section 2</div>,
-    3: <div>Content for section 3</div>,
+    3: <AllProducts />,
     4: <CreateProduct />,
     5: <div>Content for section 5</div>,
   };

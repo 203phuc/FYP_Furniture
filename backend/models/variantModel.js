@@ -43,8 +43,7 @@ const variantSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // Main image field for faster access
-    main_image: {
+    mainImage: {
       public_id: {
         type: String,
         required: true,
