@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer"; // Import multer
 import {
   createProduct, // Import the product details controller
   deleteProduct,
@@ -13,15 +12,11 @@ import { isSeller } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Configure multer for file storage
-const storage = multer.memoryStorage(); // This stores the file in memory
-const upload = multer({ storage: storage });
-
 // Use the upload middleware in your route
 router
   .route("/")
   .get(getProducts)
-  .post(isSeller, upload.single("mainImage"), createProduct);
+  .post(isSeller, createProduct);
 router.route("/approved").get(getApprovedProducts);
 
 // Route for fetching product details

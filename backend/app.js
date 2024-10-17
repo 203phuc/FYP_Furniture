@@ -1,12 +1,13 @@
-import express from "express";
-import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import userRoutes from "./routes/userRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import shopRoutes from "./routes/shopRoutes.js";
+import express from "express";
+import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import timeMiddleware from "./middleware/timeMiddleware.js"; // Corrected import name
 import cartRoutes from "./routes/cartRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import shopRoutes from "./routes/shopRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import variantRoutes from "./routes/variantRoutes.js";
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.use(
     credentials: true,
   })
 );
- 
+
 // Built-in middleware to parse incoming JSON requests
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -32,6 +33,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/carts", cartRoutes);
+app.use("/api/variants", variantRoutes);
 
 // Define error handling middleware after all routes
 app.use(notFound);

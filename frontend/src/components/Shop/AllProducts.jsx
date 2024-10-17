@@ -1,29 +1,61 @@
 import { Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import React from "react";
+import React, { useState } from "react";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify"; // Use any toast notification library you prefer
 import {
   useDeleteProductMutation,
   useGetProductsByShopQuery,
-} from "../../redux/slices/productApiSlice.js"; // Update the import path as necessary
+} from "../../redux/slices/productApiSlice.js";
+import { useAddVariantMutation } from "../../redux/slices/variantApiSlice";
 import Loader from "../Layout/Loader";
 
 const AllProducts = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   // Use the RTK Query hook to fetch products by shop ID
-  const { data: products = [], isLoading } = useGetProductsByShopQuery(
-    userInfo._id
-  );
+  const {
+    data: products = [],
+    isLoading,
+    isError: isFetchError,
+  } = useGetProductsByShopQuery(userInfo?._id);
 
-  const [deleteProduct] = useDeleteProductMutation(); // Hook to delete a product
+  const [
+    addVariant,
+    {
+      isError: isAddVariantError,
+      isLoading: isAddingVariantLoading,
+      isSuccess: isAddVariantSuccess,
+    },
+  ] = useAddVariantMutation();
 
+  const [deleteProduct] = useDeleteProductMutation();
+
+  const [rows, setRows] = useState([]);
+
+  // If product deletion succeeds, remove product from rows
   const handleDelete = async (id) => {
-    await deleteProduct(id);
-    // Optionally handle the response or show a success message
+    try {
+      await deleteProduct(id).unwrap();
+      setRows(rows.filter((row) => row.id !== id));
+      toast.success("Product deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete product");
+    }
   };
+
+  // Handle adding variations
+  const handleGenerateVariations = async (productId) => {
+    try {
+      await addVariant(productId).unwrap();
+      toast.success("Variants generated successfully");
+    } catch (error) {
+      toast.error("Failed to generate variants");
+    }
+  };
+
 
   const columns = [
     { field: "id", headerName: "Product Id", minWidth: 150, flex: 0.7 },
@@ -51,25 +83,6 @@ const AllProducts = () => {
       minWidth: 150,
       flex: 1,
     },
-
-    {
-      field: "main_image",
-      headerName: "Image",
-      minWidth: 100,
-      flex: 0.5,
-      renderCell: (params) => {
-        console.log(params); // Log the entire params object
-
-        const imageUrl = params.row.mainImage ? params.row.mainImage.url : ""; // Check if params.value exists
-        return (
-          <img
-            src={imageUrl}
-            alt={params.row.name}
-            style={{ width: 50, height: 50 }}
-          />
-        );
-      },
-    },
     {
       field: "preview",
       flex: 0.8,
@@ -82,6 +95,18 @@ const AllProducts = () => {
             <AiOutlineEye size={20} />
           </Button>
         </Link>
+      ),
+    },
+    {
+      field: "generate_variation",
+      flex: 0.8,
+      minWidth: 120,
+      headerName: "Generate Variation",
+      sortable: false,
+      renderCell: (params) => (
+        <Button onClick={() => handleGenerateVariations(params.id)}>
+          {isAddingVariantLoading ? "Generating..." : "Generate Variations"}
+        </Button>
       ),
     },
     {
@@ -98,19 +123,26 @@ const AllProducts = () => {
     },
   ];
 
-  const rows = products.map((item) => ({
-    id: item._id,
-    name: item.name,
-    description: item.description,
-    category: item.category,
-    roomtype: item.roomtype,
-    mainImage: item.mainImage,
-  }));
+  React.useEffect(() => {
+    if (products.length) {
+      const mappedRows = products.map((item) => ({
+        id: item._id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        roomtype: item.roomtype,
+        mainImage: item.mainImage,
+      }));
+      setRows(mappedRows);
+    }
+  }, [products]);
 
   return (
     <>
       {isLoading ? (
         <Loader />
+      ) : isFetchError ? (
+        <div>Error loading products</div>
       ) : (
         <div className="w-full mx-8 pt-1 mt-10 bg-white">
           <DataGrid

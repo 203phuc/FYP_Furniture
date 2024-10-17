@@ -2,6 +2,7 @@ import cloudinary from "cloudinary";
 import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
+import Variant from "../models/variantModel.js";
 
 // @desc    Create a new product
 // @route   POST /api/products
@@ -10,83 +11,88 @@ const createProduct = asyncHandler(async (req, res) => {
   const {
     name,
     description,
-    category,
-    roomtype,
+    department,
+    type,
+    tags,
     shopId,
-    variants,
-    approved,
-    reviews,
+    options, // Dynamic options with mixed-type values
   } = req.body;
-
+  console.log(req.body);
   // Validate Shop ID
   const shop = await Shop.findById(shopId);
   if (!shop) {
     return res.status(400).json({ message: "Invalid Shop ID" });
   }
 
-  // Check for uploaded file (main image)
-  if (!req.file) {
-    return res.status(400).json({ message: "Please upload an image!" });
-  }
-
   try {
-    // Upload the image to Cloudinary
-    const uploadStream = cloudinary.v2.uploader.upload_stream(
-      { folder: "products", quality: "auto" },
-      async (error, result) => {
-        if (error) {
-          return res
-            .status(500)
-            .json({ message: "Image upload failed!", error: error.message });
-        }
+    // Process options and handle image uploads
+    const processedOptions = await processOptions(options);
 
-        // Create the product with the uploaded image details
-        try {
-          const product = await Product.create({
-            name,
-            description,
-            category,
-            roomtype,
-            shopId,
-            shop,
-            variants, // Optional: Add if variants are provided
-            approved: approved || false, // Default to false if not provided
-            reviews, // Optional
-            mainImage: {
-              public_id: result.public_id,
-              url: result.secure_url,
-            },
-          });
+    // Create and save the product
+    const product = new Product({
+      name,
+      description,
+      department,
+      type,
+      tags,
+      shopId,
+      shop: {
+        _id: shop._id,
+        name: shop.name,
+        location: shop.location,
+      },
+      options: processedOptions,
+    });
 
-          res.status(201).json({ success: true, product });
-        } catch (err) {
-          res
-            .status(500)
-            .json({ message: "Product creation failed!", error: err.message });
-        }
-      }
-    );
+    await product.save();
 
-    // End the upload stream with the image buffer from the request
-    uploadStream.end(req.file.buffer);
+    res.status(201).json({ success: true, product });
   } catch (error) {
-    console.error("Error during image upload:", error);
+    console.error(error);
     res
       .status(500)
-      .json({ message: "Image upload failed!", error: error.message });
+      .json({ message: "Product creation failed!", error: error.message });
   }
 });
+
+// Helper function to process options with mixed-type values and image uploads
+const processOptions = async (options) => {
+  return await Promise.all(
+    options.map(async (option) => {
+      const processedValues = await Promise.all(
+        option.values.map(async (value) => {
+          // Check if there's an image to upload
+          if (value.image) {
+            try {
+              const uploadResponse = await cloudinary.v2.uploader.upload(
+                value.image,
+                { folder: `options/${option.name}`, quality: "auto" }
+              );
+              return { ...value, image: uploadResponse.secure_url };
+            } catch (err) {
+              throw new Error("Image upload failed");
+            }
+          }
+          // Return the value as it is, whether a string or an object (e.g., dimensions)
+          return value;
+        })
+      );
+      return { name: option.name, values: processedValues };
+    })
+  );
+};
 
 // @desc    Fetch single product by ID
 // @route   GET /api/products/:id
 // @access  Public
 const getProductDetails = asyncHandler(async (req, res) => {
+  if (Variant.product.findById(req.params.id)) {
+    const product = await Product.findById(req.params.id).populate("variants");
+  }
   const product = await Product.findById(req.params.id);
-
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
-
   res.status(200).json(product);
 });
 
@@ -95,11 +101,9 @@ const getProductDetails = asyncHandler(async (req, res) => {
 // @access  Public
 const getApprovedProducts = asyncHandler(async (req, res) => {
   const approvedProducts = await Product.find({ approved: true });
-
-  if (!approvedProducts || approvedProducts.length === 0) {
+  if (!approvedProducts.length) {
     return res.status(404).json({ message: "No approved products found" });
   }
-
   res.status(200).json(approvedProducts);
 });
 
@@ -107,7 +111,7 @@ const getApprovedProducts = asyncHandler(async (req, res) => {
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({});
+  const products = await Product.find({}).populate("variants");
   res.status(200).json(products);
 });
 
@@ -115,41 +119,22 @@ const getProducts = asyncHandler(async (req, res) => {
 // @route   DELETE /api/products/:id
 // @access  Private
 const deleteProduct = asyncHandler(async (req, res) => {
-  console.log(`Received request to delete product with ID: ${req.params.id}`);
-
   const product = await Product.findById(req.params.id);
-  console.log("Product found:", product);
-  console.log(product.mainImage);
   if (!product) {
-    console.log("Product not found");
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Log the public ID before attempting to destroy the image on Cloudinary
-  console.log(
-    "Attempting to delete image from Cloudinary with public ID:",
-    product.mainImage.public_id
-  );
-
   try {
-    await cloudinary.v2.uploader.destroy(product.mainImage.public_id);
-    console.log("Image deleted from Cloudinary successfully");
-  } catch (error) {
-    console.error("Error deleting image from Cloudinary:", error);
-    return res
-      .status(500)
-      .json({ message: "Error deleting image from Cloudinary" });
-  }
+    // If the product has a main image in Cloudinary, delete it
+    await cloudinary.v2.uploader.destroy(product.mainImage?.public_id);
 
-  // Optionally delete associated images from Cloudinary
-  try {
-    console.log("Removing product from database...");
+    // Delete the product
     await product.deleteOne();
-    console.log("Product removed successfully");
-
     res.status(200).json({ message: "Product removed" });
   } catch (error) {
-    console.error("Error removing product from database:", error);
+    res
+      .status(500)
+      .json({ message: "Error removing product", error: error.message });
   }
 });
 
@@ -160,15 +145,14 @@ const updateProduct = asyncHandler(async (req, res) => {
   const {
     name,
     description,
-    category,
-    roomtype,
-    variants,
-    approved,
+    department,
+    type,
+    tags,
     shopId,
-    shop,
+    options, // Updated options with potential mixed-type values and images
   } = req.body;
-  const product = await Product.findById(req.params.id);
 
+  const product = await Product.findById(req.params.id);
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
@@ -176,55 +160,26 @@ const updateProduct = asyncHandler(async (req, res) => {
   // Update product fields
   product.name = name || product.name;
   product.description = description || product.description;
-  product.category = category || product.category;
-  product.roomtype = roomtype || product.roomtype;
-  product.variants = variants || product.variants;
-  product.approved = approved !== undefined ? approved : product.approved;
+  product.department = department || product.department;
+  product.type = type || product.type;
+  product.tags = tags || product.tags;
 
-  // Optionally update shopId and shop object
+  // Optionally update shop info
   if (shopId) {
     const shopExists = await Shop.findById(shopId);
     if (!shopExists) {
       return res.status(400).json({ message: "Invalid Shop ID" });
     }
     product.shopId = shopId;
-    product.shop = shop || product.shop;
   }
 
-  // Handle optional image upload
-  if (req.file) {
-    // Remove the old image from Cloudinary if a new one is uploaded
-    await cloudinary.v2.uploader.destroy(product.mainImage.public_id);
-
-    // Upload the new image to Cloudinary
-    const uploadStream = cloudinary.v2.uploader.upload_stream(
-      { folder: "products", quality: "auto" },
-      async (error, result) => {
-        if (error) {
-          return res
-            .status(500)
-            .json({ message: "Image upload failed!", error: error.message });
-        }
-
-        // Update the main image field
-        product.mainImage = {
-          public_id: result.public_id,
-          url: result.secure_url,
-        };
-
-        // Save product updates
-        await product.save();
-        res.status(200).json({ success: true, product });
-      }
-    );
-
-    // End the upload stream with the new image buffer from the request
-    uploadStream.end(req.file.buffer);
-  } else {
-    // Save product updates without changing the image
-    await product.save();
-    res.status(200).json({ success: true, product });
+  // Handle options update with possible image uploads
+  if (options) {
+    product.options = await processOptions(options);
   }
+
+  await product.save();
+  res.status(200).json({ success: true, product });
 });
 
 // @desc    Get all products from a specific shop
@@ -239,10 +194,8 @@ const getProductsByShop = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid Shop ID" });
   }
 
-  // Find all products associated with the shop
-  const products = await Product.find({ shopId });
-
-  if (products.length === 0) {
+  const products = await Product.find({ shopId }).populate("variants");
+  if (!products.length) {
     return res.status(404).json({ message: "No products found for this shop" });
   }
 

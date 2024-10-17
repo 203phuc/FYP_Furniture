@@ -1,5 +1,5 @@
-import { apiSlice } from "./apiSlice.js";
 import { USERS_URL } from "../constants.jsx";
+import { apiSlice } from "./apiSlice.js";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,6 +9,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"], // Invalidate user data after login
     }),
     register: builder.mutation({
       query: (data) => ({
@@ -16,12 +17,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"], // Invalidate user data after registration
     }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
         method: "POST",
       }),
+      invalidatesTags: ["User"], // Invalidate user data after logout
     }),
     profile: builder.mutation({
       query: (data) => ({
@@ -29,6 +32,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
+      invalidatesTags: ["User"], // Invalidate user profile after update
     }),
   }),
 });

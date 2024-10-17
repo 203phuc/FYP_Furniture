@@ -1,5 +1,19 @@
 import mongoose from "mongoose";
 
+// Option Schema
+const optionSchema = new mongoose.Schema({
+  name: { type: String, required: true }, // Option name (e.g., Color)
+  values: [
+    {
+      value: {
+        type: mongoose.Schema.Types.Mixed,
+        required: true,
+      }, // Option value (e.g., "NOMAD SNOW")
+      image: { type: String }, // Optional image URL for this value
+    },
+  ],
+});
+
 // Define the Product Schema
 const productSchema = new mongoose.Schema(
   {
@@ -11,33 +25,33 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter your product description!"],
     },
-
-    category: {
+    department: {
       type: String,
       required: [true, "Please enter your product category!"],
-      enum: ["Furniture", "Electronics", "Appliances"],
+      enum: [
+        "Living",
+        "Bedroom",
+        "Dining",
+        "Office",
+        "Outdoor",
+        "Lighting",
+        "Decor",
+        "Rug",
+      ],
     },
-    roomtype: {
+    type: {
       type: String,
-      required: [true, "Please enter your product room type!"],
-      enum: ["Living Room", "Bedroom", "Office", "Outdoor"],
     },
-    variants: [{ type: mongoose.Schema.Types.ObjectId, ref: "Variant" }], // Reference to Variant collection
+    tags: {
+      type: [String],
+    },
+    options: [optionSchema], // Array of options
+    variants: [{ type: mongoose.Schema.Types.ObjectId, ref: "variants" }], // Reference to Variant collection
     approved: {
       type: Boolean,
       default: false,
     },
-    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection// Main image field for faster access
-    mainImage: {
-      public_id: {
-        type: String,
-        required: true,
-      },
-      url: {
-        type: String,
-        required: true,
-      },
-    },
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Reference to Review collection
     // New fields added
     shopId: {
       type: String,
@@ -54,9 +68,6 @@ const productSchema = new mongoose.Schema(
 );
 
 // Adding indexes to improve query performance
-productSchema.index({ category: 1 });
-productSchema.index({ roomtype: 1 });
-productSchema.index({ shopId: 1 }); // Optional: Add an index for shopId
 
 const Product = mongoose.model("Product", productSchema);
 

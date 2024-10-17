@@ -1,7 +1,5 @@
-//make slice of shop
-
+import { SHOP_URL } from "../constants.jsx"; // Import the shop URL from constants.jsx
 import { apiSlice } from "./apiSlice.js";
-import { SHOP_URL } from "../constants.jsx"; //import the shop url from constants.jsx
 
 export const shopApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,12 +8,14 @@ export const shopApiSlice = apiSlice.injectEndpoints({
         url: `${SHOP_URL}`,
         method: "GET",
       }),
+      providesTags: ["Shop"], // Provide a tag for all shops
     }),
     getShop: builder.query({
       query: (id) => ({
         url: `${SHOP_URL}/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "Shop", id }], // Tag for individual shop
     }),
     registerShop: builder.mutation({
       query: (data) => ({
@@ -23,6 +23,7 @@ export const shopApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Shop"], // Invalidate the shops cache after registration
     }),
     loginShop: builder.mutation({
       query: (data) => ({
@@ -33,19 +34,21 @@ export const shopApiSlice = apiSlice.injectEndpoints({
     }),
     updateShop: builder.mutation({
       query: (data) => ({
-        url: `${SHOP_URL}/${data.id}`, //pass the id of the shop to be updated
+        url: `${SHOP_URL}/${data.id}`, // Pass the id of the shop to be updated
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Shop", id }], // Invalidate the cache for the updated shop
     }),
     deleteShop: builder.mutation({
       query: (id) => ({
         url: `${SHOP_URL}/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (result, error, id) => [{ type: "Shop", id }], // Invalidate the cache for the deleted shop
     }),
   }),
-}); //create a slice for shop api endpoints
+});
 
 export const {
   useGetShopsQuery,

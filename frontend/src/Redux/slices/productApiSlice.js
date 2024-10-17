@@ -1,6 +1,3 @@
-import { PRODUCTS_URL } from "../constants.jsx"; // Import the product URL from constants.jsx
-import { apiSlice } from "./apiSlice.js";
-
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
@@ -8,12 +5,18 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `${PRODUCTS_URL}`,
         method: "GET",
       }),
+      providesTags: (result) =>
+        result
+          ? result.map(({ _id }) => ({ type: "Product", id: _id }))
+          : ["Product"],
     }),
     getProductsByShop: builder.query({
       query: (shopId) => ({
         url: `${PRODUCTS_URL}/shop/${shopId}`,
         method: "GET",
       }),
+      providesTags: (result, error, shopId) =>
+        result ? [{ type: "Shop", id: shopId }] : ["Shop"],
     }),
     createProduct: builder.mutation({
       query: (data) => ({
@@ -21,25 +24,28 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: [{ type: "Product" }], // Invalidate product cache to refresh the list
     }),
-    // Add product details API call here
     getProductDetails: builder.query({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "Product", id }],
     }),
     getProductApproved: builder.query({
       query: () => ({
         url: `${PRODUCTS_URL}/approved`,
         method: "GET",
       }),
+      providesTags: ["Product"],
     }),
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: [{ type: "Product", id }], // Invalidate cache for the deleted product
     }),
   }),
 });
@@ -49,6 +55,6 @@ export const {
   useGetProductsQuery,
   useGetProductsByShopQuery,
   useCreateProductMutation,
-  useGetProductDetailsQuery, // Export the new hook for product details
-  useDeleteProductMutation, // Export the delete product mutation hook
+  useGetProductDetailsQuery,
+  useDeleteProductMutation,
 } = productApiSlice;

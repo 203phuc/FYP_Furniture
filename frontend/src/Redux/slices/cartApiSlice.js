@@ -9,9 +9,11 @@ export const cartApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: cartData,
       }),
+      invalidatesTags: ["Cart"], // Invalidate cart data after syncing
     }),
     fetchCart: builder.query({
       query: (userId) => `${CART_URL}/${userId}`,
+      providesTags: ["Cart"], // Provide the cart data for caching
     }),
   }),
 });
