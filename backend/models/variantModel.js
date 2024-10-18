@@ -24,6 +24,10 @@ const variantSchema = new mongoose.Schema(
         type: String,
       },
     },
+    atributes: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
     // Array of additional images
     images: [
       {
@@ -44,6 +48,6 @@ const variantSchema = new mongoose.Schema(
 // Compound index: If you frequently query by product and color
 variantSchema.index({ product: 1, color: 1 });
 
-const Variant = mongoose.model("variants", variantSchema); // Changed to "variants"
+const Variant = mongoose.model("Variant", variantSchema); // Changed to "variants"
 
 export default Variant;

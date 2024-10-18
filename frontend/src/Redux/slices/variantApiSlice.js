@@ -1,18 +1,20 @@
+import { VARIANT_URL } from "../constants.jsx";
 import { apiSlice } from "./apiSlice.js";
 
+// fi the route of the variant api
 export const variantApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     addVariant: builder.mutation({
       query: (productId) => ({
-        url: `/variants`,
+        url: `${VARIANT_URL}`,
         method: "POST",
         body: { productId },
       }),
       invalidatesTags: ["Product"], // Invalidate product cache after adding variant
     }),
     updateVariantDetails: builder.mutation({
-      query: ({ variantId, ...variantDetails }) => ({
-        url: `/variants/${variantId}`,
+      query: (variantDetails, Id) => ({
+        url: `${VARIANT_URL}/${Id}`,
         method: "PUT",
         body: variantDetails,
       }),
@@ -21,7 +23,7 @@ export const variantApiSlice = apiSlice.injectEndpoints({
       ],
     }),
     getVariantsByProduct: builder.query({
-      query: (productId) => `/variants/product/${productId}`,
+      query: (productId) => `${VARIANT_URL}/product/${productId}`,
       providesTags: (result, error, productId) =>
         result
           ? [
@@ -32,7 +34,7 @@ export const variantApiSlice = apiSlice.injectEndpoints({
     }),
     deleteVariant: builder.mutation({
       query: (variantId) => ({
-        url: `/variants/${variantId}`,
+        url: `${VARIANT_URL}/${variantId}`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, variantId) => [
@@ -40,10 +42,12 @@ export const variantApiSlice = apiSlice.injectEndpoints({
       ],
     }),
     checkIfProductHasVariants: builder.query({
-      query: (productId) => `/variants/product/${productId}/check`,
+      query: (productId) => `${VARIANT_URL}/product/${productId}/check`,
       transformResponse: (response) => response.hasVariants,
       providesTags: (result, error, productId) =>
-        result ? [{ type: "Product", id: productId }] : [],
+        result
+          ? [{ type: "Product", id: productId }] // Provide Product tag
+          : [{ type: "Product", id: productId }],
     }),
   }),
 });

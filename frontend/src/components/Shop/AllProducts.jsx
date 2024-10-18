@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -9,7 +9,10 @@ import {
   useDeleteProductMutation,
   useGetProductsByShopQuery,
 } from "../../redux/slices/productApiSlice.js";
-import { useAddVariantMutation } from "../../redux/slices/variantApiSlice";
+import {
+  useAddVariantMutation,
+  useCheckIfProductHasVariantsQuery,
+} from "../../redux/slices/variantApiSlice";
 import Loader from "../Layout/Loader";
 
 const AllProducts = () => {
@@ -32,7 +35,6 @@ const AllProducts = () => {
   ] = useAddVariantMutation();
 
   const [deleteProduct] = useDeleteProductMutation();
-
   const [rows, setRows] = useState([]);
 
   // If product deletion succeeds, remove product from rows
@@ -56,7 +58,7 @@ const AllProducts = () => {
     }
   };
 
-
+  // Table columns
   const columns = [
     { field: "id", headerName: "Product Id", minWidth: 150, flex: 0.7 },
     {
@@ -72,14 +74,14 @@ const AllProducts = () => {
       flex: 1.5,
     },
     {
-      field: "category",
-      headerName: "Category",
+      field: "department",
+      headerName: "department",
       minWidth: 150,
       flex: 1,
     },
     {
-      field: "roomtype",
-      headerName: "Room Type",
+      field: "type",
+      headerName: "Type",
       minWidth: 150,
       flex: 1,
     },
@@ -103,11 +105,24 @@ const AllProducts = () => {
       minWidth: 120,
       headerName: "Generate Variation",
       sortable: false,
-      renderCell: (params) => (
-        <Button onClick={() => handleGenerateVariations(params.id)}>
-          {isAddingVariantLoading ? "Generating..." : "Generate Variations"}
-        </Button>
-      ),
+      renderCell: (params) => {
+        // Use the hook to check if the product has variants
+        const { data: hasVariants, isLoading: isChecking } =
+          useCheckIfProductHasVariantsQuery(params.id);
+
+        // Conditionally render the button based on if the product has variants
+        if (isChecking) {
+          return <span>Checking...</span>;
+        }
+        console.log(hasVariants);
+        return hasVariants ? (
+          <span>Variants Exist</span>
+        ) : (
+          <Button onClick={() => handleGenerateVariations(params.id)}>
+            {isAddingVariantLoading ? "Generating..." : "Generate Variations"}
+          </Button>
+        );
+      },
     },
     {
       field: "delete",
@@ -116,21 +131,25 @@ const AllProducts = () => {
       headerName: "",
       sortable: false,
       renderCell: (params) => (
-        <Button onClick={() => handleDelete(params.id)}>
-          <AiOutlineDelete size={20} />
-        </Button>
+        <>
+          <Button onClick={() => handleDelete(params.id)}>
+            <AiOutlineDelete size={20} />
+          </Button>
+          <Link to={`/variant/${params.id}`}>edit details</Link>
+        </>
       ),
     },
   ];
 
-  React.useEffect(() => {
+  // Update rows whenever products data changes
+  useEffect(() => {
     if (products.length) {
       const mappedRows = products.map((item) => ({
         id: item._id,
         name: item.name,
         description: item.description,
-        category: item.category,
-        roomtype: item.roomtype,
+        department: item.department,
+        type: item.type,
         mainImage: item.mainImage,
       }));
       setRows(mappedRows);

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   addVariant,
+  checkIfProductHasVariants,
   deleteVariant,
   getVariantsByProduct,
   updateVariantDetails,
@@ -8,10 +9,7 @@ import {
 import { isSeller } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-router.get(
-  "/product/:productId/check",
-  variantController.checkIfProductHasVariants
-);
+router.get("/product/:productId/check", checkIfProductHasVariants);
 // POST route to add variants for a product
 router.post("/", isSeller, addVariant);
 

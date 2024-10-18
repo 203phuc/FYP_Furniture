@@ -11,6 +11,7 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   baseQuery,
   tagTypes: ["User"],
+  
   endpoints: (builder) => ({
     //to rerurn obj
   }),

@@ -88,8 +88,9 @@ const processOptions = async (options) => {
 const getProductDetails = asyncHandler(async (req, res) => {
   if (Variant.product.findById(req.params.id)) {
     const product = await Product.findById(req.params.id).populate("variants");
+  } else {
+    const product = await Product.findById(req.params.id);
   }
-  const product = await Product.findById(req.params.id);
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }

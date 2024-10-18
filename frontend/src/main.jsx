@@ -17,6 +17,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
 import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
 import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
+import VariantPage from "./pages/shop/VariantPage.jsx";
 import store from "./redux/store.js";
 
 const router = createBrowserRouter(
@@ -31,6 +32,7 @@ const router = createBrowserRouter(
       <Route path="/dashboard" element={<ShopDashboardPage />} />
       <Route path="/product" element={<ProductPage />} />
       <Route path="/product/:id" element={<ProductDetailsPage />} />
+      <Route path="/variant/:id" element={<VariantPage/>}></Route>
     </Route>
   )
 );

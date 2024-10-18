@@ -1,13 +1,31 @@
-import React, { useState } from "react";
+import { Add as AddIcon, Close as CloseIcon } from "@mui/icons-material";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useCreateProductMutation } from "../../redux/slices/productApiSlice";
 
-const CreateProductPage = () => {
+export default function CreateProductPage() {
   const { userInfo } = useSelector((state) => state.auth);
-  const [createProduct, { isLoading, isError, isSuccess, error }] =
-    useCreateProductMutation();
-  const shopId = userInfo._id; // Assuming userInfo._id is the shop ID
+  const [createProduct, { isLoading }] = useCreateProductMutation();
+  const shopId = userInfo._id;
   const shop = {
     _id: shopId,
     name: userInfo.shopName,
@@ -24,30 +42,20 @@ const CreateProductPage = () => {
 
   const [colors, setColors] = useState([]);
   const [colorInput, setColorInput] = useState("");
-  const [colorImage, setColorImage] = useState(null); // For color image
+  const [colorImage, setColorImage] = useState(null);
   const [materials, setMaterials] = useState([]);
+  const [dimensionData, setDimensionData] = useState([]);
   const [materialInput, setMaterialInput] = useState("");
   const [dimensions, setDimensions] = useState({});
   const [customOptions, setCustomOptions] = useState([]);
   const [newMeasure, setNewMeasure] = useState("");
   const [newValue, setNewValue] = useState("");
-  const [optionName, setOptionName] = useState(""); // State for option name
-  const [values, setValues] = useState([]); // State for option values
-  const [showForm, setShowForm] = useState(false); // State to toggle the option form
-  const [materialImage, setMaterialImage] = useState(null); // For material image
-
+  const [optionName, setOptionName] = useState("");
+  const [values, setValues] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [materialImage, setMaterialImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const addMeasureValuePair = () => {
-    if (!newMeasure || !newValue) return; // Prevent adding empty keys
-    setDimensions((prevObject) => ({
-      ...prevObject,
-      [newMeasure]: newValue, // Add new key-value pair
-    }));
 
-    // Clear input fields after adding
-    setNewMeasure("");
-    setNewValue("");
-  };
   const handleProductChange = (e) => {
     const { name, value } = e.target;
     setProductData((prevData) => ({
@@ -80,17 +88,18 @@ const CreateProductPage = () => {
       let imageBase64 = "";
       if (colorImage) {
         try {
-          imageBase64 = await convertToBase64(colorImage); // Convert image to base64
+          imageBase64 = await convertToBase64(colorImage);
         } catch (error) {
           toast.error("Failed to upload color image.");
           return;
         }
       }
-
       setColors((prevColors) => [
         ...prevColors,
         { value: color, image: imageBase64 },
       ]);
+      setColorInput("");
+      setColorImage(null);
       toast.success(`Added color: ${color}`);
     } else {
       toast.error("Please enter a valid color.");
@@ -112,24 +121,64 @@ const CreateProductPage = () => {
       let imageBase64 = "";
       if (materialImage) {
         try {
-          imageBase64 = await convertToBase64(materialImage); // Convert image to base64
+          imageBase64 = await convertToBase64(materialImage);
         } catch (error) {
           toast.error("Failed to upload material image.");
           return;
         }
       }
-
       setMaterials((prevMaterials) => [
         ...prevMaterials,
         { value: material, image: imageBase64 },
       ]);
+      setMaterialInput("");
+      setMaterialImage(null);
       toast.success(`Added material: ${material}`);
     } else {
       toast.error("Please enter a valid material.");
     }
   };
+
+  const addMeasureValuePair = () => {
+    if (!newMeasure || !newValue) return;
+    setDimensions((prevObject) => ({
+      ...prevObject,
+      [newMeasure]: newValue,
+    }));
+    setNewMeasure("");
+    setNewValue("");
+  };
+
+  const handleAddDimensionData = () => {
+    if (Object.keys(dimensions).length === 0) {
+      toast.error("Please add at least one dimension before saving.");
+      return;
+    }
+    setDimensionData((prevData) => [
+      ...prevData,
+      { value: dimensions, image: "" },
+    ]);
+    setDimensions({});
+    toast.success("Dimension set added successfully.");
+  };
+
+  const removeDimension = (index, key) => {
+    const newDimensionData = [...dimensionData];
+    delete newDimensionData[index].value[key];
+    if (Object.keys(newDimensionData[index].value).length === 0) {
+      newDimensionData.splice(index, 1);
+    }
+    setDimensionData(newDimensionData);
+  };
+
+  const removeCurrentDimension = (key) => {
+    const newDimensions = { ...dimensions };
+    delete newDimensions[key];
+    setDimensions(newDimensions);
+  };
+
   const handleAddValue = () => {
-    setValues([...values, { value: "", image: "" }]); // Add a new empty value
+    setValues([...values, { value: "", image: "" }]);
   };
 
   const handleValueChange = (index, field, value) => {
@@ -139,72 +188,55 @@ const CreateProductPage = () => {
   };
 
   const handleRemoveValue = (index) => {
-    const newValues = values.filter((_, i) => i !== index); // Remove value at specified index
+    const newValues = values.filter((_, i) => i !== index);
     setValues(newValues);
   };
 
   const handleOpSubmit = () => {
+    if (!optionName || values.length === 0) {
+      toast.error("Please provide an option name and at least one value.");
+      return;
+    }
     setCustomOptions((prevOptions) => [
       ...prevOptions,
       { name: optionName, values: values },
     ]);
-
-    console.log("Submitted option:", customOptions);
-    // Here you can handle the submission logic (e.g., sending to an API)
+    setOptionName("");
+    setValues([]);
+    setShowForm(false);
+    toast.success("Custom option added successfully.");
   };
-  const handleImageUpload = (index, event) => {
-    const file = event.target.files[0]; // Get the uploaded file
-    const reader = new FileReader(); // Create a FileReader to read the file
 
+  const handleImageUpload = (index, event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
     reader.onloadend = () => {
-      // Set the image state as the base64 string
       handleValueChange(index, "image", reader.result);
     };
-
     if (file) {
-      reader.readAsDataURL(file); // Convert the file to base64
+      reader.readAsDataURL(file);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (
       colors.length === 0 &&
       materials.length === 0 &&
-      Object.keys(dimensions).length === 0 &&
+      dimensionData.length === 0 &&
       customOptions.length === 0
     ) {
       toast.error("Please add at least one attribute!");
       return;
     }
-
-    // Combine attributes into options structure following the schema
     const options = [
-      {
-        name: "Color",
-        values: colors,
-      },
-      {
-        name: "Material",
-        values: materials,
-      },
-      {
-        name: "Dimensions", // Add dimensions as an option
-        values: [
-          {
-            value: dimensions,
-            image: "",
-          },
-        ],
-      },
-      ...customOptions, // Include any custom options added by the user
+      { name: "Color", values: colors },
+      { name: "Material", values: materials },
+      { name: "Dimensions", values: dimensionData },
+      ...customOptions,
     ];
-
     try {
-      // Send the product data with options to the server
       await createProduct({ ...productData, shopId, shop, options }).unwrap();
-
-      // Reset form and state after successful product creation
       setProductData({
         name: "",
         description: "",
@@ -214,15 +246,9 @@ const CreateProductPage = () => {
         tags: [],
       });
       setColors([]);
-      setColorInput("");
       setMaterials([]);
-      setMaterialInput("");
-      setDimensions({}); // Reset dimensions object
+      setDimensionData([]);
       setCustomOptions([]);
-      setNewMeasure("");
-      setNewValue("");
-      setOptionName("");
-      setValues([]);
       toast.success("Product created successfully!");
       setIsModalOpen(false);
     } catch (err) {
@@ -241,226 +267,383 @@ const CreateProductPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Create Product</h1>
-      <form onSubmit={openModal} className="space-y-4">
-        {/* Product Fields */}
-        <input
-          type="text"
-          name="name"
-          value={productData.name}
-          onChange={handleProductChange}
-          placeholder="Product Name"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <input
-          type="text"
-          name="description"
-          value={productData.description}
-          onChange={handleProductChange}
-          placeholder="Description"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <select
-          name="department"
-          value={productData.department}
-          onChange={handleProductChange}
-          className="border p-2 rounded w-full"
-          required
-        >
-          <option value="">Select Department</option>
-          <option value="Living">Living</option>
-          <option value="Bedroom">Bedroom</option>
-          <option value="Dining">Dining</option>
-          <option value="Office">Office</option>
-          <option value="Outdoor">Outdoor</option>
-          <option value="Lighting">Lighting</option>
-          <option value="Decor">Decor</option>
-          <option value="Rug">Rug</option>
-        </select>
-        <input
-          type="text"
-          name="collection"
-          value={productData.collection}
-          onChange={handleProductChange}
-          placeholder="Collection"
-          className="border p-2 rounded w-full"
-          required
-        />
-        <input
-          type="text"
-          name="type"
-          value={productData.type}
-          onChange={handleProductChange}
-          placeholder="Type"
-          className="border p-2 rounded w-full"
-        />
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <Typography variant="h4" className="font-bold text-gray-800">
+        Create Product
+      </Typography>
+      <form onSubmit={openModal} className="space-y-6">
+        <Card>
+          <CardHeader title="Product Details" />
+          <CardContent className="space-y-4">
+            <TextField
+              fullWidth
+              label="Product Name"
+              name="name"
+              value={productData.name}
+              onChange={handleProductChange}
+              required
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Description"
+              name="description"
+              value={productData.description}
+              onChange={handleProductChange}
+              required
+            />
+            <FormControl fullWidth>
+              <InputLabel>Department</InputLabel>
+              <Select
+                name="department"
+                value={productData.department}
+                onChange={handleProductChange}
+                label="Department"
+              >
+                {[
+                  "Living",
+                  "Bedroom",
+                  "Dining",
+                  "Office",
+                  "Outdoor",
+                  "Lighting",
+                  "Decor",
+                  "Rug",
+                ].map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label="Collection"
+              name="collection"
+              value={productData.collection}
+              onChange={handleProductChange}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Type"
+              name="type"
+              value={productData.type}
+              onChange={handleProductChange}
+            />
+          </CardContent>
+        </Card>
 
-        {/* Color Input */}
-        <div>
-          <input
-            type="text"
-            value={colorInput}
-            onChange={handleColorInputChange}
-            placeholder="Add Color"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleColorImageChange}
-          />
-          <button type="button" onClick={handleAddColor}>
-            Add Color
-          </button>
-          <ul>
-            {colors.map((color, index) => (
-              <li key={index}>
-                {color.value}
-                {color.image && (
-                  <img src={color.image} alt={color.value} width="50" />
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Material Input */}
-        <div>
-          <input
-            type="text"
-            value={materialInput}
-            onChange={handleMaterialInputChange}
-            placeholder="Add Material"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleMaterialImageChange}
-          />
-          <button type="button" onClick={handleAddMaterial}>
-            Add Material
-          </button>
-          <ul>
-            {materials.map((material, index) => (
-              <li key={index}>
-                {material.value}
-                {material.image && (
-                  <img src={material.image} alt={material.value} width="50" />
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-        {/* Dimension Fields */}
-        <div>
-          <h3 className="font-bold">Dimensions:</h3>
-          <h3>add Dimension</h3>
-          <input
-            type="text"
-            placeholder="New Key"
-            value={newMeasure}
-            onChange={(e) => setNewMeasure(e.target.value)}
-            className="border p-2 rounded w-1/3 mr-2"
-          />
-          <input
-            type="text"
-            placeholder="New Value"
-            value={newValue}
-            onChange={(e) => setNewValue(e.target.value)}
-            className="border p-2 rounded w-1/3"
-          />
-          <button type="button" onClick={addMeasureValuePair}>
-            Add Key-Value Pair
-          </button>
-          <h4>Current Object State:</h4>
-          <pre>{JSON.stringify(dimensions, null, 2)}</pre>
-        </div>
-
-        <div>
-          {showForm ? (
-            <div>
-              <h2>Add Option</h2>
-              <input
-                type="text"
-                placeholder="Option Name"
-                value={optionName}
-                onChange={(e) => setOptionName(e.target.value)}
-                required
+        <Card>
+          <CardHeader title="Colors" />
+          <CardContent className="space-y-4">
+            <div className="flex space-x-2">
+              <TextField
+                fullWidth
+                label="Add Color"
+                value={colorInput}
+                onChange={handleColorInputChange}
               />
-              {values.map((item, index) => (
-                <div key={index} style={{ marginBottom: "10px" }}>
-                  <input
-                    type="text"
-                    placeholder="Value"
-                    value={item.value}
-                    onChange={(e) =>
-                      handleValueChange(index, "value", e.target.value)
-                    }
-                    required
-                  />
-                  <input
-                    type="file"
-                    accept="image/*" // Accept image files
-                    onChange={(e) => handleImageUpload(index, e)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveValue(index)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddValue}>
-                Add Value
-              </button>
-              <button type="button" onClick={() => handleOpSubmit()}>
-                Submit Option
-              </button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleColorImageChange}
+                className="hidden"
+                id="color-image-upload"
+              />
+              <label htmlFor="color-image-upload">
+                <Button component="span" variant="outlined">
+                  Upload Image
+                </Button>
+              </label>
+              <Button onClick={handleAddColor} startIcon={<AddIcon />}>
+                Add
+              </Button>
             </div>
-          ) : (
-            <button type="button" onClick={() => setShowForm(true)}>
-              Add Option
-            </button>
-          )}
-        </div>
+            <Grid container spacing={2}>
+              {colors.map((color, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className="w-6 h-6 rounded-full border border-gray-300"
+                        style={{ backgroundColor: color.value }}
+                      ></div>
+                      <span>{color.value}</span>
+                    </div>
+                    {color.image && (
+                      <img
+                        src={color.image}
+                        alt={color.value}
+                        className="w-8 h-8 object-cover rounded"
+                      />
+                    )}
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setColors(colors.filter((_, i) => i !== index))
+                      }
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
 
-        <button
+        <Card>
+          <CardHeader title="Materials" />
+          <CardContent className="space-y-4">
+            <div className="flex space-x-2">
+              <TextField
+                fullWidth
+                label="Add Material"
+                value={materialInput}
+                onChange={handleMaterialInputChange}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleMaterialImageChange}
+                className="hidden"
+                id="material-image-upload"
+              />
+              <label htmlFor="material-image-upload">
+                <Button component="span" variant="outlined">
+                  Upload Image
+                </Button>
+              </label>
+              <Button onClick={handleAddMaterial} startIcon={<AddIcon />}>
+                Add
+              </Button>
+            </div>
+            <Grid container spacing={2}>
+              {materials.map((material, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                    <span>{material.value}</span>
+                    {material.image && (
+                      <img
+                        src={material.image}
+                        alt={material.value}
+                        className="w-8 h-8 object-cover rounded"
+                      />
+                    )}
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setMaterials(materials.filter((_, i) => i !== index))
+                      }
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="Dimensions" />
+          <CardContent className="space-y-4">
+            <div className="flex space-x-2">
+              <TextField
+                label="Measure (e.g., Length)"
+                value={newMeasure}
+                onChange={(e) => setNewMeasure(e.target.value)}
+                className="flex-grow"
+              />
+              <TextField
+                label="Value (e.g., 10 cm)"
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                className="flex-grow"
+              />
+              <Button onClick={addMeasureValuePair} startIcon={<AddIcon />}>
+                Add
+              </Button>
+            </div>
+            <Card className="bg-gray-50">
+              <CardHeader
+                title="Current Dimensions"
+                titleTypographyProps={{ variant: "h6" }}
+              />
+              <CardContent className="p-4 space-y-2">
+                {Object.entries(dimensions).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <Typography variant="body2">
+                      <span className="font-medium">{key}:</span> {value}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => removeCurrentDimension(key)}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </div>
+                ))}
+                {Object.keys(dimensions).length === 0 && (
+                  <Typography variant="body2" className="text-gray-500 italic">
+                    No dimensions added yet
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+            <Button
+              fullWidth
+              onClick={handleAddDimensionData}
+              variant="contained"
+            >
+              Save Dimension Set
+            </Button>
+            <Grid container spacing={2}>
+              {dimensionData.map((dimSet, setIndex) => (
+                <Grid item xs={12} sm={6} md={4} key={setIndex}>
+                  <Card className="bg-gray-50">
+                    <CardHeader
+                      title={`Dimension Set ${setIndex + 1}`}
+                      titleTypographyProps={{ variant: "h6" }}
+                    />
+                    <CardContent className="p-4 space-y-2">
+                      {Object.entries(dimSet.value).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between"
+                        >
+                          <Typography variant="body2">
+                            <span className="font-medium">{key}:</span> {value}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => removeDimension(setIndex, key)}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="Custom Options" />
+          <CardContent className="space-y-4">
+            {showForm ? (
+              <div className="space-y-4">
+                <TextField
+                  fullWidth
+                  label="Option Name"
+                  value={optionName}
+                  onChange={(e) => setOptionName(e.target.value)}
+                  required
+                />
+                {values.map((item, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <TextField
+                      fullWidth
+                      label="Value"
+                      value={item.value}
+                      onChange={(e) =>
+                        handleValueChange(index, "value", e.target.value)
+                      }
+                      required
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(index, e)}
+                      className="hidden"
+                      id={`custom-option-image-${index}`}
+                    />
+                    <label htmlFor={`custom-option-image-${index}`}>
+                      <Button component="span" variant="outlined">
+                        Upload Image
+                      </Button>
+                    </label>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveValue(index)}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  </div>
+                ))}
+                <div className="flex space-x-2">
+                  <Button onClick={handleAddValue} startIcon={<AddIcon />}>
+                    Add Value
+                  </Button>
+                  <Button onClick={handleOpSubmit} variant="contained">
+                    Submit Option
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button onClick={() => setShowForm(true)} variant="outlined">
+                Add Custom Option
+              </Button>
+            )}
+            <Grid container spacing={2}>
+              {customOptions.map((option, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card className="bg-gray-50">
+                    <CardHeader
+                      title={option.name}
+                      titleTypographyProps={{ variant: "h6" }}
+                    />
+                    <CardContent className="p-4 space-y-2">
+                      {option.values.map((value, vIndex) => (
+                        <div
+                          key={vIndex}
+                          className="flex items-center justify-between"
+                        >
+                          <span>{value.value}</span>
+                          {value.image && (
+                            <img
+                              src={value.image}
+                              alt={value.value}
+                              className="w-8 h-8 object-cover rounded"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+
+        <Button
           type="submit"
-          className="bg-blue-600 text-white p-2 rounded mt-4"
+          fullWidth
+          variant="contained"
           disabled={isLoading}
         >
           Create Product
-        </button>
+        </Button>
       </form>
 
-      {/* Confirmation Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Confirm Product Creation</h2>
-            <p>Are you sure you want to create this product?</p>
-            <div className="flex space-x-4 mt-4">
-              <button
-                onClick={handleSubmit}
-                className="bg-green-500 text-white p-2 rounded"
-              >
-                Yes, Create
-              </button>
-              <button
-                onClick={closeModal}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={isModalOpen} onClose={closeModal}>
+        <DialogTitle>Confirm Product Creation</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to create this product?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            Yes, Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
-};
-
-export default CreateProductPage;
+}

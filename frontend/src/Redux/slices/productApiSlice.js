@@ -1,3 +1,6 @@
+import { PRODUCTS_URL } from "../constants";
+import { apiSlice } from "./apiSlice";
+
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
@@ -16,8 +19,14 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
       providesTags: (result, error, shopId) =>
-        result ? [{ type: "Shop", id: shopId }] : ["Shop"],
+        result
+          ? [
+              { type: "Shop", id: shopId },
+              ...result.map(({ _id }) => ({ type: "Product", id: _id })),
+            ]
+          : [{ type: "Shop", id: shopId }],
     }),
+
     createProduct: builder.mutation({
       query: (data) => ({
         url: `${PRODUCTS_URL}`,
@@ -31,7 +40,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `${PRODUCTS_URL}/${id}`,
         method: "GET",
       }),
-      providesTags: (result, error, id) => [{ type: "Product", id }],
+      providesTags: (result, error, id) => [{ type: "Product", id }], // Ensure 'id' is being used from the query
     }),
     getProductApproved: builder.query({
       query: () => ({
@@ -45,7 +54,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `${PRODUCTS_URL}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "Product", id }], // Invalidate cache for the deleted product
+      invalidatesTags: [{ type: "Product" }], // Invalidate cache for the deleted product
     }),
   }),
 });

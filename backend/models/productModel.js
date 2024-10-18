@@ -46,7 +46,7 @@ const productSchema = new mongoose.Schema(
       type: [String],
     },
     options: [optionSchema], // Array of options
-    variants: [{ type: mongoose.Schema.Types.ObjectId, ref: "variants" }], // Reference to Variant collection
+    // variants: [{ type: mongoose.Schema.Types.ObjectId, ref: "Variant" }], // Reference to Variant collection
     approved: {
       type: Boolean,
       default: false,
@@ -64,11 +64,17 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
 // Adding indexes to improve query performance
-
+productSchema.virtual("variants", {
+  ref: "Variant",
+  foreignField: "product",
+  localField: "_id",
+});
 const Product = mongoose.model("Product", productSchema);
 
 export default Product;
