@@ -35,6 +35,16 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Product" }], // Invalidate product cache to refresh the list
     }),
+
+    updateProduct: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `${PRODUCTS_URL}/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Product", id }], // Invalidate cache for the updated product
+    }),
+
     getProductDetails: builder.query({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
@@ -42,6 +52,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: (result, error, id) => [{ type: "Product", id }], // Ensure 'id' is being used from the query
     }),
+
     getProductApproved: builder.query({
       query: () => ({
         url: `${PRODUCTS_URL}/approved`,
@@ -49,6 +60,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ["Product"],
     }),
+
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
@@ -64,6 +76,7 @@ export const {
   useGetProductsQuery,
   useGetProductsByShopQuery,
   useCreateProductMutation,
+  useUpdateProductMutation, // Export the update hook
   useGetProductDetailsQuery,
   useDeleteProductMutation,
 } = productApiSlice;

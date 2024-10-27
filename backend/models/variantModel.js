@@ -12,7 +12,7 @@ const variantSchema = new mongoose.Schema(
       type: Number,
       min: [0, "Price cannot be negative"],
     },
-    stock_quantity: {
+    stockQuantity: {
       type: Number,
       min: [0, "Stock quantity cannot be negative"],
     },
@@ -24,7 +24,7 @@ const variantSchema = new mongoose.Schema(
         type: String,
       },
     },
-    atributes: {
+    attributes: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },

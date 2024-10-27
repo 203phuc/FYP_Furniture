@@ -1,21 +1,31 @@
 import React, { useState } from "react";
+import DashboardContent from "../../components/Shop/Layout/DashboardContent.jsx";
 import DashboardHeader from "../../components/Shop/Layout/DashboardHeader.jsx";
 import DashboardSideBar from "../../components/Shop/Layout/DashboardSideBar.jsx";
-import DashboardContent from "../../components/Shop/Layout/DashboardContent.jsx";
 
 const ShopDashboardPage = () => {
   const [active, setActive] = useState(1);
-  console.log(active);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
-    <div>
-      <DashboardHeader />
-      <div className="flex items-start justify-between w-full">
-        <div className="w-[80px] 800px:w-[330px]">
+    <div className="flex flex-col h-screen bg-gray-100">
+      <DashboardHeader toggleSidebar={toggleSidebar} />
+      <div className="flex flex-1 overflow-hidden">
+        <div
+          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
           <DashboardSideBar active={active} setActive={setActive} />
         </div>
-        <div className="w-full justify-center flex">
-          <DashboardContent active={active} />
+        <div className="flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            <DashboardContent active={active} />
+          </div>
         </div>
       </div>
     </div>

@@ -1,18 +1,18 @@
 import React from "react";
 import { AiOutlineGift } from "react-icons/ai";
-import { MdOutlineLocalOffer } from "react-icons/md";
+import { BiMessageSquareDetail } from "react-icons/bi";
 import { FiPackage, FiShoppingBag } from "react-icons/fi";
+import { MdOutlineLocalOffer } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { BiMessageSquareDetail } from "react-icons/bi";
 import logo from "../../../assets/cozniture-high-resolution-logo-transparent.png";
 const DashboardHeader = () => {
   const { userInfo } = useSelector((state) => state.auth);
   return (
-    <div className="w-full h-[80px] bg-white shadow sticky top-0 left-0 z-30 flex items-center justify-between px-4">
+    <div className="w-full h-[60px] bg-white shadow sticky top-0 left-0 z-30 flex items-center justify-between px-4">
       <div>
         <Link to="/">
-          <img src={logo} alt="" className="w-[150px] h-[50px]" />
+          <img src={logo} alt="" className="w-[150px] h-[3  0px]" />
         </Link>
       </div>
       <div className="flex items-center">

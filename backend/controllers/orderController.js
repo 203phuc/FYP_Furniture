@@ -6,38 +6,38 @@ import Order from "../models/orderModel.js";
 // @access  Private
 const createOrder = asyncHandler(async (req, res) => {
   const {
-    cart_id,
-    buyer_id,
+    cartId,
+    buyerId,
     items,
-    total_product,
-    payment_status,
-    shipping_address,
-    paid_at,
-    delivered_at,
+    totalProduct,
+    paymentStatus,
+    shippingAddress,
+    paidAt,
+    deliveredAt,
   } = req.body;
 
   // Validate that all required fields are provided
   if (
-    !cart_id ||
-    !buyer_id ||
+    !cartId ||
+    !buyerId ||
     !items ||
     items.length === 0 ||
-    !total_product ||
-    !shipping_address
+    !totalProduct ||
+    !shippingAddress
   ) {
     res.status(400);
     throw new Error("Please provide all required fields");
   }
 
   const order = new Order({
-    cart_id,
-    buyer_id,
+    cartId,
+    buyerId,
     items,
-    total_product,
-    payment_status,
-    shipping_address,
-    paid_at,
-    delivered_at,
+    totalProduct,
+    paymentStatus,
+    shippingAddress,
+    paidAt,
+    deliveredAt,
   });
 
   const createdOrder = await order.save();
@@ -49,7 +49,7 @@ const createOrder = asyncHandler(async (req, res) => {
 // @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
-    .populate("buyer_id", "name email")
+    .populate("buyerId", "name email")
     .populate("items.product_id", "name price")
     .populate("items.shop_id", "name");
 
@@ -62,10 +62,10 @@ const getOrderById = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get orders by buyer ID
-// @route   GET /api/orders/user/:buyer_id
+// @route   GET /api/orders/user/:buyerId
 // @access  Private
 const getOrdersByBuyerId = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ buyer_id: req.params.buyer_id })
+  const orders = await Order.find({ buyerId: req.params.buyerId })
     .populate("items.product_id", "name price")
     .populate("items.shop_id", "name");
 
@@ -84,11 +84,22 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    order.payment_status = req.body.payment_status || order.payment_status;
-    order.paid_at = req.body.paid_at || order.paid_at;
-    order.delivered_at = req.body.delivered_at || order.delivered_at;
+    order.paymentStatus = req.body.paymentStatus || order.paymentStatus;
+    order.paidAt = req.body.paidAt || order.paidAt;
+    order.deliveredAt = req.body.deliveredAt || order.deliveredAt;
 
     const updatedOrder = await order.save();
+    const updateVariants = order.items.map(async (item) => {
+      const variant = await item.product_id.variants.find(
+        (variant) => variant._id.toString() === item.variant_id.toString()
+      );
+      variant.quantity -= item.quantity;
+      await variant.save();
+    });
+    await Promise.all(updateVariants);
+    res.json({
+      message: "Order status updated successfully",
+    })
     res.json(updatedOrder);
   } else {
     res.status(404);

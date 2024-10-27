@@ -86,22 +86,39 @@ const processOptions = async (options) => {
 // @route   GET /api/products/:id
 // @access  Public
 const getProductDetails = asyncHandler(async (req, res) => {
-  if (Variant.product.findById(req.params.id)) {
-    const product = await Product.findById(req.params.id).populate("variants");
-  } else {
+  try {
+    // Attempt to find the product by ID
     const product = await Product.findById(req.params.id);
+
+    // Check if the product was found
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if the product has variants and populate if it does
+    if (product.variants && product.variants.length > 0) {
+      await product.populate("variants"); // Populate only if there are variants
+    }
+
+    // Return the found product
+    res.status(200).json(product);
+  } catch (error) {
+    // Handle any errors that occur during the process
+    console.error("Error fetching product details:", error);
+    res.status(500).json({
+      message: "An error occurred while fetching product details",
+      error: error.message,
+    });
   }
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
-  }
-  res.status(200).json(product);
 });
 
 // @desc    Fetch all approved products
 // @route   GET /api/products/approved
 // @access  Public
 const getApprovedProducts = asyncHandler(async (req, res) => {
-  const approvedProducts = await Product.find({ approved: true });
+  const approvedProducts = await Product.find({ approved: true }).populate(
+    "variants"
+  );
   if (!approvedProducts.length) {
     return res.status(404).json({ message: "No approved products found" });
   }
@@ -120,22 +137,23 @@ const getProducts = asyncHandler(async (req, res) => {
 // @route   DELETE /api/products/:id
 // @access  Private
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
-  }
-
   try {
-    // If the product has a main image in Cloudinary, delete it
-    await cloudinary.v2.uploader.destroy(product.mainImage?.public_id);
+    const { id } = req.params;
+
+    // Find the product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Optionally, you can delete all related variants if you need to
+    await Variant.deleteMany({ product: id });
 
     // Delete the product
     await product.deleteOne();
-    res.status(200).json({ message: "Product removed" });
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error removing product", error: error.message });
+    console.error(error);
   }
 });
 
@@ -153,33 +171,52 @@ const updateProduct = asyncHandler(async (req, res) => {
     options, // Updated options with potential mixed-type values and images
   } = req.body;
 
+  // Find the product by ID
   const product = await Product.findById(req.params.id);
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Update product fields
-  product.name = name || product.name;
-  product.description = description || product.description;
-  product.department = department || product.department;
-  product.type = type || product.type;
-  product.tags = tags || product.tags;
+  // Update product fields only if new values are provided
+  product.name = name !== undefined ? name : product.name;
+  product.description =
+    description !== undefined ? description : product.description;
+  product.department =
+    department !== undefined ? department : product.department;
+  product.type = type !== undefined ? type : product.type;
+  product.tags = tags !== undefined ? tags : product.tags;
 
-  // Optionally update shop info
+  // Optionally update shop info if a new shopId is provided
   if (shopId) {
     const shopExists = await Shop.findById(shopId);
     if (!shopExists) {
       return res.status(400).json({ message: "Invalid Shop ID" });
     }
-    product.shopId = shopId;
+
+    // Update shop information in the product object
+    product.shopId = shopId; // Update shopId only if valid
+    product.shop = {
+      _id: shopExists._id,
+      name: shopExists.name,
+      location: shopExists.location,
+    };
   }
 
   // Handle options update with possible image uploads
   if (options) {
-    product.options = await processOptions(options);
+    try {
+      await Variant.deleteMany({ product: id });
+      product.options = await processOptions(options);
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Error processing options", error: error.message });
+    }
   }
 
+  // Save the updated product
   await product.save();
+
   res.status(200).json({ success: true, product });
 });
 

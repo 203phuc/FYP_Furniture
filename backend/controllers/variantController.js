@@ -12,21 +12,43 @@ const generateCombinations = (
   optionValues
 ) => {
   if (index === keys.length) {
+    console.log("Final combination before push:", current); // Log final combination
     combinations.push({ ...current }); // Push a copy of the current combination
     return;
   }
 
   const key = keys[index];
-  optionValues[key].forEach((value) => {
-    current[key] = value;
-    generateCombinations(keys, index + 1, current, combinations, optionValues);
-  });
-};
+  const optionsForKey = optionValues[key];
 
+  // Debug log to see current key and its values
+  console.log("Current key:", key, "Option values:", optionsForKey);
+
+  // Check if there are any values for this key
+  if (optionsForKey.length === 0) {
+    // If there are no values (like for Material), set a default value and continue
+    console.log(`No values for key "${key}", adding default null values`);
+    current[key] = { value: null, image: null };
+    generateCombinations(keys, index + 1, current, combinations, optionValues);
+  } else {
+    // If there are values, iterate over them and recursively generate combinations
+    optionsForKey.forEach((option) => {
+      current[key] = { value: option.value, image: option.image };
+      console.log(`Current combination at index ${index}:`, current); // Debug log for current combination
+      generateCombinations(
+        keys,
+        index + 1,
+        current,
+        combinations,
+        optionValues
+      );
+    });
+  }
+};
 // Controller to add variants with option data directly
 const addVariant = asyncHandler(async (req, res) => {
   const { productId } = req.body; // Only the productId is needed for now
 
+  console.log("variants controllers", productId);
   // Find the product by ID
   const product = await Product.findById(productId);
   if (!product) {
@@ -35,22 +57,30 @@ const addVariant = asyncHandler(async (req, res) => {
 
   // Extract options from the product
   const optionValues = {};
-  product.options.forEach((option) => {
-    optionValues[option.name] = option.values.map((value) => value.value);
-  });
+  try {
+    product.options.forEach((option) => {
+      optionValues[option.name] = option.values.map((value) => ({
+        value: value.value, // Get the value
+        image: value.image, // Get the image (if present)
+      }));
+    });
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("optionValues__________", optionValues);
 
   // Generate combinations of variants based on product options
   const keys = Object.keys(optionValues);
   const combinations = [];
   generateCombinations(keys, 0, {}, combinations, optionValues);
-  console.log(combinations);
+  console.log("combination:", combinations);
   const createdVariants = [];
 
   // Create and save each variant with option data directly
   for (const combination of combinations) {
     const variant = new Variant({
       product: productId, // Link the variant to the product
-      atributes: { ...combination }, // Store the combination of options directly
+      attributes: { ...combination }, // Store the combination of options directly
     });
 
     const savedVariant = await variant.save();
@@ -83,7 +113,7 @@ const checkIfProductHasVariants = asyncHandler(async (req, res) => {
 
 // Controller to update additional details of a variant
 const updateVariantDetails = asyncHandler(async (req, res) => {
-  const { _id, price, stock_quantity, mainImage, images, atributes } = req.body;
+  const { _id, price, stock_quantity, mainImage, images, attributes } = req.body;
   console.log("pre", mainImage);
   // Find the variant by ID
   const variant = await Variant.findById(_id);
@@ -115,8 +145,8 @@ const updateVariantDetails = asyncHandler(async (req, res) => {
       variant.images = uploadedImages;
     }
 
-    if (atributes) {
-      variant.atributes = atributes; // Update attributes directly
+    if (attributes) {
+      variant.attributes = attributes; // Update attributes directly
     }
   } catch (error) {
     console.log(error);

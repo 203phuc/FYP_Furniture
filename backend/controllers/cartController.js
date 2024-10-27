@@ -1,72 +1,76 @@
 import asyncHandler from "express-async-handler";
 import Cart from "../models/cartModel.js";
 import Product from "../models/productModel.js";
+import Variant from "../models/variantModel.js";
 
-// @desc    Create or update a cart
+// @desc    Sync cart by adding new items or updating existing ones
 // @route   POST /api/carts
 // @access  Private
-const addToCart = asyncHandler(async (req, res) => {
+const syncCart = asyncHandler(async (req, res) => {
   const { items } = req.body;
   const user_id = req.user._id;
-  console.log(user_id, items);
 
-  // Find the cart by user ID
-  let cart = await Cart.findOne({ user_id });
+  try {
+    // Find or create the user's cart
+    let cart = await Cart.findOne({ user_id });
+    if (!cart) {
+      cart = new Cart({ user_id, items: [] });
 
-  if (cart) {
-    // If the cart exists, update it
-    for (const newItem of items) {
-      const product = await Product.findById(newItem.product_id);
+      // Process each item in the request
+      for (const newItem of items) {
+        const {
+          productId,
+          variantId,
+          quantity,
+          price,
+          productName,
+          attributes,
+          mainImage,
+        } = newItem;
 
-      if (!product) {
-        res.status(404);
-        throw new Error("Product not found");
-      }
-
-      const existingItemIndex = cart.items.findIndex(
-        (item) => item.product_id.toString() === newItem.product_id
-      );
-
-      if (existingItemIndex >= 0) {
-        // If item exists, update the quantity and price
-        cart.items[existingItemIndex].quantity += newItem.quantity;
-        cart.items[existingItemIndex].price = product.price; // Update price from Product model
-      } else {
-        // Otherwise, add the new item with the current price
-        cart.items.push({
-          product_id: newItem.product_id,
-          price: product.price,
-          quantity: newItem.quantity,
-        });
-      }
-    }
-  } else {
-    // If the cart doesn't exist, create a new cart
-    const populatedItems = await Promise.all(
-      items.map(async (newItem) => {
-        const product = await Product.findById(newItem.product_id);
-
+        // Find the product and variant
+        const product = await Product.findById(productId);
         if (!product) {
-          res.status(404);
           throw new Error("Product not found");
         }
 
-        return {
-          product_id: newItem.product_id,
-          price: product.price, // Use the product's current price
-          quantity: newItem.quantity,
-        };
-      })
-    );
+        const variant = await Variant.findById(variantId);
+        if (!variant) {
+          throw new Error("Variant not found");
+        }
 
-    cart = new Cart({
-      user_id,
-      items: populatedItems,
-    });
+        // Find or update item in the cart
+        const existingItemIndex = cart.items.findIndex(
+          (item) => item.productId === productId && item.variantId === variantId
+        );
+
+        if (existingItemIndex >= 0) {
+          // Update quantity and price of existing item
+          cart.items[existingItemIndex].quantity += quantity;
+          cart.items[existingItemIndex].price = price || variant.price;
+        } else {
+          // Add new item to the cart
+          cart.items.push({
+            productId: productId,
+            variantId: variantId,
+            productName: productName,
+            attributes: attributes,
+            quantity: quantity,
+            price: price || variant.price,
+            mainImage: mainImage || variant.mainImage,
+          });
+        }
+      }
+    } else {
+      cart.items = items;
+    }
+
+    const savedCart = await cart.save();
+    res.status(201).json(savedCart);
+  } catch (error) {
+    console.error("Error syncing cart:", error);
+    res.status(500).json({ error: "Failed to sync cart" });
   }
-
-  const savedCart = await cart.save();
-  res.status(201).json(savedCart);
 });
 
 // @desc    Get cart by user ID
@@ -74,14 +78,14 @@ const addToCart = asyncHandler(async (req, res) => {
 // @access  Private
 const getCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user_id: req.params.user_id }).populate(
-    "items.product_id",
+    "items.productId",
     "name price"
   );
 
   if (cart) {
     res.json({
       cart,
-      totalPrice: cart.totalPrice, // Use the virtual field to return the total price
+      totalPrice: cart.totalPrice, // Assuming there's a virtual field for total price
     });
   } else {
     res.status(404);
@@ -89,45 +93,17 @@ const getCart = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update cart item quantity
-// @route   PUT /api/carts/:user_id/:product_id
-// @access  Private
-const updateCartItem = asyncHandler(async (req, res) => {
-  const { user_id, product_id } = req.params;
-  const { quantity } = req.body;
-
-  const cart = await Cart.findOne({ user_id });
-
-  if (cart) {
-    const itemIndex = cart.items.findIndex(
-      (item) => item.product_id.toString() === product_id
-    );
-
-    if (itemIndex >= 0) {
-      cart.items[itemIndex].quantity = quantity;
-      const updatedCart = await cart.save();
-      res.json(updatedCart);
-    } else {
-      res.status(404);
-      throw new Error("Item not found in cart");
-    }
-  } else {
-    res.status(404);
-    throw new Error("Cart not found");
-  }
-});
-
 // @desc    Remove item from cart
-// @route   DELETE /api/carts/:user_id/:product_id
+// @route   DELETE /api/carts/:user_id/:productId
 // @access  Private
 const removeCartItem = asyncHandler(async (req, res) => {
-  const { user_id, product_id } = req.params;
+  const { user_id, productId } = req.params;
 
   const cart = await Cart.findOne({ user_id });
 
   if (cart) {
     cart.items = cart.items.filter(
-      (item) => item.product_id.toString() !== product_id
+      (item) => item.productId.toString() !== productId
     );
 
     if (cart.items.length === 0) {
@@ -143,4 +119,4 @@ const removeCartItem = asyncHandler(async (req, res) => {
   }
 });
 
-export { addToCart, getCart, removeCartItem, updateCartItem };
+export { getCart, removeCartItem, syncCart };

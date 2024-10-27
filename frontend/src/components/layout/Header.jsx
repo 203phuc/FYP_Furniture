@@ -28,8 +28,11 @@ const Header = ({ allProducts }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdown1Open, setIsDropdown1Open] = useState(false);
-  //active
   const [active, setActive] = useState(0);
+
+  // New state variables
+  const [openWishlist, setOpenWishlist] = useState(false);
+  const [openCart, setOpenCart] = useState(false);
 
   const logoutHandler = async () => {
     try {
@@ -100,11 +103,7 @@ const Header = ({ allProducts }) => {
             {/* Logo */}
             <div>
               <Link to="/">
-                <img
-                  src={logo}
-                  alt="Cozniture Logo"
-                  className="h-10" // Adjust the height as needed
-                />
+                <img src={logo} alt="Cozniture Logo" className="h-10" />
               </Link>
             </div>
             <div className={`${styles.button}`}>
@@ -124,13 +123,8 @@ const Header = ({ allProducts }) => {
               </Link>
             </div>
 
-            {/* seller logout */}
-
             {/* User and Navigation Links */}
             <div className="flex items-center relative">
-              {/* seller Section */}
-
-              {/* User Section */}
               {userInfo && userInfo.role === "user" ? (
                 <div>
                   <div className="flex">

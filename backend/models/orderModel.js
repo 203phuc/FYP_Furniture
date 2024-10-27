@@ -2,19 +2,19 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    cart_id: {
+    cartId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true, "Please provide the cart ID"],
       ref: "Cart", // Assuming there is a Cart model
     },
-    buyer_id: {
+    buyerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true, "Please provide the buyer ID"],
       ref: "User", // Assuming there is a User model
     },
     items: [
       {
-        product_id: {
+        productId: {
           type: mongoose.Schema.Types.ObjectId,
           required: [true, "Please provide the product ID"],
           ref: "Product", // Assuming there is a Product model
@@ -33,29 +33,29 @@ const orderSchema = new mongoose.Schema(
           required: [true, "Please provide the quantity"],
           min: [1, "Quantity must be at least 1"],
         },
-        total_cost: {
+        totalCost: {
           type: Number,
           required: [true, "Please provide the total cost"],
           min: [0, "Total cost cannot be negative"],
         },
-        shop_id: {
+        shopId: {
           type: mongoose.Schema.Types.ObjectId,
           required: [true, "Please provide the shop ID"],
           ref: "Shop", // Assuming there is a Shop model
         },
       },
     ],
-    total_product: {
+    totalProduct: {
       type: Number,
       required: [true, "Please provide the total number of products"],
       min: [1, "Total number of products must be at least 1"],
     },
-    payment_status: {
+    paymentStatus: {
       type: String,
       enum: ["Pending", "Paid", "Failed"], // Example statuses
       default: "Pending",
     },
-    shipping_address: {
+    shippingAddress: {
       address1: {
         type: String,
         required: [true, "Please provide the first address line"],
@@ -77,15 +77,15 @@ const orderSchema = new mongoose.Schema(
         required: [true, "Please provide the country"],
       },
     },
-    paid_at: {
+    paidAt: {
       type: Date,
       required: [false], // Optional field
     },
-    delivered_at: {
+    deliveredAt: {
       type: Date,
       required: [false], // Optional field
     },
-    created_at: {
+    createdAt: {
       type: Date,
       default: Date.now,
     },

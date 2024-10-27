@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,19 +18,28 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useCreateProductMutation } from "../../redux/slices/productApiSlice";
+import {
+  useGetProductDetailsQuery,
+  useUpdateProductMutation,
+} from "../../redux/slices/productApiSlice";
 
-export default function CreateProductPage() {
+export default function EditProductPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
-  const [createProduct, { isLoading }] = useCreateProductMutation();
-  const shopId = userInfo._id;
-  const shop = {
-    _id: shopId,
-    name: userInfo.shopName,
-  };
+
+  const {
+    data: product, 
+    isLoading,
+    isError,
+    error,
+  } = useGetProductDetailsQuery(id);
+  console.log(product);
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
   const [productData, setProductData] = useState({
     name: "",
@@ -41,20 +51,47 @@ export default function CreateProductPage() {
   });
 
   const [colors, setColors] = useState([]);
-  const [colorInput, setColorInput] = useState("");
-  const [colorImage, setColorImage] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [dimensionData, setDimensionData] = useState([]);
-  const [materialInput, setMaterialInput] = useState("");
-  const [dimensions, setDimensions] = useState({});
   const [customOptions, setCustomOptions] = useState([]);
+
+  const [colorInput, setColorInput] = useState("");
+  const [materialInput, setMaterialInput] = useState("");
   const [newMeasure, setNewMeasure] = useState("");
   const [newValue, setNewValue] = useState("");
+  const [dimensions, setDimensions] = useState({});
   const [optionName, setOptionName] = useState("");
   const [values, setValues] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [materialImage, setMaterialImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setProductData({
+        name: product.name,
+        description: product.description,
+        department: product.department,
+        type: product.type,
+        tags: product.tags,
+      });
+
+      const productOptions = product.options || [];
+      setColors(
+        productOptions.find((opt) => opt.name === "Color")?.values || []
+      );
+      setMaterials(
+        productOptions.find((opt) => opt.name === "Material")?.values || []
+      );
+      setDimensionData(
+        productOptions.find((opt) => opt.name === "Dimensions")?.values || []
+      );
+      setCustomOptions(
+        productOptions.filter(
+          (opt) => !["Color", "Material", "Dimensions"].includes(opt.name)
+        )
+      );
+    }
+  }, [product]);
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
@@ -63,43 +100,21 @@ export default function CreateProductPage() {
       [name]: value,
     }));
   };
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  const removeDimensionSet = (setIndex) => {
+    setDimensionData((prevData) =>
+      prevData.filter((_, index) => index !== setIndex)
+    );
   };
 
   const handleColorInputChange = (e) => {
     setColorInput(e.target.value);
   };
 
-  const handleColorImageChange = (e) => {
-    const file = e.target.files[0];
-    setColorImage(file);
-  };
-
-  const handleAddColor = async () => {
+  const handleAddColor = () => {
     const color = colorInput.trim();
     if (color) {
-      let imageBase64 = "";
-      if (colorImage) {
-        try {
-          imageBase64 = await convertToBase64(colorImage);
-        } catch (error) {
-          toast.error("Failed to upload color image.");
-          return;
-        }
-      }
-      setColors((prevColors) => [
-        ...prevColors,
-        { value: color, image: imageBase64 },
-      ]);
+      setColors((prevColors) => [...prevColors, { value: color, image: "" }]);
       setColorInput("");
-      setColorImage(null);
       toast.success(`Added color: ${color}`);
     } else {
       toast.error("Please enter a valid color.");
@@ -110,29 +125,14 @@ export default function CreateProductPage() {
     setMaterialInput(e.target.value);
   };
 
-  const handleMaterialImageChange = (e) => {
-    const file = e.target.files[0];
-    setMaterialImage(file);
-  };
-
-  const handleAddMaterial = async () => {
+  const handleAddMaterial = () => {
     const material = materialInput.trim();
     if (material) {
-      let imageBase64 = "";
-      if (materialImage) {
-        try {
-          imageBase64 = await convertToBase64(materialImage);
-        } catch (error) {
-          toast.error("Failed to upload material image.");
-          return;
-        }
-      }
       setMaterials((prevMaterials) => [
         ...prevMaterials,
-        { value: material, image: imageBase64 },
+        { value: material, image: "" },
       ]);
       setMaterialInput("");
-      setMaterialImage(null);
       toast.success(`Added material: ${material}`);
     } else {
       toast.error("Please enter a valid material.");
@@ -163,12 +163,29 @@ export default function CreateProductPage() {
   };
 
   const removeDimension = (index, key) => {
-    const newDimensionData = [...dimensionData];
-    delete newDimensionData[index].value[key];
-    if (Object.keys(newDimensionData[index].value).length === 0) {
-      newDimensionData.splice(index, 1);
+    try {
+      // Create a new copy of the dimensionData
+      const newDimensionData = [...dimensionData];
+
+      // Create a new value object excluding the key to be removed
+      const { [key]: removed, ...newValue } = newDimensionData[index].value;
+
+      // Update the dimension data with the new value object
+      newDimensionData[index] = {
+        ...newDimensionData[index],
+        value: newValue,
+      };
+
+      // Check if the value object is empty and remove the dimension set if it is
+      if (Object.keys(newValue).length === 0) {
+        newDimensionData.splice(index, 1);
+      }
+
+      // Update the state with the new dimension data
+      setDimensionData(newDimensionData);
+    } catch (err) {
+      console.log(err);
     }
-    setDimensionData(newDimensionData);
   };
 
   const removeCurrentDimension = (key) => {
@@ -192,6 +209,30 @@ export default function CreateProductPage() {
     setValues(newValues);
   };
 
+  //option related functions
+  const handleRemoveValueFromOption = (optionIndex, valueIndex) => {
+    // Create a copy of the customOptions state
+    const newCustomOptions = customOptions.map((option, index) => {
+      // Create a copy of the values array for the specific option
+      if (index === optionIndex) {
+        return {
+          ...option,
+          values: option.values.filter((_, vIndex) => vIndex !== valueIndex), // Remove the value at the specified index
+        };
+      }
+      return option; // Return the unchanged option
+    });
+
+    // Update the state with the new custom options
+    setCustomOptions(newCustomOptions);
+  };
+
+  const handleRemoveOption = (optionIndex) => {
+    const newCustomOptions = [...customOptions];
+    newCustomOptions.splice(optionIndex, 1);
+    setCustomOptions(newCustomOptions);
+  };
+
   const handleOpSubmit = () => {
     if (!optionName || values.length === 0) {
       toast.error("Please provide an option name and at least one value.");
@@ -207,63 +248,6 @@ export default function CreateProductPage() {
     toast.success("Custom option added successfully.");
   };
 
-  const handleImageUpload = (index, event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      handleValueChange(index, "image", reader.result);
-    };
-    if (file) {
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const options = [];
-
-    if (colors.length > 0) {
-      options.push({ name: "Color", values: colors });
-    }
-
-    if (materials.length > 0) {
-      options.push({ name: "Material", values: materials });
-    }
-
-    if (dimensionData.length > 0) {
-      options.push({ name: "Dimensions", values: dimensionData });
-    }
-
-    options.push(...customOptions);
-
-    if (options.length === 0) {
-      toast.error("Please add at least one attribute!");
-      return;
-    }
-
-    try {
-      await createProduct({ ...productData, shopId, shop, options }).unwrap();
-      setProductData({
-        name: "",
-        description: "",
-        department: "",
-        collection: "",
-        type: "",
-        tags: [],
-      });
-      setColors([]);
-      setMaterials([]);
-      setDimensionData([]);
-      setCustomOptions([]);
-      toast.success("Product created successfully!");
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      toast.error(err?.data?.message || err.error);
-    }
-  };
-
   const openModal = (e) => {
     e.preventDefault();
     setIsModalOpen(true);
@@ -273,10 +257,55 @@ export default function CreateProductPage() {
     setIsModalOpen(false);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (
+      colors.length === 0 &&
+      materials.length === 0 &&
+      dimensionData.length === 0 &&
+      customOptions.length === 0
+    ) {
+      toast.error("Please add at least one attribute!");
+      return;
+    }
+    const options = [
+      { name: "Color", values: colors },
+      { name: "Material", values: materials },
+      { name: "Dimensions", values: dimensionData },
+      ...customOptions,
+    ];
+    try {
+      await updateProduct({
+        id,
+        ...productData,
+        shopId: userInfo._id,
+        shop: { _id: userInfo._id, name: userInfo.shopName },
+        options,
+      }).unwrap();
+      toast.success("Product updated successfully!");
+      navigate("/all-products");
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.data?.message || err.error);
+    }
+  };
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  if (isError) {
+    return (
+      <Typography color="error">
+        Error: {error?.data?.message || error.error}
+      </Typography>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <Typography variant="h4" className="font-bold text-gray-800">
-        Create Product
+        Edit Product
       </Typography>
       <form onSubmit={openModal} className="space-y-6">
         <Card>
@@ -326,14 +355,6 @@ export default function CreateProductPage() {
             </FormControl>
             <TextField
               fullWidth
-              label="Collection"
-              name="collection"
-              value={productData.collection}
-              onChange={handleProductChange}
-              required
-            />
-            <TextField
-              fullWidth
               label="Type"
               name="type"
               value={productData.type}
@@ -352,18 +373,6 @@ export default function CreateProductPage() {
                 value={colorInput}
                 onChange={handleColorInputChange}
               />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleColorImageChange}
-                className="hidden"
-                id="color-image-upload"
-              />
-              <label htmlFor="color-image-upload">
-                <Button component="span" variant="outlined">
-                  Upload Image
-                </Button>
-              </label>
               <Button onClick={handleAddColor} startIcon={<AddIcon />}>
                 Add
               </Button>
@@ -379,13 +388,6 @@ export default function CreateProductPage() {
                       ></div>
                       <span>{color.value}</span>
                     </div>
-                    {color.image && (
-                      <img
-                        src={color.image}
-                        alt={color.value}
-                        className="w-8 h-8 object-cover rounded"
-                      />
-                    )}
                     <IconButton
                       size="small"
                       onClick={() =>
@@ -411,18 +413,6 @@ export default function CreateProductPage() {
                 value={materialInput}
                 onChange={handleMaterialInputChange}
               />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleMaterialImageChange}
-                className="hidden"
-                id="material-image-upload"
-              />
-              <label htmlFor="material-image-upload">
-                <Button component="span" variant="outlined">
-                  Upload Image
-                </Button>
-              </label>
               <Button onClick={handleAddMaterial} startIcon={<AddIcon />}>
                 Add
               </Button>
@@ -432,13 +422,6 @@ export default function CreateProductPage() {
                 <Grid item xs={12} sm={6} md={4} key={index}>
                   <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
                     <span>{material.value}</span>
-                    {material.image && (
-                      <img
-                        src={material.image}
-                        alt={material.value}
-                        className="w-8 h-8 object-cover rounded"
-                      />
-                    )}
                     <IconButton
                       size="small"
                       onClick={() =>
@@ -453,7 +436,7 @@ export default function CreateProductPage() {
             </Grid>
           </CardContent>
         </Card>
-
+        {/** Dimensions */}
         <Card>
           <CardHeader title="Dimensions" />
           <CardContent className="space-y-4">
@@ -514,6 +497,14 @@ export default function CreateProductPage() {
                     <CardHeader
                       title={`Dimension Set ${setIndex + 1}`}
                       titleTypographyProps={{ variant: "h6" }}
+                      action={
+                        <IconButton
+                          size="small"
+                          onClick={() => removeDimensionSet(setIndex)}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      }
                     />
                     <CardContent className="p-4 space-y-2">
                       {Object.entries(dimSet.value).map(([key, value]) => (
@@ -539,7 +530,7 @@ export default function CreateProductPage() {
             </Grid>
           </CardContent>
         </Card>
-        {/* Custom Options */}
+        {/** Custom Options */}
         <Card>
           <CardHeader title="Custom Options" />
           <CardContent className="space-y-4">
@@ -577,7 +568,7 @@ export default function CreateProductPage() {
                     </label>
                     <IconButton
                       size="small"
-                      onClick={() => handleRemoveValue(index)}
+                      onClick={() => handleRemoveValue(index)} // This removes a value
                     >
                       <CloseIcon />
                     </IconButton>
@@ -604,6 +595,16 @@ export default function CreateProductPage() {
                     <CardHeader
                       title={option.name}
                       titleTypographyProps={{ variant: "h6" }}
+                      action={
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveOption(index)}
+                        >
+                          {" "}
+                          // This removes the entire option
+                          <CloseIcon />
+                        </IconButton>
+                      }
                     />
                     <CardContent className="p-4 space-y-2">
                       {option.values.map((value, vIndex) => (
@@ -619,6 +620,14 @@ export default function CreateProductPage() {
                               className="w-8 h-8 object-cover rounded"
                             />
                           )}
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleRemoveValueFromOption(index, vIndex)
+                            } // Remove value from specific option
+                          >
+                            <CloseIcon />
+                          </IconButton>
                         </div>
                       ))}
                     </CardContent>
@@ -633,21 +642,21 @@ export default function CreateProductPage() {
           type="submit"
           fullWidth
           variant="contained"
-          disabled={isLoading}
+          disabled={isUpdating}
         >
-          Create Product
+          Update Product
         </Button>
       </form>
 
       <Dialog open={isModalOpen} onClose={closeModal}>
-        <DialogTitle>Confirm Product Creation</DialogTitle>
+        <DialogTitle>Confirm Product Update</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to create this product?</Typography>
+          <Typography>Are you sure you want to update this product?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeModal}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
-            Yes, Create
+            Yes, Update
           </Button>
         </DialogActions>
       </Dialog>

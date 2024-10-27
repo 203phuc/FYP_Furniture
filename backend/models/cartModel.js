@@ -9,7 +9,7 @@ const cartSchema = new mongoose.Schema(
     },
     items: [
       {
-        product_id: {
+        productId: {
           type: mongoose.Schema.Types.ObjectId,
           required: [true, "Please provide the product ID"],
           ref: "Product",
@@ -28,9 +28,28 @@ const cartSchema = new mongoose.Schema(
             message: "Quantity must be an integer",
           },
         },
-        added_at: {
-          type: Date,
-          default: Date.now,
+        productName: {
+          type: String,
+          required: [true, "Please provide the product name"],
+        },
+        attributes: {
+          type: mongoose.Schema.Types.Mixed,
+          required: [true, "Please provide the product attributes"],
+        },
+        variantId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: [true, "Please provide the variant ID"],
+          ref: "Variant",
+        },
+        mainImage: {
+          public_id: {
+            type: String,
+            required: [true, "Please provide the main image public ID"],
+          },
+          url: {
+            type: String,
+            required: [true, "Please provide the main image URL"],
+          },
         },
       },
     ],
@@ -55,11 +74,11 @@ cartSchema.pre("save", async function (next) {
   // Optionally fetch product prices from the Product model to ensure the cart
   // always has the current prices. This can be skipped if prices in the cart are handled manually.
   for (let i = 0; i < this.items.length; i++) {
-    const product = await mongoose
-      .model("Product")
-      .findById(this.items[i].product_id);
-    if (product) {
-      this.items[i].price = product.price; // Sync price from Product model
+    const variant = await mongoose
+      .model("Variant")
+      .findById(this.items[i].variant_id);
+    if (variant) {
+      this.items[i].price = variant.price; // Sync price from Product model
     }
   }
   next();

@@ -31,9 +31,9 @@ const VariantPage = () => {
       const initializedVariants = variants.map((variant) => ({
         _id: variant._id,
         price: variant.price ?? 0, // Set default to 0 if undefined
-        stock_quantity: variant.stock_quantity ?? 0, // Set default to 0 if undefined
+        stockQuantity: variant.stockQuantity ?? 0, // Set default to 0 if undefined
         mainImage: variant.mainImage || "", // Default object if missing
-        atributes: variant.atributes || {}, // Default empty object if missing
+        attributes: variant.attributes || {}, // Default empty object if missing
         images: variant.images || [], // Default empty array if missing
       }));
 
@@ -135,8 +135,8 @@ const VariantPage = () => {
                   <div className="mt-2">
                     <strong>Attributes:</strong>
                     <ul className="list-disc pl-6 mt-2">
-                      {Object.entries(variant.atributes).length > 0 ? (
-                        Object.entries(variant.atributes).map(
+                      {Object.entries(variant.attributes).length > 0 ? (
+                        Object.entries(variant.attributes).map(
                           ([key, value]) => (
                             <li key={key} className="text-gray-700">
                               <strong>{key}:</strong>{" "}
@@ -168,8 +168,8 @@ const VariantPage = () => {
                     <strong>Stock Quantity:</strong>
                     <input
                       type="number"
-                      name="stock_quantity"
-                      value={variant.stock_quantity} // Directly access variant stock_quantity
+                      name="stockQuantity"
+                      value={variant.stockQuantity} // Directly access variant stockQuantity
                       onChange={(e) => handleChange(e, variant._id)}
                       className="ml-2 p-1 border border-gray-400 rounded"
                     />

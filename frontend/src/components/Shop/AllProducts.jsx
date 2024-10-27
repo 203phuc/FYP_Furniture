@@ -1,10 +1,10 @@
-import { Button } from "@mui/material";
+import { Button, Menu, MenuItem } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import React, { useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify"; // Use any toast notification library you prefer
+import { toast } from "react-toastify";
 import {
   useDeleteProductMutation,
   useGetProductsByShopQuery,
@@ -15,14 +15,43 @@ import {
 } from "../../redux/slices/variantApiSlice";
 import Loader from "../Layout/Loader";
 
+const EditOptions = ({ productId }) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  return (
+    <>
+      <Button onClick={handleClick}>Edit Options</Button>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem
+          onClick={handleClose}
+          component={Link}
+          to={`/edit-product/${productId}`}
+        >
+          Edit Product
+        </MenuItem>
+        <MenuItem
+          onClick={handleClose}
+          component={Link}
+          to={`/variant/${productId}`}
+        >
+          Edit Variants
+        </MenuItem>
+      </Menu>
+    </>
+  );
+};
+
 const AllProducts = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
-  // Use the RTK Query hook to fetch products by shop ID
   const {
     data: products = [],
     isLoading,
     isError: isFetchError,
+    error: fetchError,
   } = useGetProductsByShopQuery(userInfo?._id);
 
   const [
@@ -37,7 +66,6 @@ const AllProducts = () => {
   const [deleteProduct] = useDeleteProductMutation();
   const [rows, setRows] = useState([]);
 
-  // If product deletion succeeds, remove product from rows
   const handleDelete = async (id) => {
     try {
       await deleteProduct(id).unwrap();
@@ -48,7 +76,6 @@ const AllProducts = () => {
     }
   };
 
-  // Handle adding variations
   const handleGenerateVariations = async (productId) => {
     try {
       await addVariant(productId).unwrap();
@@ -58,7 +85,6 @@ const AllProducts = () => {
     }
   };
 
-  // Table columns
   const columns = [
     { field: "id", headerName: "Product Id", minWidth: 150, flex: 0.7 },
     {
@@ -66,24 +92,37 @@ const AllProducts = () => {
       headerName: "Name",
       minWidth: 180,
       flex: 1.4,
+      renderCell: (params) => (
+        <div style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+          {params.value}
+        </div>
+      ),
     },
     {
       field: "description",
       headerName: "Description",
       minWidth: 250,
       flex: 1.5,
+      hide: window.innerWidth < 960,
+      renderCell: (params) => (
+        <div style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+          {params.value}
+        </div>
+      ),
     },
     {
       field: "department",
-      headerName: "department",
+      headerName: "Department",
       minWidth: 150,
       flex: 1,
+      hide: window.innerWidth < 960,
     },
     {
       field: "type",
       headerName: "Type",
       minWidth: 150,
       flex: 1,
+      hide: window.innerWidth < 960,
     },
     {
       field: "preview",
@@ -106,15 +145,12 @@ const AllProducts = () => {
       headerName: "Generate Variation",
       sortable: false,
       renderCell: (params) => {
-        // Use the hook to check if the product has variants
         const { data: hasVariants, isLoading: isChecking } =
           useCheckIfProductHasVariantsQuery(params.id);
 
-        // Conditionally render the button based on if the product has variants
         if (isChecking) {
           return <span>Checking...</span>;
         }
-        console.log(hasVariants);
         return hasVariants ? (
           <span>Variants Exist</span>
         ) : (
@@ -128,20 +164,19 @@ const AllProducts = () => {
       field: "delete",
       flex: 0.8,
       minWidth: 120,
-      headerName: "",
+      headerName: "Actions",
       sortable: false,
       renderCell: (params) => (
         <>
           <Button onClick={() => handleDelete(params.id)}>
             <AiOutlineDelete size={20} />
           </Button>
-          <Link to={`/variant/${params.id}`}>edit details</Link>
+          <EditOptions productId={params.id} />
         </>
       ),
     },
   ];
 
-  // Update rows whenever products data changes
   useEffect(() => {
     if (products.length) {
       const mappedRows = products.map((item) => ({
@@ -161,7 +196,10 @@ const AllProducts = () => {
       {isLoading ? (
         <Loader />
       ) : isFetchError ? (
-        <div>Error loading products</div>
+        <div>
+          Error loading products:{" "}
+          {fetchError?.data?.message || fetchError?.error}
+        </div>
       ) : (
         <div className="w-full mx-8 pt-1 mt-10 bg-white">
           <DataGrid
@@ -170,6 +208,14 @@ const AllProducts = () => {
             pageSize={10}
             disableSelectionOnClick
             autoHeight
+            getRowHeight={() => "auto"}
+            components={{
+              NoRowsOverlay: () => (
+                <div className="flex justify-center items-center h-full">
+                  No products found
+                </div>
+              ),
+            }}
           />
         </div>
       )}

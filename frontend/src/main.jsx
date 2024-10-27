@@ -8,6 +8,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import App from "./App";
+import ProtectedRoute from "./components/route/ProtectedRoute";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import ProductDetailsPage from "./pages/ProductDetailsPage.jsx";
@@ -19,6 +20,8 @@ import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
 import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
 import VariantPage from "./pages/shop/VariantPage.jsx";
 import store from "./redux/store.js";
+import { Edit } from "@mui/icons-material";
+import EditProductPage from "./components/Shop/EditProduct";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,11 +31,49 @@ const router = createBrowserRouter(
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/shop-create" element={<ShopCreatePage />} />
       <Route path="/shop-login" element={<ShopLoginPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/dashboard" element={<ShopDashboardPage />} />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute requiredRole="seller">
+            <ShopDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/variant/:id"
+        element={
+          <ProtectedRoute requiredRole="seller">
+            <VariantPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/edit-product/:id"
+        element={
+          <ProtectedRoute requiredRole="seller">
+            <EditProductPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/product" element={<ProductPage />} />
-      <Route path="/product/:id" element={<ProductDetailsPage />} />
-      <Route path="/variant/:id" element={<VariantPage/>}></Route>
+      <Route
+        path="/product/:id"
+        element={
+          <ProtectedRoute>
+            <ProductDetailsPage />
+
+          </ProtectedRoute>
+        }
+      />
     </Route>
   )
 );
