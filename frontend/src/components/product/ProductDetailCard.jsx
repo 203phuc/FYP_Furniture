@@ -89,20 +89,47 @@ export default function ProductDetailsCard({ setOpen, data }) {
       return;
     }
 
+    if (!selectedVariant) {
+      toast.error("Please select a variant.");
+      return;
+    }
 
-    if (selectedVariant?.stockQuantity < count) {
+    // Check if the desired quantity exceeds the available stock
+    if (selectedVariant.stockQuantity < count) {
       toast.error("Product stock limited!");
       return;
     }
 
+    // Retrieve cart from local storage
+    const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
+
+    // Check if the item with the selected variant already exists in the local storage cart
+    const existingCartItem = localCart.items.find(
+      (item) =>
+        item.productId === data._id && item.variantId === selectedVariant._id
+    );
+
+    // Calculate the new quantity by combining existing and selected quantities
+    const currentCartQuantity = existingCartItem
+      ? existingCartItem.quantity
+      : 0;
+    const newQuantity = currentCartQuantity + count;
+
+    // Check if the combined quantity exceeds available stock
+    if (newQuantity > selectedVariant.stockQuantity) {
+      toast.error("Cannot add more than available stock!");
+      return;
+    }
+
+    // Dispatch action to update local cart state
     dispatch(
       addToCart({
         productId: data._id,
         productName: data.name,
-        attributes: selectedVariant?.attributes,
-        mainImage: selectedVariant?.mainImage,
-        variantId: selectedVariant?._id,
-        price: selectedVariant?.price,
+        attributes: selectedVariant.attributes,
+        mainImage: selectedVariant.mainImage,
+        variantId: selectedVariant._id,
+        price: selectedVariant.price,
         quantity: count,
       })
     );
@@ -224,6 +251,10 @@ export default function ProductDetailsCard({ setOpen, data }) {
             </Typography>
             <Typography variant="h6" gutterBottom>
               ${selectedVariant?.price || data.price}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Available Stock:{" "}
+              {selectedVariant?.stockQuantity || data.stockQuantity}
             </Typography>
 
             {data.options.map(

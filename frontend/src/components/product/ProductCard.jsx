@@ -65,9 +65,30 @@ const ProductCard = ({ data }) => {
       return;
     }
 
-    const isItemExists = cart.items.find((item) => item.productId === data._id);
-    if (isItemExists) {
-      toast.success("Updating item quantity in cart!");
+    if (selectedVariant.stockQuantity < 1) {
+      toast.error("Out of stock!");
+      return;
+    }
+
+    // Get the cart from local storage
+    const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
+
+    // Check if the item with the selected variant is already in the local storage cart
+    const existingCartItem = localCart.items.find(
+      (item) =>
+        item.productId === data._id && item.variantId === selectedVariant._id
+    );
+
+    // Calculate the new quantity if adding this item to the cart
+    const currentCartQuantity = existingCartItem
+      ? existingCartItem.quantity
+      : 0;
+    const newQuantity = currentCartQuantity + 1; // assuming we're adding 1 item
+
+    // Check if the new quantity exceeds the stock quantity
+    if (newQuantity > selectedVariant.stockQuantity) {
+      toast.error("Exceeds available stock quantity!");
+      return;
     }
 
     try {
@@ -83,12 +104,13 @@ const ProductCard = ({ data }) => {
           mainImage: selectedVariant.mainImage,
         })
       );
-      toast.success("Item updated to cart locally!");
+      toast.success("Item added to cart locally!");
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error("Failed to add item to cart.");
     }
   };
+
 
   // useEffect hook to sync cart on initial render or cart changes
   const previousCart = useRef(cart);

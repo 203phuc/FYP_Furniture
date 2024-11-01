@@ -34,9 +34,13 @@ const syncCart = asyncHandler(async (req, res) => {
           throw new Error("Product not found");
         }
 
+
         const variant = await Variant.findById(variantId);
         if (!variant) {
           throw new Error("Variant not found");
+        }
+        if (quantity > variant.stockQuantity) {
+          throw new Error("User can not add more than stock quantity");
         }
 
         // Find or update item in the cart

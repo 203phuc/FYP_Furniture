@@ -7,6 +7,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${PRODUCTS_URL}`,
         method: "GET",
+        refetchOnMountOrArgChange: true,
       }),
       providesTags: (result) =>
         result
@@ -59,6 +60,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["Product"],
+      refetchOnMountOrArgChange: true,
     }),
 
     deleteProduct: builder.mutation({

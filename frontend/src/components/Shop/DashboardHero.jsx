@@ -5,15 +5,14 @@ import { Link } from "react-router-dom";
 import { MdBorderClear } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 // import { getAllOrdersOfShop } from "../../redux/actions/order"; // Order data action
-// import { getAllProductsShop } from "../../redux/actions/product"; // Product data action
+import { useGetProductsByShopQuery } from "../../redux/slices/productApiSlice"; // Product data action
 import { Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 const DashboardHero = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth); // Get userInfo from Redux
-  // const { orders } = useSelector((state) => state.order); // Order data from Redux
-  // const { products } = useSelector((state) => state.products); // Product data from Redux
+
 
   useEffect(() => {
     // dispatch(getAllOrdersOfShop(userInfo._id)); // Fetch orders for the user

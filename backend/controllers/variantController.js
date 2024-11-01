@@ -113,7 +113,7 @@ const checkIfProductHasVariants = asyncHandler(async (req, res) => {
 
 // Controller to update additional details of a variant
 const updateVariantDetails = asyncHandler(async (req, res) => {
-  const { _id, price, stock_quantity, mainImage, images, attributes } = req.body;
+  const { _id, price, stockQuantity, mainImage, images, attributes } = req.body;
   console.log("pre", mainImage);
   // Find the variant by ID
   const variant = await Variant.findById(_id);
@@ -157,7 +157,7 @@ const updateVariantDetails = asyncHandler(async (req, res) => {
 
   // Update the variant with additional details
   variant.price = price; // Add price
-  variant.stock_quantity = stock_quantity; // Add stock quantity
+  variant.stockQuantity = stockQuantity; // Add stock quantity
 
   // Save the updated variant
   const updatedVariant = await variant.save();
