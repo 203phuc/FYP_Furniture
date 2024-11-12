@@ -1,27 +1,20 @@
-import { MoreVert, ShoppingCart, Visibility } from "@mui/icons-material";
-import {
-  Button,
-  Card,
-  CardContent,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+"use client";
+
+import { MoreVertical, ShoppingCart } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSyncCartMutation } from "../../redux/slices/cartApiSlice";
 import { addToCart } from "../../redux/slices/cartSlice";
-import ProductDetailCard from "./ProductDetailCard";
 
-const ProductCard = ({ data }) => {
-  console.log(data);
+// Assuming ProductDetailCard is adapted to work with this new design
+
+export default function ProductCard({ data }) {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const userInfo = useSelector((state) => state.auth.userInfo);
   const cart = useSelector((state) => state.cart.cart);
-  console.log(cart);
   const [syncCart] = useSyncCartMutation();
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
@@ -70,29 +63,23 @@ const ProductCard = ({ data }) => {
       return;
     }
 
-    // Get the cart from local storage
     const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
-
-    // Check if the item with the selected variant is already in the local storage cart
     const existingCartItem = localCart.items.find(
       (item) =>
         item.productId === data._id && item.variantId === selectedVariant._id
     );
 
-    // Calculate the new quantity if adding this item to the cart
     const currentCartQuantity = existingCartItem
       ? existingCartItem.quantity
       : 0;
-    const newQuantity = currentCartQuantity + 1; // assuming we're adding 1 item
+    const newQuantity = currentCartQuantity + 1;
 
-    // Check if the new quantity exceeds the stock quantity
     if (newQuantity > selectedVariant.stockQuantity) {
       toast.error("Exceeds available stock quantity!");
       return;
     }
 
     try {
-      // Dispatch action to update local cart state
       await dispatch(
         addToCart({
           productId: data._id,
@@ -101,6 +88,7 @@ const ProductCard = ({ data }) => {
           attributes: selectedVariant.attributes,
           quantity: 1,
           price: selectedVariant.price,
+          stockQuantity: selectedVariant.stockQuantity,
           mainImage: selectedVariant.mainImage,
         })
       );
@@ -111,18 +99,15 @@ const ProductCard = ({ data }) => {
     }
   };
 
-
-  // useEffect hook to sync cart on initial render or cart changes
   const previousCart = useRef(cart);
 
   useEffect(() => {
     if (previousCart.current !== cart) {
-      // Only sync if the cart has actually changed
       syncCart(cart)
         .then(() => {
           console.log("Cart synced with server after cart change.");
           toast.success("Cart synced with server after cart change.");
-          previousCart.current = cart; // Update the reference to the latest cart
+          previousCart.current = cart;
         })
         .catch((error) => {
           console.error(
@@ -134,114 +119,101 @@ const ProductCard = ({ data }) => {
   }, [cart, syncCart]);
 
   return (
-    <Card className="w-full overflow-hidden relative">
-      <div className="aspect-w-4 aspect-h-3 w-full">
-        <Link to={`/product/${data._id}`}>
-          <img
-            src={selectedVariant?.mainImage?.url || "/placeholder.svg"}
-            alt={data.name}
-            className="w-full h-full object-cover"
-          />
-        </Link>
+    <div className="max-w-[500px] mx-auto">
+      <div className="relative">
+        <div className="aspect-[4/3] w-full bg-gray-100">
+          <Link to={`/product/${data._id}`}>
+            <img
+              src={
+                selectedVariant?.mainImage?.url ||
+                "/placeholder.svg?height=280&width=450"
+              }
+              alt={data.name}
+              className="w-full h-full object-cover"
+            />
+          </Link>
+        </div>
+
+        <button
+          onClick={toggleDropdown}
+          className="absolute right-2 top-2 p-1 bg-white rounded-full shadow-md"
+        >
+          <MoreVertical className="w-5 h-5 text-gray-600" />
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute right-2 top-10 w-48 bg-white rounded-md shadow-lg z-10">
+            {userInfo?.role !== "seller" && (
+              <button
+                onClick={addToCartHandler}
+                className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      <CardContent className="p-4">
-        <Link to={`/shop/preview/${data.shopId}`} className="no-underline">
-          <Typography variant="h6" className="text-gray-800">
+      <div className="">
+        <div>
+          <Link
+            href={`/shop/preview/${data.shopId}`}
+            className="text-sm font-thin text-gray-900 hover:underline"
+          >
             {data.shop.name}
-          </Typography>
-        </Link>
-
-        <Link to={`/product/${data._id}`} className="no-underline">
-          <Typography variant="body1" className="text-gray-600 truncate">
+          </Link>
+          <Link
+            href={`/product/${data._id}`}
+            className="block text-lg font-thin text-gray-900 hover:underline"
+          >
             {data.name}
-          </Typography>
-        </Link>
+          </Link>
+        </div>
 
         {optionWithMostImages.values.length > 0 && (
-          <div className="mt-2">
-            <Typography variant="subtitle1" className="font-bold">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-thin text-gray-900">
               {optionWithMostImages.name}:
-            </Typography>
-            <div className="flex flex-wrap items-center mt-1 space-x-0.5 space-y-0.5">
+            </h3>
+            <div className="flex flex-wrap gap-1">
               {optionWithMostImages.values.map((option) => (
-                <Button
+                <button
                   key={option._id}
                   onClick={() => handleOptionSelect(option.value)}
-                  className={`w-4 h-4 min-w-0 p-0 overflow-hidden bg-cover bg-center ${
+                  className={`w-6 h-6 overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-black m-1 ${
                     selectedOptionValue === option.value
-                      ? "ring-2 ring-blue-500"
+                      ? "ring-2 ring-offset-4 ring-black"
                       : ""
                   }`}
                   style={{
                     backgroundImage: option.image
                       ? `url(${option.image})`
                       : "none",
-                    backgroundColor: option.image ? "transparent" : "#e5e7eb", // fallback bg color if no image
-                    borderRadius: 0,
+                    backgroundColor: option.image ? "transparent" : "#e5e7eb",
                   }}
                 >
                   {!option.image && (
-                    <div className="w-full h-full flex items-center justify-center text-[8px]">
+                    <span className="text-xs font-medium">
                       {option.value.substring(0, 2)}
-                    </div>
+                    </span>
                   )}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className="mt-2 flex justify-between items-center">
-          <Typography variant="h6" className="font-bold">
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-bold text-gray-900">
             ${selectedVariant?.price || "N/A"}
-          </Typography>
-          <Typography variant="body2" className="text-gray-600">
+          </span>
+          <span className="text-sm text-gray-500">
             {selectedVariant?.stockQuantity || 0} in stock
-          </Typography>
+          </span>
         </div>
-      </CardContent>
-
-      <div className="absolute right-2 top-2">
-        <IconButton onClick={toggleDropdown}>
-          <MoreVert />
-        </IconButton>
-        {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-            <div
-              className="py-1"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="options-menu"
-            >
-              <Button
-                fullWidth
-                startIcon={<Visibility />}
-                onClick={() => setDetailsOpen(true)}
-                className="justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              >
-                View Details
-              </Button>
-              {userInfo?.role !== "seller" && (
-                <Button
-                  fullWidth
-                  startIcon={<ShoppingCart />}
-                  onClick={addToCartHandler}
-                  className="justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                >
-                  Add to Cart
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
-
-      {detailsOpen && (
-        <ProductDetailCard setOpen={setDetailsOpen} data={data} />
-      )}
-    </Card>
+    </div>
   );
-};
-
-export default ProductCard;
+}

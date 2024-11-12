@@ -87,8 +87,9 @@ const processOptions = async (options) => {
 // @access  Public
 const getProductDetails = asyncHandler(async (req, res) => {
   try {
+    console.log("inside the get detail");
     // Attempt to find the product by ID
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("variants");
 
     // Check if the product was found
     if (!product) {
@@ -96,9 +97,6 @@ const getProductDetails = asyncHandler(async (req, res) => {
     }
 
     // Check if the product has variants and populate if it does
-    if (product.variants && product.variants.length > 0) {
-      await product.populate("variants"); // Populate only if there are variants
-    }
 
     // Return the found product
     res.status(200).json(product);
@@ -111,6 +109,31 @@ const getProductDetails = asyncHandler(async (req, res) => {
     });
   }
 });
+// @desc    update the state of the approval
+// @route   PATCH/api/products/:id/toggle-approval
+// @access  Public
+const toggleProductApproval = async (req, res) => {
+  try {
+    console.log("inside the toggle approval");
+    const { id } = req.params;
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Toggle the approved status
+    product.approved = !product.approved;
+    await product.save();
+
+    res.json({
+      message: "Product approval status updated",
+      approved: product.approved,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // @desc    Fetch all approved products
 // @route   GET /api/products/approved
@@ -247,5 +270,6 @@ export {
   getProductDetails,
   getProducts,
   getProductsByShop,
+  toggleProductApproval,
   updateProduct,
 };

@@ -34,6 +34,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"], // Invalidate user profile after update
     }),
+    verifyEmail: builder.mutation({
+      query: (token) => ({
+        url: `${USERS_URL}/verify-email`,
+        method: "POST", // Updated to POST for security and consistency
+        body: { token },
+      }),
+      invalidatesTags: ["User"], // Optionally invalidate user data after verification
+    }),
   }),
 });
 
@@ -42,4 +50,5 @@ export const {
   useRegisterMutation,
   useLogoutMutation,
   useProfileMutation,
+  useVerifyEmailMutation,
 } = userApiSlice;

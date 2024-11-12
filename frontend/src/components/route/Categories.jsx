@@ -107,7 +107,7 @@ const Categories = () => {
   }, []);
 
   return (
-    <>
+    <div className="pb-20 bg-[#f5f5f5]">
       <div className="text-center m-11 ">
         <h6 className="mb-4 xl:text-7xl capitalize font-thin">
           A CELEBRATION OF PERSONAL STYLE
@@ -118,18 +118,18 @@ const Categories = () => {
           <swiper-slide key={slide.index} class="custom-slide">
             <div
               onClick={() => (window.location.href = slide.link)}
-              className="cursor-pointer w-full h-auto p-4 bg-white rounded-lg shadow-md"
+              className="cursor-pointer w-full h-auto bg-white "
             >
               <img
                 src={slide.image}
                 alt={slide.title}
                 className="w-full h-auto"
               />
-              <h5 className="text-lg font-semibold mt-4">{slide.title}</h5>
-              <p className="text-sm mt-2 text-gray-600">{slide.description}</p>
+              <h5 className="text-lg font-semibold mt-2">{slide.title}</h5>
+              <p className="text-sm mt-1 text-gray-600">{slide.description}</p>
               <a
                 href={slide.link}
-                className="text-blue-600 font-bold mt-2 block hover:underline"
+                className=" font-bold mt-2 block hover:underline"
               >
                 {slide.cta}
               </a>
@@ -137,7 +137,7 @@ const Categories = () => {
           </swiper-slide>
         ))}
       </swiper-container>
-    </>
+    </div>
   );
 };
 

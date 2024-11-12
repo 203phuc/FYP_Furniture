@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { AiOutlineArrowRight, AiOutlineMoneyCollect } from "react-icons/ai";
-import styles from "../../styles/styles";
-import { Link } from "react-router-dom";
 import { MdBorderClear } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import styles from "../../styles/styles";
 // import { getAllOrdersOfShop } from "../../redux/actions/order"; // Order data action
-import { useGetProductsByShopQuery } from "../../redux/slices/productApiSlice"; // Product data action
 import { Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 const DashboardHero = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth); // Get userInfo from Redux
-
 
   useEffect(() => {
     // dispatch(getAllOrdersOfShop(userInfo._id)); // Fetch orders for the user

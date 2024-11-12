@@ -4,6 +4,7 @@ import express from "express";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import timeMiddleware from "./middleware/timeMiddleware.js"; // Corrected import name
 import cartRoutes from "./routes/cartRoutes.js";
+import checkOutRoute from "./routes/checkOutRoute.js";
 import productRoutes from "./routes/productRoutes.js";
 import shopRoutes from "./routes/shopRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -34,6 +35,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/carts", cartRoutes);
 app.use("/api/variants", variantRoutes);
+app.use("/api/checkout", checkOutRoute);
 
 // Define error handling middleware after all routes
 app.use(notFound);

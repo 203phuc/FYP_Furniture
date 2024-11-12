@@ -9,6 +9,10 @@ import {
 } from "react-router-dom";
 import App from "./App";
 import ProtectedRoute from "./components/route/ProtectedRoute";
+import EditProductPage from "./components/Shop/EditProduct";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
+import CartPage from "./pages/cartPage";
+import CheckoutPage from "./pages/checkoutPage";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import ProductDetailsPage from "./pages/ProductDetailsPage.jsx";
@@ -19,18 +23,21 @@ import ShopCreatePage from "./pages/shop/ShopCreatePage.jsx";
 import ShopDashboardPage from "./pages/shop/ShopDashboardPage.jsx";
 import ShopLoginPage from "./pages/shop/ShopLoginPage.jsx";
 import VariantPage from "./pages/shop/VariantPage.jsx";
+import VerifyPage from "./pages/VerifyPage";
 import store from "./redux/store.js";
-import { Edit } from "@mui/icons-material";
-import EditProductPage from "./components/Shop/EditProduct";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
+      {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyPage />} />
       <Route path="/shop-create" element={<ShopCreatePage />} />
       <Route path="/shop-login" element={<ShopLoginPage />} />
+
+      {/* Protected Routes */}
       <Route
         path="/profile"
         element={
@@ -39,6 +46,32 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/product/:id"
+        element={
+          <ProtectedRoute>
+            <ProductDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cart/:id"
+        element={
+          <ProtectedRoute>
+            <CartPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Seller Routes */}
       <Route
         path="/dashboard"
         element={
@@ -55,7 +88,6 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/edit-product/:id"
         element={
@@ -64,19 +96,24 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route path="/product" element={<ProductPage />} />
-      <Route
-        path="/product/:id"
-        element={
-          <ProtectedRoute>
-            <ProductDetailsPage />
 
+      {/* Admin Routes */}
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            {/* Admin Dashboard Page (you can create this page) */}
+            <AdminDashboardPage />
           </ProtectedRoute>
         }
       />
+
+      {/* Public Product Page */}
+      <Route path="/product" element={<ProductPage />} />
     </Route>
   )
 );
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <React.StrictMode>

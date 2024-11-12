@@ -12,14 +12,18 @@ const cartSlice = createSlice({
   },
   reducers: {
     addToCart: (state, action) => {
-      const itemExists = state.cart.items.find(
-        (item) => item.product_id === action.payload.product_id
+      const itemIndex = state.cart.items.findIndex(
+        (item) => item.variantId === action.payload.variantId
       );
 
-      if (!itemExists) {
-        state.cart.items.push(action.payload);
+      if (itemIndex === -1) {
+        state.cart.items.push({ ...action.payload });
       } else {
-        itemExists.quantity += action.payload.quantity;
+        state.cart.items[itemIndex] = {
+          ...state.cart.items[itemIndex],
+          quantity:
+            state.cart.items[itemIndex].quantity + action.payload.quantity,
+        };
       }
 
       // Sync to local storage

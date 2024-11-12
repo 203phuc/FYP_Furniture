@@ -70,6 +70,13 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Product" }], // Invalidate cache for the deleted product
     }),
+    toggleProductApproval: builder.mutation({
+      query: (id) => ({
+        url: `${PRODUCTS_URL}/${id}/toggle-approval`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Product"], // Invalidate to refetch updated products
+    }),
   }),
 });
 
@@ -81,4 +88,5 @@ export const {
   useUpdateProductMutation, // Export the update hook
   useGetProductDetailsQuery,
   useDeleteProductMutation,
+  useToggleProductApprovalMutation,
 } = productApiSlice;

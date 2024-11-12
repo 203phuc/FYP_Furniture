@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
@@ -16,8 +16,28 @@ import { useLogoutMutation } from "../../redux/slices/userApiSlice.js";
 import styles from "../../styles/styles.jsx";
 import Navbar from "./Navbar.jsx";
 
+// Custom hook to handle clicks outside of a component
+const useOutsideClick = (callback) => {
+  const ref = useRef();
+
+  useEffect(() => {
+    const handleClick = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        callback();
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [callback]);
+
+  return ref;
+};
+
 const Header = ({ allProducts }) => {
-  // User section
   const { userInfo } = useSelector((state) => state.auth);
   const [logoutApiCall] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -29,10 +49,14 @@ const Header = ({ allProducts }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdown1Open, setIsDropdown1Open] = useState(false);
   const [active, setActive] = useState(0);
-
-  // New state variables
   const [openWishlist, setOpenWishlist] = useState(false);
   const [openCart, setOpenCart] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchData, setSearchData] = useState(null);
+
+  // Use the custom hook for both dropdowns
+  const dropdownRef = useOutsideClick(() => setIsDropdownOpen(false));
+  const dropdown1Ref = useOutsideClick(() => setIsDropdown1Open(false));
 
   const logoutHandler = async () => {
     try {
@@ -43,10 +67,6 @@ const Header = ({ allProducts }) => {
       console.error(err);
     }
   };
-
-  // Search section
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchData, setSearchData] = useState(null);
 
   const handleSearchChange = (e) => {
     const term = e.target.value;
@@ -106,16 +126,20 @@ const Header = ({ allProducts }) => {
                 <img src={logo} alt="Cozniture Logo" className="h-10" />
               </Link>
             </div>
-            <div className={`${styles.button}`}>
+            <div className={`${styles.button} `}>
               <Link
                 to={`${
-                  userInfo && userInfo.role === "seller"
+                  userInfo && userInfo.role === "admin"
+                    ? "/admin-dashboard"
+                    : userInfo && userInfo.role === "seller"
                     ? "/dashboard"
                     : "/shop-create"
                 }`}
               >
                 <h1 className="text-[#fff] flex items-center">
-                  {userInfo && userInfo.role === "seller"
+                  {userInfo && userInfo.role === "admin"
+                    ? "Go Dashboard"
+                    : userInfo && userInfo.role === "seller"
                     ? "Go Dashboard"
                     : "Become Seller"}{" "}
                   <IoIosArrowForward className="ml-1" />
@@ -141,15 +165,15 @@ const Header = ({ allProducts }) => {
                     </div>
 
                     <div className={`${styles.normalFlex}`}>
-                      <div
+                      <Link
+                        to={`/cart/${userInfo._id}`}
                         className="relative cursor-pointer mr-[15px]"
-                        onClick={() => setOpenCart(true)}
                       >
                         <PiShoppingCartSimpleThin size={25} color="black" />
                         <span className="absolute right-0 top-0 rounded-full bg-[#fcfcfc] w-3 h-3  right p-0 m-0 text-black font-mono text-[9px] leading-tight text-center font-light">
                           {cart && cart.items.length}
                         </span>
-                      </div>
+                      </Link>
                     </div>
                     <div className={`${styles.normalFlex}`}>
                       <div className="relative cursor-pointer mr-[15px]">
@@ -169,32 +193,34 @@ const Header = ({ allProducts }) => {
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center text-slate-950"
-                  >
-                    <PiUserThin className="mr-2" /> {userInfo.name}
-                  </button>
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
-                        onClick={logoutHandler}
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
+                  <div ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center text-slate-950"
+                    >
+                      <PiUserThin className="mr-2" /> {userInfo.name}
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                        <Link
+                          to="/profile"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                          onClick={logoutHandler}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="relative">
+                <div className="relative" ref={dropdown1Ref}>
                   <div className="relative">
                     <button
                       onClick={() => setIsDropdown1Open(!isDropdown1Open)}

@@ -1,7 +1,9 @@
-import asyncHandler from "express-async-handler";
-import User from "../models/userModel.js";
 import cloudinary from "cloudinary";
+import asyncHandler from "express-async-handler";
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
+import { sendMail } from "../utils/sendMail.js";
 
 // @desc    Authenticate user and set token
 // @route   POST /api/users/auth
@@ -71,6 +73,12 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create(userData);
 
   if (user) {
+    // Generate activation token
+    const activationToken = createActivationToken(user);
+
+    // Send verification email
+    await sendMail(user.email, activationToken);
+
     generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
@@ -87,6 +95,53 @@ const registerUser = asyncHandler(async (req, res) => {
   } else {
     res.status(400);
     throw new Error("Invalid user data");
+  }
+});
+
+const createActivationToken = (user) => {
+  return jwt.sign(
+    { email: user.email, _id: user._id },
+    process.env.ACTIVATION_SECRET,
+    {
+      expiresIn: "1h", // Token expiry time
+    }
+  );
+};
+// @desc    Verify user's email
+// @route   GET /api/users/verify-email
+// @access  Public
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.body.token;
+  console.log(token);
+  if (!token) {
+    res.status(400);
+    throw new Error("Verification token is required");
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.ACTIVATION_SECRET);
+
+    // Find the user by email
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    // Activate the user account
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully. You can now log in.",
+    });
+  } catch (error) {
+    res.status(400);
+    console.log(error);
+    throw new Error("Invalid or expired token");
   }
 });
 
@@ -308,15 +363,16 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 export {
   authUser,
-  registerUser,
-  logoutUser,
-  getUserProfile,
-  updateUserProfile,
-  updateUserAvatar,
-  updateUserAddresses,
-  deleteUserAddress,
-  updateUserPassword,
-  getUserInfoById,
-  getAllUsers,
   deleteUser,
+  deleteUserAddress,
+  getAllUsers,
+  getUserInfoById,
+  getUserProfile,
+  logoutUser,
+  registerUser,
+  updateUserAddresses,
+  updateUserAvatar,
+  updateUserPassword,
+  updateUserProfile,
+  verifyEmail,
 };

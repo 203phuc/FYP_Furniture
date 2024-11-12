@@ -1,13 +1,13 @@
 import React from "react";
-import Footer from "../components/layout/Footer";
 import Hero from "../components/layout/Hero";
+import LandingCompact from "../components/layout/LandingCompact";
 import Categories from "../components/route/Categories";
 const HomePage = () => {
   return (
     <>
       <Hero />
       <Categories />
-      <Footer />
+      <LandingCompact />
     </>
   );
 };

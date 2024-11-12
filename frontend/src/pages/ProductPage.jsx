@@ -21,9 +21,7 @@ const ProductsPage = () => {
       skip: userInfo?.role !== "seller",
     });
   const { data: approvedProducts, isLoading: isLoadingUser } =
-    useGetProductApprovedQuery(undefined, {
-      skip: userInfo?.role !== "user",
-    });
+    useGetProductApprovedQuery(undefined, {});
 
   // Determine which data to use based on user role
   const dataToUse =
@@ -53,18 +51,20 @@ const ProductsPage = () => {
       {isLoading ? (
         <Loader />
       ) : (
-        <div>
-          <br />
-          <br />
-          <div className={`${styles.section}`}>
-            <div className="grid grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[25px] lg:grid-cols-4 lg:gap-[25px] xl:grid-cols-5 xl:gap-[30px]">
+        <div className="py-8">
+          <div className={`${styles.section} container mx-auto px-4`}>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredData &&
                 filteredData.map((product, index) => (
-                  <ProductCard data={product} key={index} />
+                  <div key={index} className="flex justify-center">
+                    <div className="w-full max-w-[500px]">
+                      <ProductCard data={product} />
+                    </div>
+                  </div>
                 ))}
             </div>
             {filteredData && filteredData.length === 0 && (
-              <h1 className="text-center w-full pb-[100px] text-[20px]">
+              <h1 className="text-center w-full py-20 text-2xl font-semibold">
                 No products found!
               </h1>
             )}

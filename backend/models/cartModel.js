@@ -41,6 +41,15 @@ const cartSchema = new mongoose.Schema(
           required: [true, "Please provide the variant ID"],
           ref: "Variant",
         },
+        stockQuantity: {
+          type: Number,
+          required: [true, "Please provide the stock quantity"],
+          min: [1, "Stock quantity must be at least 1"],
+          validate: {
+            validator: Number.isInteger,
+            message: "Stock quantity must be an integer",
+          },
+        },
         mainImage: {
           public_id: {
             type: String,

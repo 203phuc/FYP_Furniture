@@ -1,15 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./app.css";
+import Footer from "./components/layout/Footer.jsx";
 import Header from "./components/layout/Header.jsx";
 import "./index.css";
-import { useGetProductsQuery } from "./redux/slices/productApiSlice"; // Import the hook
+import { useFetchCartQuery } from "./redux/slices/cartApiSlice";
+import { updateCart } from "./redux/slices/cartSlice";
+import { useGetProductsQuery } from "./redux/slices/productApiSlice";
 
 const App = () => {
   const location = useLocation();
-  const { data: products, isLoading, error } = useGetProductsQuery(); // Use the query hook to get products
+  const {
+    data: products,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useGetProductsQuery();
+  const { userInfo } = useSelector((state) => state.auth);
+  const userId = userInfo?._id;
+
+  const {
+    data: cartData,
+    isLoading: cartLoading,
+    error: cartError,
+  } = useFetchCartQuery(userId, {
+    skip: !userId,
+  });
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (cartData) {
+      dispatch(updateCart(cartData.cart.items));
+    }
+  }, [cartData, dispatch]);
 
   const hiddenPaths = [
     "/login",
@@ -17,28 +43,30 @@ const App = () => {
     "/shop-create",
     "/shop-login",
     "/dashboard",
-    "/dashboard/cupouns",
-    "/dashboard/events",
-    "/dashboard/products",
-    "/dashboard/orders",
-    "/dashboard/reviews",
-    "/dashboard/shop",
-    "/dashboard/shop-settings",
-    "/dashboard/shop-settings/edit",
+    "/dashboard/*", // Optionally match nested paths
+    "/admin-dashboard",
+    "/admin-dashboard/*",
   ];
 
-  const shouldShowHeader = !hiddenPaths.includes(location.pathname);
+  const shouldShowHeader = !hiddenPaths.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
-  console.log(products);
   return (
     <>
       <ToastContainer />
       {shouldShowHeader && (
-        <Header allProducts={products} isLoading={isLoading} error={error} />
+        <Header
+          allProducts={products}
+          isLoading={productsLoading}
+          error={productsError}
+        />
       )}
-      {isLoading && <div>Loading...</div>}
-      {error && <div>Error loading products: {error.message}</div>}
+      {(productsLoading || cartLoading) && <div>Loading...</div>}
+      {cartError && toast.error(cartError.message)}
+      {productsError && toast.error(productsError.message)}
       <Outlet />
+      {shouldShowHeader && <Footer />}
     </>
   );
 };

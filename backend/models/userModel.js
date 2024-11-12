@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: [true, "Please provide your phone number"], // Optional field
-      min: [0, "Phone number cannot be negative"],
     },
     addresses: [
       {
@@ -62,6 +61,10 @@ const userSchema = new mongoose.Schema(
         type: String,
         required: [false], // Optional field
       },
+    },
+    isVerified: {
+      type: Boolean,
+      default: false, // Added field to track email verification
     },
   },
   { timestamps: true }

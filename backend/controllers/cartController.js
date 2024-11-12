@@ -34,7 +34,6 @@ const syncCart = asyncHandler(async (req, res) => {
           throw new Error("Product not found");
         }
 
-
         const variant = await Variant.findById(variantId);
         if (!variant) {
           throw new Error("Variant not found");
@@ -60,6 +59,7 @@ const syncCart = asyncHandler(async (req, res) => {
             productName: productName,
             attributes: attributes,
             quantity: quantity,
+            stockQuantity: variant.stockQuantity,
             price: price || variant.price,
             mainImage: mainImage || variant.mainImage,
           });
@@ -81,19 +81,27 @@ const syncCart = asyncHandler(async (req, res) => {
 // @route   GET /api/carts/:user_id
 // @access  Private
 const getCart = asyncHandler(async (req, res) => {
+  console.log("Fetching cart for user:", req.params.user_id);
+
+  // Try to find the cart based on user ID
   const cart = await Cart.findOne({ user_id: req.params.user_id }).populate(
     "items.productId",
     "name price"
   );
 
+  // Check if a cart exists
   if (cart) {
+    // If cart exists, return the cart and total price
     res.json({
       cart,
-      totalPrice: cart.totalPrice, // Assuming there's a virtual field for total price
+      totalPrice: cart.totalPrice || 0, // Assuming a virtual field or calculate if needed
     });
   } else {
-    res.status(404);
-    throw new Error("Cart not found");
+    // If no cart exists, return an empty cart with totalPrice of 0
+    res.json({
+      cart: { items: [] },
+      totalPrice: 0,
+    });
   }
 });
 

@@ -466,6 +466,7 @@ export default function CreateProductPage() {
               />
               <TextField
                 label="Value (e.g., 10 cm)"
+                type="number"
                 value={newValue}
                 onChange={(e) => setNewValue(e.target.value)}
                 className="flex-grow"

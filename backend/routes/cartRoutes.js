@@ -8,7 +8,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Route to sync (add or update) items in the cart
+// Route to sync (add or update) items in the cartSchema
 router.post("/", protect, syncCart);
 
 // Route to get the cart by user ID

@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
-import User from "../models/userModel.js";
 import Shop from "../models/shopModel.js";
+import User from "../models/userModel.js";
 
 const protect = asyncHandler(async (req, res, next) => {
   let token; // get token from header
@@ -44,8 +44,17 @@ const isSeller = asyncHandler(async (req, res, next) => {
 });
 
 // User must be an admin
-const isAdmin = asyncHandler((req, res, next) => {
-  if (req.user.role.toUpperCase() === "ADMIN") {
+const isAdmin = asyncHandler(async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) {
+    res.status(401);
+    throw new Error("Not authorized, no token");
+  }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  console.log(decoded);
+  const user = await User.findById(decoded.id);
+  console.log(user);
+  if (user.role.toUpperCase() === "ADMIN") {
     next();
   } else {
     res.status(401);
@@ -53,4 +62,4 @@ const isAdmin = asyncHandler((req, res, next) => {
   }
 });
 
-export { protect, isSeller, isAdmin };
+export { isAdmin, isSeller, protect };
