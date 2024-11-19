@@ -40,19 +40,34 @@ const RegisterPage = () => {
     reader.readAsDataURL(e.target.files[0]);
   };
 
+  // Phone number validation function
   const validatePhoneNumber = (number) => {
     const phoneRegex = /^[0-9]{10,15}$/; // Adjust the length as needed
     return phoneRegex.test(number);
   };
 
+  // Email format validation function
+  const validateEmailFormat = (email) => {
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return emailRegex.test(email);
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
 
+    // Validate email format
+    if (!validateEmailFormat(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password match
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
+    // Validate phone number format
     if (!validatePhoneNumber(phoneNumber)) {
       toast.error("Please enter a valid phone number");
       return;
@@ -149,7 +164,7 @@ const RegisterPage = () => {
             Phone Number
           </label>
           <input
-            type="text"
+            type="number"
             id="phoneNumber"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter phone number"

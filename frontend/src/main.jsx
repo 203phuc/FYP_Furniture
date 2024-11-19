@@ -12,9 +12,9 @@ import ProtectedRoute from "./components/route/ProtectedRoute";
 import EditProductPage from "./components/Shop/EditProduct";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 import CartPage from "./pages/cartPage";
-import CheckoutPage from "./pages/checkoutPage";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import OrderPage from "./pages/OrderPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
@@ -66,7 +66,7 @@ const router = createBrowserRouter(
         path="/checkout"
         element={
           <ProtectedRoute>
-            <CheckoutPage />
+            <OrderPage />
           </ProtectedRoute>
         }
       />

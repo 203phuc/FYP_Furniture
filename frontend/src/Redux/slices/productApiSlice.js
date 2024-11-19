@@ -4,16 +4,30 @@ import { apiSlice } from "./apiSlice";
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: () => ({
-        url: `${PRODUCTS_URL}`,
-        method: "GET",
-        refetchOnMountOrArgChange: true,
-      }),
+      query: (params) => {
+        const { department, tags } = params || {}; // Ensure params is always defined, destructure department and tags safely
+        console.log("params", params);
+        const queryParams = new URLSearchParams();
+
+        // Only append department and tags if they are provided
+        if (department) queryParams.append("department", department);
+        if (tags) queryParams.append("tags", tags);
+
+        const queryString = queryParams.toString();
+
+        // Return the URL with the query parameters if they exist
+        return {
+          url: `${PRODUCTS_URL}${queryString ? `?${queryString}` : ""}`,
+          method: "GET",
+          refetchOnMountOrArgChange: true,
+        };
+      },
       providesTags: (result) =>
         result
           ? result.map(({ _id }) => ({ type: "Product", id: _id }))
           : ["Product"],
     }),
+
     getProductsByShop: builder.query({
       query: (shopId) => ({
         url: `${PRODUCTS_URL}/shop/${shopId}`,
@@ -55,12 +69,26 @@ export const productApiSlice = apiSlice.injectEndpoints({
     }),
 
     getProductApproved: builder.query({
-      query: () => ({
-        url: `${PRODUCTS_URL}/approved`,
-        method: "GET",
-      }),
-      providesTags: ["Product"],
-      refetchOnMountOrArgChange: true,
+      query: (params) => {
+        const { department, tags } = params || {}; // Safely destructure
+        console.log("params", params);
+
+        // Build query parameters conditionally
+        const queryParams = new URLSearchParams();
+        if (department) queryParams.append("department", department);
+        if (tags) queryParams.append("tags", tags);
+
+        const queryString = queryParams.toString();
+        console.log("queryString", queryString);
+
+        return {
+          url: `${PRODUCTS_URL}/approved${
+            queryString ? `?${queryString}` : ""
+          }`, // Use the /approved endpoint with any filters
+          method: "GET",
+          refetchOnMountOrArgChange: true,
+        };
+      },
     }),
 
     deleteProduct: builder.mutation({
@@ -70,6 +98,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Product" }], // Invalidate cache for the deleted product
     }),
+
     toggleProductApproval: builder.mutation({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}/toggle-approval`,

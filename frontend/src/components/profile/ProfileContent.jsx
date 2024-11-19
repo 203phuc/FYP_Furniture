@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineCamera, AiOutlineDelete } from "react-icons/ai";
-import { useDispatch, useSelector } from "react-redux";
+import { RxCross1 } from "react-icons/rx";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setCredentials } from "../../redux/slices/authSlice.js";
-import { useProfileMutation } from "../../redux/slices/userApiSlice.js";
+import {
+  useGetUserProfileQuery,
+  useProfileMutation,
+} from "../../redux/slices/userApiSlice.js";
 import FormContainer from "../layout/FormContainer.jsx";
 
 const ProfileContent = ({ active }) => {
@@ -18,10 +22,10 @@ const ProfileContent = ({ active }) => {
   const [createdAt, setCreatedAt] = useState("");
   const [updatedAt, setUpdatedAt] = useState("");
 
+  const { data: userInfo } = useGetUserProfileQuery();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { userInfo } = useSelector((state) => state.auth);
   const [updateProfile, { isLoading: loadingUpdateProfile }] =
     useProfileMutation();
 
@@ -36,15 +40,19 @@ const ProfileContent = ({ active }) => {
 
     reader.readAsDataURL(e.target.files[0]);
   };
-
+  const parseDate = (date) => (date ? new Date(date).toISOString() : null);
   useEffect(() => {
-    setName(userInfo.name);
-    setEmail(userInfo.email);
-    setPhoneNumber(userInfo.phoneNumber);
-    setAddress(userInfo.address);
-    setCreatedAt(userInfo.createdAt);
-    setUpdatedAt(userInfo.updatedAt);
-  }, [userInfo.email, userInfo.name, userInfo.phoneNumber, userInfo.address]);
+    if (userInfo) {
+      // Add this check
+      console.log(userInfo);
+      setName(userInfo.name || "");
+      setEmail(userInfo.email || "");
+      setPhoneNumber(userInfo.phoneNumber || "");
+      setAddress(userInfo.address || "");
+      setCreatedAt(parseDate(userInfo.createdAt));
+      setUpdatedAt(parseDate(userInfo.updatedAt));
+    }
+  }, [userInfo]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -57,7 +65,6 @@ const ProfileContent = ({ active }) => {
         name,
         email,
         phoneNumber,
-        address,
       }).unwrap();
       dispatch(setCredentials(data));
       toast.success("Profile updated successfully");
@@ -174,6 +181,7 @@ const ProfileContent = ({ active }) => {
 
             <div className="flex justify-end mt-4">
               <button
+                onClick={submitHandler}
                 type="submit"
                 className="mt-3 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
@@ -196,55 +204,85 @@ const Address = ({ userInfo }) => {
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [addressType, setAddressType] = useState("");
+  const [addresses, setAddresses] = useState([]);
   const dispatch = useDispatch();
-
-  console.log(userInfo);
-
+  const [addAddress, { isLoading }] = useProfileMutation();
+  // Address types
   const addressTypeData = [
-    {
-      name: "Default",
-    },
-    {
-      name: "Home",
-    },
-    {
-      name: "Office",
-    },
+    { name: "Default" },
+    { name: "home" },
+    { name: "office" },
   ];
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (addressType === "" || country === "" || city === "") {
-      toast.error("Please fill all the fields!");
-    } else {
-      dispatch(
-        updateUserAddress(
+  useEffect(() => {
+    if (
+      city &&
+      country &&
+      addressType &&
+      address1 &&
+      zipCode &&
+      address2 &&
+      userInfo
+    ) {
+      setAddresses([
+        ...addresses,
+        {
           country,
           city,
+          zipCode,
           address1,
           address2,
-          zipCode,
-          addressType
-        )
-      );
+          addressType,
+        },
+      ]);
+    }
+  }, [city, country, addressType, address1, zipCode, address2, userInfo]);
+  // Form Submission Handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("form submitted");
+
+    console.log(addresses);
+    // Validation
+    if (!addressType || !country || !city) {
+      toast.error("Please fill all the required fields!");
+      return;
+    }
+
+    try {
+      // Dispatch the address addition (replace with actual function)
+      await addAddress({
+        addresses,
+      }).unwrap();
+
+      // Reset form
       setOpen(false);
       setCountry("");
       setCity("");
+      setZipCode("");
       setAddress1("");
       setAddress2("");
-      setZipCode("");
       setAddressType("");
+      toast.success("Address added successfully!");
+    } catch (error) {
+      toast.error("Failed to add address!");
+      console.log(error);
     }
   };
 
+  // Delete Address Handler
   const handleDelete = (item) => {
-    const id = item._id;
-    dispatch(deleteUserAddress(id));
+    try {
+      const id = item._id;
+      dispatch(deleteUserAddress(id)); // Replace with actual delete logic
+      toast.success("Address deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete address!");
+    }
   };
 
   return (
     <div className="w-full px-5">
+      {/* Modal for Adding Address */}
       {open && (
         <div className="fixed w-full h-screen bg-[#0000004b] top-0 left-0 flex items-center justify-center">
           <div className="w-[35%] h-[80vh] bg-white rounded shadow relative overflow-y-scroll">
@@ -258,146 +296,125 @@ const Address = ({ userInfo }) => {
             <h1 className="text-center text-2xl font-semibold">
               Add New Address
             </h1>
-            <div className="w-full">
-              <form aria-required onSubmit={handleSubmit} className="w-full">
-                <div className="w-full block p-4">
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Country"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                    />
-                  </div>
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="City"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                    />
-                  </div>
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Address Line 1
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Address Line 1"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={address1}
-                      onChange={(e) => setAddress1(e.target.value)}
-                    />
-                  </div>
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Address Line 2
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Address Line 2"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={address2}
-                      onChange={(e) => setAddress2(e.target.value)}
-                    />
-                  </div>
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Zip Code
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Zip Code"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={zipCode}
-                      onChange={(e) => setZipCode(e.target.value)}
-                    />
-                  </div>
-                  <div className="w-full pb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Address Type
-                    </label>
-                    <select
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={addressType}
-                      onChange={(e) => setAddressType(e.target.value)}
-                    >
-                      <option value="">Select Address Type</option>
-                      {addressTypeData.map((type) => (
-                        <option key={type.name} value={type.name}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <button
-                      type="submit"
-                      className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Save Address
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
+            <form onSubmit={handleSubmit} className="p-4">
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Country <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Country"
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                />
+              </div>
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="City"
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+              </div>
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Address Line 1
+                </label>
+                <input
+                  type="text"
+                  placeholder="Address Line 1"
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={address1}
+                  onChange={(e) => setAddress1(e.target.value)}
+                />
+              </div>
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Address Line 2
+                </label>
+                <input
+                  type="text"
+                  placeholder="Address Line 2"
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={address2}
+                  onChange={(e) => setAddress2(e.target.value)}
+                />
+              </div>
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Zip Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="Zip Code"
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                />
+              </div>
+              <div className="pb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Address Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="block w-full px-3 py-2 border rounded-md"
+                  value={addressType}
+                  onChange={(e) => setAddressType(e.target.value)}
+                >
+                  <option value="">Select Address Type</option>
+                  {addressTypeData.map((type) => (
+                    <option key={type.name} value={type.name}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="mt-4 w-full py-2 bg-blue-600 text-white rounded-md"
+              >
+                Save Address
+              </button>
+            </form>
           </div>
         </div>
       )}
-      {/* Your address listing code here */}
-      <div className="flex w-full items-center justify-between">
-        <h1 className="text-[25px] font-[600] text-[#000000ba] pb-2">
-          My Addresses
-        </h1>
-        <div
-          className="w-[150px] bg-black h-[50px] my-3 flex items-center justify-center rounded-xl cursor-pointer !rounded-md"
+
+      {/* Address List */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-[25px] font-semibold">My Addresses</h1>
+        <button
+          className="px-4 py-2 bg-black text-white rounded-md"
           onClick={() => setOpen(true)}
         >
-          <span className="text-[#fff]">Add New</span>
-        </div>
+          Add New
+        </button>
       </div>
-      <br />
-      {userInfo &&
+
+      {userInfo?.addresses?.length ? (
         userInfo.addresses.map((item, index) => (
           <div
-            className="w-full bg-white h-min 800px:h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10 mb-5"
             key={index}
+            className="flex items-center justify-between p-4 bg-white shadow rounded-md my-3"
           >
-            <div className="flex items-center">
-              <h5 className="pl-5 font-[600]">{item.addressType}</h5>
+            <div>
+              <p className="font-semibold">{item.addressType}</p>
+              <p>{`${item.address1}, ${item.address2}, ${item.city}, ${item.country}`}</p>
             </div>
-            <div className="pl-8 flex items-center">
-              <h6 className="text-[12px] 800px:text-[unset]">
-                {item.address1} {item.address2}
-              </h6>
-            </div>
-            <div className="pl-8 flex items-center">
-              <h6 className="text-[12px] 800px:text-[unset]">
-                {userInfo && userInfo.phoneNumber}
-              </h6>
-            </div>
-            <div className="min-w-[10%] flex items-center justify-between pl-8">
-              <AiOutlineDelete
-                size={25}
-                className="cursor-pointer"
-                onClick={() => handleDelete(item)}
-              />
-            </div>
+            <AiOutlineDelete
+              size={25}
+              className="cursor-pointer text-red-600"
+              onClick={() => handleDelete(item)}
+            />
           </div>
-        ))}
-
-      {userInfo && userInfo.addresses.length === 0 && (
-        <h5 className="text-center pt-8 text-[18px]">
-          You not have any saved address!
-        </h5>
+        ))
+      ) : (
+        <p className="text-center mt-4">No addresses found!</p>
       )}
     </div>
   );

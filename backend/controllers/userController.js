@@ -5,6 +5,15 @@ import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
 import { sendMail } from "../utils/sendMail.js";
 
+// Generate activation token
+const createActivationToken = (user) => {
+  return jwt.sign(
+    { email: user.email, _id: user._id },
+    process.env.ACTIVATION_SECRET,
+    { expiresIn: "1h" }
+  );
+};
+
 // @desc    Authenticate user and set token
 // @route   POST /api/users/auth
 // @access  Public
@@ -22,13 +31,11 @@ const authUser = asyncHandler(async (req, res) => {
       addresses: user.addresses,
       role: user.role,
       avatar: user.avatar,
-      createdAt: user.createdAt, // Include createdAt field
-      updatedAt: user.updatedAt, // Include updatedAt field
-      token: user.token,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     });
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    res.status(401).json({ message: "Invalid email or password" });
   }
 });
 
@@ -37,48 +44,27 @@ const authUser = asyncHandler(async (req, res) => {
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, phoneNumber, addresses, avatar } = req.body;
-
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    res.status(400).json({ message: "User already exists" });
+    return;
   }
 
-  const userData = {
-    name,
-    email,
-    password,
-  };
-
-  if (phoneNumber) {
-    userData.phoneNumber = phoneNumber;
-  }
-
-  if (addresses) {
-    userData.addresses = addresses;
-  }
+  const userData = { name, email, password, phoneNumber, addresses };
 
   if (avatar) {
     const myCloud = await cloudinary.v2.uploader.upload(avatar, {
       folder: "avatars",
     });
-
-    userData.avatar = {
-      public_id: myCloud.public_id,
-      url: myCloud.secure_url,
-    };
+    userData.avatar = { public_id: myCloud.public_id, url: myCloud.secure_url };
   }
 
   const user = await User.create(userData);
 
   if (user) {
-    // Generate activation token
     const activationToken = createActivationToken(user);
-
-    // Send verification email
     await sendMail(user.email, activationToken);
-
     generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
@@ -88,277 +74,188 @@ const registerUser = asyncHandler(async (req, res) => {
       addresses: user.addresses,
       role: user.role,
       avatar: user.avatar,
-      createdAt: user.createdAt, // Automatically included
-      updatedAt: user.updatedAt, // Automatically included
-      token: user.token,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     });
   } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+    res.status(400).json({ message: "Invalid user data" });
   }
 });
 
-const createActivationToken = (user) => {
-  return jwt.sign(
-    { email: user.email, _id: user._id },
-    process.env.ACTIVATION_SECRET,
-    {
-      expiresIn: "1h", // Token expiry time
-    }
-  );
-};
 // @desc    Verify user's email
-// @route   GET /api/users/verify-email
+// @route   POST /api/users/verify-email
 // @access  Public
 const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.body.token;
-  console.log(token);
+  const { token } = req.body;
+
   if (!token) {
-    res.status(400);
-    throw new Error("Verification token is required");
+    res.status(400).json({ message: "Verification token is required" });
+    return;
   }
 
   try {
-    // Verify the token
     const decoded = jwt.verify(token, process.env.ACTIVATION_SECRET);
-
-    // Find the user by email
     const user = await User.findOne({ email: decoded.email });
 
     if (!user) {
-      res.status(404);
-      throw new Error("User not found");
+      res.status(404).json({ message: "User not found" });
+      return;
     }
 
-    // Activate the user account
     user.isVerified = true;
     await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Email verified successfully. You can now log in.",
-    });
+    res
+      .status(200)
+      .json({ message: "Email verified successfully. You can now log in." });
   } catch (error) {
-    res.status(400);
-    console.log(error);
-    throw new Error("Invalid or expired token");
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 });
 
 // @desc    Logout user and clear token
 // @route   POST /api/users/logout
 // @access  Public
-const logoutUser = asyncHandler(async (req, res) => {
-  res.cookie("jwt", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
-
+const logoutUser = asyncHandler((req, res) => {
+  res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
   res.status(200).json({ message: "User logged out" });
 });
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
-const getUserProfile = asyncHandler(async (req, res) => {
-  const user = {
-    ...req.user._doc,
-  };
-  res.status(200).json(user);
+const getUserProfile = asyncHandler((req, res) => {
+  console.log("inside the get profile");
+  res.status(200).json(req.user);
 });
 
-// @desc    Update user profile
-// @route   PUT /api/users/profile
+// @desc    Update user profile, avatar, addresses, or password
+// @route   PATCH /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    // Update fields from the request body
-    if (req.body.name !== undefined) user.name = req.body.name;
-    if (req.body.email !== undefined) user.email = req.body.email;
-    if (req.body.phoneNumber !== undefined)
-      user.phoneNumber = req.body.phoneNumber;
-    if (req.body.addresses !== undefined) user.addresses = req.body.addresses;
-    if (req.body.avatar !== undefined) user.avatar = req.body.avatar;
+    const {
+      name,
+      email,
+      phoneNumber,
+      addresses,
+      avatar,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    } = req.body;
+    console.log("address", addresses);
+    // Basic info updates
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
 
-    // Save the updated user
+    // Address updates
+    if (Array.isArray(addresses)) {
+      addresses.forEach((newAddress) => {
+        const existsAddress = user.addresses.findById(newAddress._id);
+        if (existsAddress) {
+          // Update the existing address with newAddress details
+          Object.assign(existsAddress, newAddress);
+        } else {
+          // Add the newAddress to the addresses array
+          user.addresses.push(newAddress);
+        }
+      });
+    } else if (addresses) {
+      // Handle single address (if `addresses` is not an array)
+      const existsAddress = user.addresses.find((address) =>
+        address._id.equals(addresses._id)
+      );
+      if (existsAddress) {
+        Object.assign(existsAddress, addresses);
+      } else {
+        user.addresses.push(addresses);
+      }
+    }
+
+    // Avatar update
+    if (avatar) {
+      if (user.avatar.public_id)
+        await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+      const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+        folder: "avatars",
+        width: 150,
+      });
+      user.avatar = { public_id: myCloud.public_id, url: myCloud.secure_url };
+    }
+
+    // Password update
+    if (oldPassword && newPassword && confirmPassword) {
+      const isPasswordMatched = await user.matchPassword(oldPassword);
+      if (!isPasswordMatched)
+        return res.status(400).json({ message: "Old password is incorrect" });
+      if (newPassword !== confirmPassword)
+        return res.status(400).json({ message: "Passwords do not match" });
+      user.password = newPassword;
+    }
+
     const updatedUser = await user.save();
-
     res.status(200).json({
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
       phoneNumber: updatedUser.phoneNumber,
       addresses: updatedUser.addresses,
-      role: updatedUser.role,
       avatar: updatedUser.avatar,
+      role: updatedUser.role,
     });
   } else {
-    res.status(404);
-    throw new Error("User not found");
+    res.status(404).json({ message: "User not found" });
   }
-});
-
-// @desc    Update user avatar
-// @route   PUT /api/users/update-avatar
-// @access  Private
-const updateUserAvatar = asyncHandler(async (req, res) => {
-  let existsUser = await User.findById(req.user._id);
-  if (req.body.avatar !== "") {
-    const imageId = existsUser.avatar.public_id;
-
-    await cloudinary.v2.uploader.destroy(imageId);
-
-    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-      folder: "avatars",
-      width: 150,
-    });
-
-    existsUser.avatar = {
-      public_id: myCloud.public_id,
-      url: myCloud.secure_url,
-    };
-  }
-
-  await existsUser.save();
-
-  res.status(200).json({
-    success: true,
-    user: existsUser,
-  });
-});
-
-// @desc    Update user addresses
-// @route   PUT /api/users/update-user-addresses
-// @access  Private
-const updateUserAddresses = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  const sameTypeAddress = user.addresses.find(
-    (address) => address.addressType === req.body.addressType
-  );
-  if (sameTypeAddress) {
-    res.status(400);
-    throw new Error(`${req.body.addressType} address already exists`);
-  }
-
-  const existsAddress = user.addresses.find(
-    (address) => address._id === req.body._id
-  );
-
-  if (existsAddress) {
-    Object.assign(existsAddress, req.body);
-  } else {
-    // Add the new address to the array
-    user.addresses.push(req.body);
-  }
-
-  await user.save();
-
-  res.status(200).json({
-    success: true,
-    user,
-  });
 });
 
 // @desc    Delete user address
-// @route   DELETE /api/users/delete-user-address/:id
+// @route   DELETE /api/users/address/:id
 // @access  Private
 const deleteUserAddress = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const addressId = req.params.id;
-
+  const { id: addressId } = req.params;
   await User.updateOne(
-    {
-      _id: userId,
-    },
+    { _id: req.user._id },
     { $pull: { addresses: { _id: addressId } } }
   );
-
-  const user = await User.findById(userId);
-
-  res.status(200).json({ success: true, user });
-});
-
-// @desc    Update user password
-// @route   PUT /api/users/update-user-password
-// @access  Private
-const updateUserPassword = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select("+password");
-
-  const isPasswordMatched = await user.matchPassword(req.body.oldPassword);
-
-  if (!isPasswordMatched) {
-    res.status(400);
-    throw new Error("Old password is incorrect!");
-  }
-
-  if (req.body.newPassword !== req.body.confirmPassword) {
-    res.status(400);
-    throw new Error("Passwords do not match!");
-  }
-  user.password = req.body.newPassword;
-
-  await user.save();
-
-  res.status(200).json({
-    success: true,
-    message: "Password updated successfully!",
-  });
+  res.status(200).json({ message: "Address deleted successfully" });
 });
 
 // @desc    Get user information by userId
-// @route   GET /api/users/user-info/:id
+// @route   GET /api/users/:id
 // @access  Public
 const getUserInfoById = asyncHandler(async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      user,
-    });
-  } catch (error) {
-    res.status(500);
-    throw new Error(error.message);
-  }
+  const user = await User.findById(req.params.id);
+  user
+    ? res.status(200).json(user)
+    : res.status(404).json({ message: "User not found" });
 });
 
 // @desc    Get all users (admin only)
-// @route   GET /api/users/admin-all-users
+// @route   GET /api/users
 // @access  Private/Admin
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().sort({
-    createdAt: -1,
-  });
-  res.status(200).json({
-    success: true,
-    users,
-  });
+  const users = await User.find().sort({ createdAt: -1 });
+  res.status(200).json(users);
 });
 
 // @desc    Delete user (admin only)
-// @route   DELETE /api/users/delete-user/:id
+// @route   DELETE /api/users/:id
 // @access  Private/Admin
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    res.status(400);
-    throw new Error("User not found");
+    res.status(404).json({ message: "User not found" });
+    return;
   }
 
-  const imageId = user.avatar.public_id;
-
-  await cloudinary.v2.uploader.destroy(imageId);
-
+  if (user.avatar.public_id)
+    await cloudinary.v2.uploader.destroy(user.avatar.public_id);
   await User.findByIdAndDelete(req.params.id);
-
-  res.status(200).json({
-    success: true,
-    message: "User deleted successfully!",
-  });
+  res.status(200).json({ message: "User deleted successfully" });
 });
 
 export {
@@ -370,9 +267,6 @@ export {
   getUserProfile,
   logoutUser,
   registerUser,
-  updateUserAddresses,
-  updateUserAvatar,
-  updateUserPassword,
   updateUserProfile,
   verifyEmail,
 };

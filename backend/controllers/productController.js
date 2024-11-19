@@ -135,25 +135,82 @@ const toggleProductApproval = async (req, res) => {
   }
 };
 
-// @desc    Fetch all approved products
+// @desc    Fetch all approved products with optional filters for department and tags and pagination
 // @route   GET /api/products/approved
 // @access  Public
 const getApprovedProducts = asyncHandler(async (req, res) => {
-  const approvedProducts = await Product.find({ approved: true }).populate(
-    "variants"
-  );
-  if (!approvedProducts.length) {
-    return res.status(404).json({ message: "No approved products found" });
+  const { department, tags, page = 1, limit = 10 } = req.query;
+
+  // Build the filter object
+  const filter = { approved: true }; // Only fetch approved products by default
+  if (department) {
+    filter.department = { $regex: new RegExp(department, "i") }; // Case-insensitive search
   }
-  res.status(200).json(approvedProducts);
+  if (tags) {
+    filter.tags = { $in: tags.split(",").map((tag) => new RegExp(tag, "i")) };
+  }
+
+  try {
+    // Calculate skip and limit for pagination
+    const skip = (page - 1) * limit;
+
+    // Fetch paginated results
+    const [products, totalProducts] = await Promise.all([
+      Product.find(filter).populate("variants").skip(skip).limit(Number(limit)),
+      Product.countDocuments(filter),
+    ]);
+
+    // Check if there are no results
+    if (!products.length) {
+      return res.status(404).json({ message: "No approved products found" });
+    }
+
+    // Return paginated results and metadata
+    res.status(200).json({
+      products,
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: Number(page),
+    });
+  } catch (error) {
+    console.error("Error fetching approved products:", error);
+    res.status(500).json({
+      message: "Error fetching approved products",
+      error: error.message,
+    });
+  }
 });
 
-// @desc    Fetch all products
+// @desc    Fetch all products, with optional filters for department and tags
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({}).populate("variants");
-  res.status(200).json(products);
+  const { department, tags } = req.query;
+  console.log(
+    "getting approved products from get products" + department + tags
+  );
+
+  // Build the filter object
+  const filter = {};
+
+  if (department) {
+    filter.department = { $regex: new RegExp(department, "i") }; // Case-insensitive search for department
+  }
+
+  if (tags) {
+    filter.tags = { $in: tags.split(",").map((tag) => new RegExp(tag, "i")) }; // Case-insensitive search for tags
+  }
+
+  try {
+    // Fetch products with applied filters and populate variants
+    const products = await Product.find(filter).populate("variants");
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching products", error: error.message });
+  }
 });
 
 // @desc    Delete a product

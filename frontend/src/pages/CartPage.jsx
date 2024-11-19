@@ -19,7 +19,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   useFetchCartQuery,
@@ -125,10 +125,12 @@ function CartPage() {
       ...item,
       quantity: quantities[item.variantId] || item.quantity,
     }));
-    await updateCart(cartData);
-    await syncCart({ user_id: userInfo.id, items: updatedItems });
-
-    toast.success("Cart updated successfully!");
+    try {
+      await updateCart(cartData);
+      await syncCart({ user_id: userInfo.id, items: updatedItems });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleRemoveItem = async (variantId) => {
@@ -138,8 +140,8 @@ function CartPage() {
     await syncCart({ user_id: userInfo.id, items: updatedItems });
   };
   const handleCheckout = async () => {
-    navigate("/checkout");
-    return;
+    // navigate("/checkout");
+    // return;
     setCheckOutIsLoading(true);
 
     try {

@@ -19,6 +19,10 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"], // Invalidate user data after registration
     }),
+    getUserProfile: builder.query({
+      query: () => `${USERS_URL}/profile`,
+      providesTags: ["User"], // Provide the user data for caching
+    }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
@@ -42,10 +46,22 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"], // Optionally invalidate user data after verification
     }),
+    getAllUsers: builder.query({
+      query: () => `${USERS_URL}/admin-all-users`,
+    }),
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/delete-user/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
 export const {
+  useGetUserProfileQuery,
+  useGetAllUsersQuery,
+  useDeleteUserMutation,
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,

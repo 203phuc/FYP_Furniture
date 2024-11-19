@@ -1,43 +1,42 @@
-// navigation Data
 export const navItems = [
   {
     title: "LIVING",
-    url: "/living",
+    url: "/living", // URL for the department
   },
   {
     title: "DINNING",
-    url: "/best-selling",
+    url: "/dining", // URL for the department
   },
   {
     title: "BEDROOM",
-    url: "/products",
+    url: "/bedroom", // URL for the department
   },
   {
     title: "OUTDOOR",
-    url: "/events",
+    url: "/outdoor", // URL for the department
   },
   {
     title: "LIGHTING",
-    url: "/faq",
+    url: "/lighting", // URL for the department
   },
   {
     title: "DECOR",
-    url: "/faq",
+    url: "/decor", // URL for the department
   },
   {
     title: "RUG",
-    url: "/faq",
+    url: "/rug", // URL for the department
   },
   {
     title: "OFFICE",
-    url: "/faq",
+    url: "/office", // URL for the department
   },
   {
     title: "SALE",
-    url: "/faq",
+    url: "/sale", // URL for the department
   },
   {
     title: "DESIGN",
-    url: "/faq",
+    url: "/design", // URL for the department
   },
 ];

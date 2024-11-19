@@ -1,10 +1,10 @@
 import React from "react";
-import ContactSection from "../components/checkout/ContactSection";
+import ContactSection from "../components/checkout/ContactSection.jsx";
 import DeliverySection from "../components/checkout/DeliverySection.jsx";
 import OrderSummary from "../components/checkout/OrderSummary.jsx";
 import PaymentSection from "../components/checkout/PaymentSection.jsx";
 
-const CheckoutPage = () => {
+const OrderPage = () => {
   return (
     <div className="flex flex-col md:flex-row justify-center items-start p-4 md:p-8 bg-white">
       {/* Left side: Form sections */}
@@ -22,4 +22,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage;
+export default OrderPage;

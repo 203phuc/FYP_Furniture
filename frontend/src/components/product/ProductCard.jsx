@@ -1,5 +1,4 @@
 "use client";
-
 import { MoreVertical, ShoppingCart } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,7 +46,7 @@ export default function ProductCard({ data }) {
     setSelectedOptionValue(value);
   };
 
-  const addToCartHandler = async () => {
+  const addToCartHandler = () => {
     if (!userInfo) {
       toast.error("Please log in to add items to the cart.");
       return;
@@ -66,7 +65,8 @@ export default function ProductCard({ data }) {
     const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
     const existingCartItem = localCart.items.find(
       (item) =>
-        item.productId === data._id && item.variantId === selectedVariant._id
+        item.productId._id === data._id &&
+        item.variantId === selectedVariant._id
     );
 
     const currentCartQuantity = existingCartItem
@@ -80,7 +80,7 @@ export default function ProductCard({ data }) {
     }
 
     try {
-      await dispatch(
+      dispatch(
         addToCart({
           productId: data._id,
           variantId: selectedVariant._id,
@@ -102,19 +102,40 @@ export default function ProductCard({ data }) {
   const previousCart = useRef(cart);
 
   useEffect(() => {
-    if (previousCart.current !== cart) {
-      syncCart(cart)
-        .then(() => {
-          console.log("Cart synced with server after cart change.");
-          toast.success("Cart synced with server after cart change.");
-          previousCart.current = cart;
-        })
-        .catch((error) => {
-          console.error(
-            "Failed to sync cart with server after cart change.",
-            error
-          );
-        });
+    let isCancelled = false;
+
+    // Only sync if the cart has actually changed
+    if (JSON.stringify(previousCart.current) !== JSON.stringify(cart)) {
+      const timer = setTimeout(() => {
+        if (!isCancelled) {
+          syncCart(cart)
+            .then(() => {
+              if (!isCancelled) {
+                console.log("Cart synced with server.");
+
+                toast.success("Cart synced with server.");
+              }
+            })
+            .catch((error) => {
+              if (!isCancelled) {
+                console.error("Failed to sync cart with server.", error);
+                toast.error("Failed to sync cart with server.");
+              }
+            })
+            .finally(() => {
+              if (!isCancelled) {
+                console.log("Cart sync attempt completed.");
+                previousCart.current = cart; // Update previousCart reference
+              }
+            });
+        }
+      }, 500); // Debounce sync by 500ms
+
+      // Cleanup function for debouncing
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+      };
     }
   }, [cart, syncCart]);
 

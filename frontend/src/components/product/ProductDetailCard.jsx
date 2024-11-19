@@ -50,6 +50,7 @@ export default function ProductDetailsCard() {
             error
           );
         });
+      toast.success("Cart synced with server after cart change.");
     }
     if (wishlist && data && wishlist.find((i) => i._id === data._id)) {
       setClick(true);
@@ -95,13 +96,14 @@ export default function ProductDetailsCard() {
     const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
     const existingCartItem = localCart.items.find(
       (item) =>
-        item.productId === data._id && item.variantId === selectedVariant._id
+        item.productId._id === data._id &&
+        item.variantId === selectedVariant._id
     );
     const currentCartQuantity = existingCartItem
       ? existingCartItem.quantity
       : 0;
     const newQuantity = currentCartQuantity + count;
-
+    console.log(" newQuantity", newQuantity);
     if (newQuantity > selectedVariant.stockQuantity) {
       toast.error("Cannot add more than available stock!");
       return;
@@ -120,7 +122,6 @@ export default function ProductDetailsCard() {
         })
       );
       toast.success("Item added to cart successfully!");
-      await syncCart(cart).unwrap();
       toast.success("Cart synced with server.");
     } catch (error) {
       toast.error("Failed to sync cart with server.", error);
@@ -201,7 +202,7 @@ export default function ProductDetailsCard() {
   return (
     <div className=" mx-auto shadow-lg">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-3/4">
           <img
             src={selectedVariant?.mainImage?.url || data.mainImage?.url}
             alt={data.name}
@@ -234,45 +235,45 @@ export default function ProductDetailsCard() {
         </div>
 
         <div className="w-full md:w-1/2 px-6 py-8">
-          <Typography variant="h5" gutterBottom>
-            {data.name}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {data.description}
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            ${selectedVariant?.price || data.price}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <div className="text-4xl font-thin mb-4 max-w-max">{data.name}</div>
+          <p className="text-xl font-thin mt-4">
+            $ {selectedVariant?.price || data.price}
+          </p>
+          <p className="mt-4 font-thin">{data.description}</p>
+
+          <p className={`mt-4 font-thin `}>
             Available Stock:{" "}
             {selectedVariant?.stockQuantity || data.stockQuantity}
-          </Typography>
+          </p>
 
           {data.options.map(
             (option) =>
               option.values &&
               option.values.length > 0 && (
                 <div key={option.name} className="mt-4">
-                  <Typography variant="subtitle1" gutterBottom>
-                    {option.name}:
-                  </Typography>
+                  <p className="mb-2 font-semibold uppercase">{option.name}:</p>
                   <div className="flex flex-wrap gap-2">
                     {option.values.map((value) => (
-                      <Button
+                      <button
                         key={value._id}
-                        variant={
-                          JSON.stringify(selectedOptions[option.name]) ===
-                          JSON.stringify(value.value)
-                            ? "contained"
-                            : "outlined"
-                        }
                         onClick={() =>
                           handleOptionChange(option.name, value.value)
                         }
-                        className="min-w-0"
+                        className={` focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-black m-1 ${
+                          JSON.stringify(selectedOptions[option.name]) ===
+                          JSON.stringify(value.value)
+                            ? "ring-2 ring-offset-4 ring-black"
+                            : ""
+                        }`}
+                        style={{
+                          backgroundImage: value.image
+                            ? `url(${value.image})`
+                            : "none",
+                          backgroundColor: value.image ? "transparent" : "",
+                        }}
                       >
                         {renderOptionValue(option, value.value)}
-                      </Button>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -296,15 +297,13 @@ export default function ProductDetailsCard() {
             </IconButton>
           </div>
 
-          <Button
-            variant="contained"
-            color="primary"
+          <button
             startIcon={<ShoppingCart />}
-            className="mt-4 w-full"
+            className="mt-4 w-full font-bold bg-black text-white py-2 px-4 hover:bg-gray-800 flex items-center justify-center"
             onClick={addToCartHandler}
           >
             Add to Cart
-          </Button>
+          </button>
         </div>
       </div>
     </div>

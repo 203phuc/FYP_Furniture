@@ -29,21 +29,55 @@ const ShopCreatePage = () => {
     }
   }, [userInfo, navigate]);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const validatePhoneNumber = (number) => {
-    const phoneRegex = /^[0-9]{10,15}$/; // Adjust the length as needed
+    const phoneRegex = /^[0-9]{10,15}$/;
     return phoneRegex.test(number);
+  };
+
+  const validateZipCode = (zip) => {
+    const zipRegex = /^\d{5}(?:[-\s]\d{4})?$/;
+    return zipRegex.test(zip);
+  };
+
+  const validatePasswordStrength = (password) => {
+    // Minimum 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
     if (!validatePhoneNumber(phoneNumber)) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (!validateZipCode(zipCode)) {
+      toast.error("Please enter a valid zip code");
+      return;
+    }
+
+    if (!validatePasswordStrength(password)) {
+      toast.error(
+        "Password must be at least 8 characters, with an uppercase letter, a number, and a special character"
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -95,7 +129,7 @@ const ShopCreatePage = () => {
           </label>
           <div className="mt-1">
             <input
-              type="text"
+              type="number"
               name="phoneNumber"
               required
               value={phoneNumber}

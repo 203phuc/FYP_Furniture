@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
         },
         addressType: {
           type: String,
-          enum: ["home", "work", "other"], // Example address types
+          enum: ["home", "work", "other"],
         },
       },
     ],
