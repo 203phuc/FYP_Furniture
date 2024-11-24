@@ -39,6 +39,15 @@ const variantSchema = new mongoose.Schema(
         },
       },
     ],
+    // Add 3D Model field
+    threeDModel: {
+      public_id: {
+        type: String, // Store Cloudinary public_id
+      },
+      url: {
+        type: String, // Store the URL of the 3D model file
+      },
+    },
   },
   {
     timestamps: true,

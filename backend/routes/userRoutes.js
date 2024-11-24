@@ -2,6 +2,7 @@ import express from "express";
 import {
   authUser,
   deleteUser,
+  deleteUserAddress,
   getAllUsers,
   getUserProfile,
   logoutUser,
@@ -26,6 +27,8 @@ router
   .route("/profile")
   .get(protect, getUserProfile)
   .patch(protect, updateUserProfile);
+
+router.route("/delete-address/:id").delete(protect, deleteUserAddress);
 
 // Admin routes for fetching all users and deleting a user
 router.get("/admin-all-users", protect, isAdmin, getAllUsers);

@@ -154,7 +154,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     // Address updates
     if (Array.isArray(addresses)) {
       addresses.forEach((newAddress) => {
-        const existsAddress = user.addresses.findById(newAddress._id);
+        const existsAddress = user.addresses.find(
+          (address) => address._id === newAddress._id
+        );
+
         if (existsAddress) {
           // Update the existing address with newAddress details
           Object.assign(existsAddress, newAddress);
@@ -216,6 +219,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @access  Private
 const deleteUserAddress = asyncHandler(async (req, res) => {
   const { id: addressId } = req.params;
+  console.log(addressId, req.user._id);
   await User.updateOne(
     { _id: req.user._id },
     { $pull: { addresses: { _id: addressId } } }

@@ -1,76 +1,25 @@
 import asyncHandler from "express-async-handler";
 import Cart from "../models/cartModel.js";
-import Product from "../models/productModel.js";
-import Variant from "../models/variantModel.js";
 
 // @desc    Sync cart by adding new items or updating existing ones
 // @route   POST /api/carts
 // @access  Private
+// Sync cart by preserving existing _id fields
 const syncCart = asyncHandler(async (req, res) => {
   const { items } = req.body;
   const user_id = req.user._id;
 
   try {
-    // Find or create the user's cart
-    let cart = await Cart.findOne({ user_id });
-    if (!cart) {
-      cart = new Cart({ user_id, items: [] });
+    const cart = await Cart.findOneAndUpdate(
+      { user_id },
+      {
+        $setOnInsert: { user_id },
+        $set: { items }, // Directly replace the `items` field
+      },
+      { new: true, upsert: true }
+    );
 
-      // Process each item in the request
-      for (const newItem of items) {
-        const {
-          productId,
-          variantId,
-          quantity,
-          price,
-          productName,
-          attributes,
-          mainImage,
-        } = newItem;
-
-        // Find the product and variant
-        const product = await Product.findById(productId);
-        if (!product) {
-          throw new Error("Product not found");
-        }
-
-        const variant = await Variant.findById(variantId);
-        if (!variant) {
-          throw new Error("Variant not found");
-        }
-        if (quantity > variant.stockQuantity) {
-          throw new Error("User can not add more than stock quantity");
-        }
-
-        // Find or update item in the cart
-        const existingItemIndex = cart.items.findIndex(
-          (item) => item.productId === productId && item.variantId === variantId
-        );
-
-        if (existingItemIndex >= 0) {
-          // Update quantity and price of existing item
-          cart.items[existingItemIndex].quantity += quantity;
-          cart.items[existingItemIndex].price = price || variant.price;
-        } else {
-          // Add new item to the cart
-          cart.items.push({
-            productId: productId,
-            variantId: variantId,
-            productName: productName,
-            attributes: attributes,
-            quantity: quantity,
-            stockQuantity: variant.stockQuantity,
-            price: price || variant.price,
-            mainImage: mainImage || variant.mainImage,
-          });
-        }
-      }
-    } else {
-      cart.items = items;
-    }
-
-    const savedCart = await cart.save();
-    res.status(201).json(savedCart);
+    res.status(201).json(cart);
   } catch (error) {
     console.error("Error syncing cart:", error);
     res.status(500).json({ error: "Failed to sync cart" });

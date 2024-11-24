@@ -30,6 +30,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"], // Invalidate user data after logout
     }),
+    deleteUserAddress: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/delete-address/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
     profile: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/profile`,
@@ -59,6 +66,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useDeleteUserAddressMutation,
   useGetUserProfileQuery,
   useGetAllUsersQuery,
   useDeleteUserMutation,

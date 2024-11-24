@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setCredentials } from "../../redux/slices/authSlice.js";
 import {
+  useDeleteUserAddressMutation,
   useGetUserProfileQuery,
   useProfileMutation,
 } from "../../redux/slices/userApiSlice.js";
@@ -207,51 +208,41 @@ const Address = ({ userInfo }) => {
   const [addresses, setAddresses] = useState([]);
   const dispatch = useDispatch();
   const [addAddress, { isLoading }] = useProfileMutation();
+
+  const [deleteAddress, { isLoading: isDeleting }] =
+    useDeleteUserAddressMutation();
+
   // Address types
   const addressTypeData = [
     { name: "Default" },
     { name: "home" },
     { name: "office" },
   ];
-  useEffect(() => {
-    if (
-      city &&
-      country &&
-      addressType &&
-      address1 &&
-      zipCode &&
-      address2 &&
-      userInfo
-    ) {
-      setAddresses([
-        ...addresses,
-        {
-          country,
-          city,
-          zipCode,
-          address1,
-          address2,
-          addressType,
-        },
-      ]);
-    }
-  }, [city, country, addressType, address1, zipCode, address2, userInfo]);
+
   // Form Submission Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("form submitted");
 
-    console.log(addresses);
     // Validation
     if (!addressType || !country || !city) {
       toast.error("Please fill all the required fields!");
       return;
     }
 
+    // Add the new address to the list
+    const newAddress = {
+      country,
+      city,
+      zipCode,
+      address1,
+      address2,
+      addressType,
+    };
+
     try {
       // Dispatch the address addition (replace with actual function)
       await addAddress({
-        addresses,
+        addresses: [...userInfo.addresses, newAddress],
       }).unwrap();
 
       // Reset form
@@ -270,13 +261,15 @@ const Address = ({ userInfo }) => {
   };
 
   // Delete Address Handler
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     try {
       const id = item._id;
-      dispatch(deleteUserAddress(id)); // Replace with actual delete logic
-      toast.success("Address deleted successfully!");
+      const response = await deleteAddress(id).unwrap();
+      console.log(response); // Debug response
+      toast.success(response?.message || "Address deleted successfully!");
     } catch (error) {
-      toast.error("Failed to delete address!");
+      console.error(error); // Debug error
+      toast.error(error?.data?.message || "Failed to delete address!");
     }
   };
 

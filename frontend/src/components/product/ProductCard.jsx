@@ -1,6 +1,7 @@
 "use client";
+import { isEqual } from "lodash";
 import { MoreVertical, ShoppingCart } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -10,12 +11,14 @@ import { addToCart } from "../../redux/slices/cartSlice";
 // Assuming ProductDetailCard is adapted to work with this new design
 
 export default function ProductCard({ data }) {
+  console.log("ProductCard rendered");
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const userInfo = useSelector((state) => state.auth.userInfo);
-  const cart = useSelector((state) => state.cart.cart);
+  const { cart } = useSelector((state) => state.cart);
   const [syncCart] = useSyncCartMutation();
-
+  const [initialCart, setInitialCart] = useState({ ...cart });
+  console.log(cart);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const optionWithMostImages = useMemo(() => {
@@ -98,46 +101,41 @@ export default function ProductCard({ data }) {
       toast.error("Failed to add item to cart.");
     }
   };
-
-  const previousCart = useRef(cart);
-
+  // const { isSyncing } = useCartSync(cart, syncCart);
   useEffect(() => {
-    let isCancelled = false;
+    console.log("ProductCard useEffect triggered", initialCart, cart);
 
-    // Only sync if the cart has actually changed
-    if (JSON.stringify(previousCart.current) !== JSON.stringify(cart)) {
-      const timer = setTimeout(() => {
-        if (!isCancelled) {
-          syncCart(cart)
-            .then(() => {
-              if (!isCancelled) {
-                console.log("Cart synced with server.");
-
-                toast.success("Cart synced with server.");
-              }
-            })
-            .catch((error) => {
-              if (!isCancelled) {
-                console.error("Failed to sync cart with server.", error);
-                toast.error("Failed to sync cart with server.");
-              }
-            })
-            .finally(() => {
-              if (!isCancelled) {
-                console.log("Cart sync attempt completed.");
-                previousCart.current = cart; // Update previousCart reference
-              }
-            });
-        }
-      }, 500); // Debounce sync by 500ms
-
-      // Cleanup function for debouncing
-      return () => {
-        isCancelled = true;
-        clearTimeout(timer);
-      };
+    // Ensure cart data is valid before proceeding
+    if (!cart?.items?.length) {
+      console.log("Cart is empty or invalid. Skipping initial cart setup.");
+      return;
     }
-  }, [cart, syncCart]);
+
+    // Set the initial cart only once if not already set
+    if (!initialCart) {
+      console.log("Initializing cart...");
+      setInitialCart(JSON.parse(JSON.stringify(cart))); // Deep copy of cart
+      return;
+    }
+
+    // Skip syncing if cart hasn't changed
+    if (isEqual(initialCart, cart)) {
+      console.log("Cart is unchanged. Skipping sync.");
+      return;
+    }
+
+    console.log("Cart content has changed. Syncing...");
+    syncCart(cart)
+      .unwrap()
+      .then(() => {
+        console.log("Cart synchronized successfully.");
+        setInitialCart(JSON.parse(JSON.stringify(cart))); // Update reference after sync
+        toast.success("Cart synchronized successfully.");
+      })
+      .catch((error) => {
+        console.error("Failed to sync cart:", error);
+      });
+  }, [cart, initialCart, syncCart]);
 
   return (
     <div className="max-w-[500px] mx-auto">

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -11,10 +11,13 @@ import {
   useFetchCartQuery,
   useSyncCartMutation,
 } from "./redux/slices/cartApiSlice";
-import { updateCart } from "./redux/slices/cartSlice";
+import { addToCart } from "./redux/slices/cartSlice";
 import { useGetProductApprovedQuery } from "./redux/slices/productApiSlice";
 
 const App = () => {
+  const cart = useSelector((state) => state.cart.cart);
+  const dispatch = useDispatch();
+  console.log("cart", cart);
   const location = useLocation();
   const {
     data: products = [], // Default to empty array
@@ -31,37 +34,25 @@ const App = () => {
   } = useFetchCartQuery(userId, {
     skip: !userId,
   });
+  console.log("fetch cart", cartData);
 
-  const previousCart = useRef(cartData); // Ref to store previous cart data
+  useEffect(() => {
+    if (cart && cart.items.length > 0) {
+      console.log("cart is not innitialized");
+    } else if (
+      cartData &&
+      cartData.cart.items.length > 0 &&
+      cart.items.length === 0
+    ) {
+      dispatch(addToCart(cartData.cart));
+    }
+    if (cartError) {
+      toast.error("Error fetching cart data. Please try again.");
+    }
+  }, [cartData, cart]);
 
   // Sync cart only if it changes and if it's empty
-  useEffect(() => {
-    if (userId && cartData && cartData.cart?.items?.length === 0) {
-      console.log("Syncing in the app");
-      // Only sync if the cart is empty and it's a new sync attempt
-      if (JSON.stringify(previousCart.current) !== JSON.stringify(cartData)) {
-        syncCart({ user_id: userId, items: [] })
-          .unwrap()
-          .then(() => {
-            console.log("Cart synced successfully for empty cart.");
-            previousCart.current = cartData; // Update ref with current cart data
-          })
-          .catch((error) => {
-            console.error("Failed to sync empty cart:", error);
-            toast.error("Failed to sync empty cart.");
-          });
-      }
-    }
-  }, [cartData, userId, syncCart]);
-
-  const dispatch = useDispatch();
-
   // Update cart in Redux store
-  useEffect(() => {
-    if (cartData?.cart?.items) {
-      dispatch(updateCart(cartData.cart.items));
-    }
-  }, [cartData, dispatch]);
 
   const hiddenPaths = [
     "/login",
@@ -88,8 +79,7 @@ const App = () => {
           error={productsError}
         />
       )}
-      {cartLoading && <div>Loading...</div>}
-      {cartError && toast.error(cartError.message || "Failed to fetch cart")}
+
       <Outlet />
       {shouldShowHeader && <Footer />}
     </>

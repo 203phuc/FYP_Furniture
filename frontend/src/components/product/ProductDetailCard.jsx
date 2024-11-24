@@ -4,11 +4,10 @@ import {
   Add,
   Favorite,
   FavoriteBorder,
-  Message,
   Remove,
   ShoppingCart,
 } from "@mui/icons-material";
-import { Button, IconButton, Tooltip, Typography } from "@mui/material";
+import { IconButton, Tooltip, Typography } from "@mui/material";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
@@ -218,20 +217,13 @@ export default function ProductDetailsCard() {
                 alt={data.shop.name}
                 className="w-12 h-12 mr-2"
               />
+
               <div>
                 <Typography variant="subtitle1">{data.shop.name}</Typography>
                 <Typography variant="body2">{data.ratings} Ratings</Typography>
               </div>
             </Link>
           </div>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Message />}
-            className="mt-4 w-full"
-          >
-            Send Message
-          </Button>
         </div>
 
         <div className="w-full md:w-1/2 px-6 py-8">
@@ -296,7 +288,15 @@ export default function ProductDetailsCard() {
               {click ? <Favorite color="error" /> : <FavoriteBorder />}
             </IconButton>
           </div>
-
+          <div className="mt-4">
+            <button
+              color="secondary"
+              className="w-full font-bold bg-slate-600 text-white py-2 px-4 hover:bg-gray-800 flex items-center justify-center"
+              onClick={() => setShow3DViewer(true)} // This sets a state to display the 3D viewer
+            >
+              View in 3D
+            </button>
+          </div>
           <button
             startIcon={<ShoppingCart />}
             className="mt-4 w-full font-bold bg-black text-white py-2 px-4 hover:bg-gray-800 flex items-center justify-center"
