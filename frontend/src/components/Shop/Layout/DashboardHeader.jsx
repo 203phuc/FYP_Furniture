@@ -3,6 +3,7 @@ import { AiOutlineGift } from "react-icons/ai";
 import { BiMessageSquareDetail } from "react-icons/bi";
 import { FiPackage, FiShoppingBag } from "react-icons/fi";
 import { MdOutlineLocalOffer } from "react-icons/md";
+import { PiUserCircleFill } from "react-icons/pi";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import logo from "../../../assets/cozniture-high-resolution-logo-transparent.png";
@@ -49,11 +50,15 @@ const DashboardHeader = () => {
             />
           </Link>
           <Link to={`/shop/${userInfo._id}`}>
-            <img
-              src={`${userInfo.avatar?.url}`}
-              alt=""
-              className="w-[50px] h-[50px] rounded-full object-cover"
-            />
+            {userInfo.avatar?.url ? (
+              <img
+                src={`${userInfo.avatar?.url}`}
+                alt=""
+                className="w-[50px] h-[50px] rounded-full object-cover"
+              />
+            ) : (
+              <PiUserCircleFill size={40} className="mx-5 cursor-pointer" />
+            )}
           </Link>
         </div>
       </div>

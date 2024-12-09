@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // To access route parameters
 import { toast } from "react-toastify";
 import Loader from "../../components/Layout/Loader"; // Assuming you have a Loader component
@@ -6,9 +8,9 @@ import {
   useGetVariantsByProductQuery,
   useUpdateVariantDetailsMutation,
 } from "../../redux/slices/variantApiSlice"; // Assuming you have the update mutation defined
-
 const VariantPage = () => {
   const { id: productId } = useParams(); // Get productId from route params
+
   const {
     data: variants = [],
     isLoading,
@@ -30,16 +32,48 @@ const VariantPage = () => {
     if (variants.length > 0) {
       const initializedVariants = variants.map((variant) => ({
         _id: variant._id,
-        price: variant.price ?? 0, // Set default to 0 if undefined
-        stockQuantity: variant.stockQuantity ?? 0, // Set default to 0 if undefined
-        mainImage: variant.mainImage || "", // Default object if missing
-        attributes: variant.attributes || {}, // Default empty object if missing
-        images: variant.images || [], // Default empty array if missing
+        price: variant.price ?? 0,
+        stockQuantity: variant.stockQuantity ?? 0,
+        mainImage: variant.mainImage || "",
+        attributes: variant.attributes || {},
+        images: variant.images || [],
+        threeDModel: variant.threeDModel || null, // Initialize as null instead of an empty string
+        modelUrl: variant.threeDModel || "", // Make sure you have this field
       }));
-
       setEditableVariants(initializedVariants);
     }
   }, [variants]);
+
+  const handleFileChange = (e, variantId) => {
+    const file = e.target.files[0];
+    if (file) {
+      const modelUrl = URL.createObjectURL(file); // Generate URL for the uploaded file
+
+      // Update the editableVariants state directly with the selected 3D model
+      setEditableVariants((prev) =>
+        prev.map((variant) =>
+          variant._id === variantId
+            ? { ...variant, threeDModel: file, url: modelUrl } // Set the file and its URL
+            : variant
+        )
+      );
+    }
+  };
+
+  const Model = ({ url }) => {
+    console.log("url", url);
+    const { scene, error, isLoading } = useGLTF(url);
+
+    if (isLoading) {
+      return <div>Loading model...</div>;
+    }
+
+    if (error) {
+      return <div>Error loading GLTF model: {error.message}</div>;
+    }
+
+    return <primitive object={scene} />;
+  };
 
   // Handle change in input fields for a specific variant
   const handleChange = (e, variantId) => {
@@ -52,14 +86,44 @@ const VariantPage = () => {
   };
 
   // Handle update submission for a specific variant
+
   const handleUpdate = async (variantId) => {
     const variantDetails = editableVariants.find((v) => v._id === variantId);
+    const formData = new FormData();
     const Id = variantDetails._id;
-    try {
-      await updateVariant(variantDetails, Id).unwrap();
-      toast.success("Variant updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update variant.");
+    console.log("three d model", variantDetails.threeDModel);
+
+    // Append non-file data to FormData
+    for (const key in variantDetails) {
+      if (key === "threeDModel") continue; // Skip the 3D model as it's a file
+
+      if (key === "attributes" && typeof variantDetails[key] === "object") {
+        // Stringify attributes if it's an object
+        formData.append(key, JSON.stringify(variantDetails[key]));
+      } else {
+        formData.append(key, variantDetails[key]);
+      }
+    }
+
+    // Append the 3D model file if exists
+    if (variantDetails.threeDModel) {
+      formData.append("threeDModel", variantDetails.threeDModel); // File upload (not base64)
+    }
+
+    // Log formData entries for inspection
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    if (Id !== undefined) {
+      try {
+        console.log("variantDetails", variantDetails, Id);
+        const response = await updateVariant(formData, Id).unwrap();
+        console.log("data of variant after update: ", response);
+        toast.success("Variant updated successfully!");
+      } catch (error) {
+        toast.error("Failed to update variant.");
+      }
     }
   };
 
@@ -112,6 +176,8 @@ const VariantPage = () => {
     });
   };
 
+  // Handle 3D model upload and convert to base64 (if applicable) or direct file send
+
   return (
     <div className="p-5 bg-gray-100 rounded-lg">
       {isLoading ? (
@@ -132,6 +198,7 @@ const VariantPage = () => {
                     Variant ID: {variant._id}
                   </h3>
 
+                  {/* Existing attributes and input fields for price and stock */}
                   <div className="mt-2">
                     <strong>Attributes:</strong>
                     <ul className="list-disc pl-6 mt-2">
@@ -139,10 +206,19 @@ const VariantPage = () => {
                         Object.entries(variant.attributes).map(
                           ([key, value]) => (
                             <li key={key} className="text-gray-700">
-                              <strong>{key}:</strong>{" "}
-                              {typeof value === "object"
-                                ? JSON.stringify(value)
-                                : value}
+                              <label className="block font-bold">
+                                {key}:
+                                <input
+                                  type="text"
+                                  className="mt-1 w-full border  border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+                                  value={
+                                    typeof value === "object"
+                                      ? JSON.stringify(value)
+                                      : value
+                                  }
+                                  readOnly
+                                />
+                              </label>
                             </li>
                           )
                         )
@@ -154,12 +230,13 @@ const VariantPage = () => {
                     </ul>
                   </div>
 
+                  {/* Input fields for price and stock */}
                   <label className="block mt-2">
                     <strong>Price:</strong>
                     <input
                       type="number"
                       name="price"
-                      value={variant.price} // Directly access variant price
+                      value={variant.price}
                       onChange={(e) => handleChange(e, variant._id)}
                       className="ml-2 p-1 border border-gray-400 rounded"
                     />
@@ -169,20 +246,30 @@ const VariantPage = () => {
                     <input
                       type="number"
                       name="stockQuantity"
-                      value={variant.stockQuantity} // Directly access variant stockQuantity
+                      value={variant.stockQuantity}
                       onChange={(e) => handleChange(e, variant._id)}
                       className="ml-2 p-1 border border-gray-400 rounded"
                     />
                   </label>
+
+                  {/* Main image upload */}
                   <div className="mt-2">
                     <strong>Main Image:</strong>
-                    {variant.mainImage && (
-                      <img
-                        src={variant.mainImage}
-                        alt={variant.name}
-                        className="mt-2 w-24 h-auto border border-gray-300 rounded"
-                      />
-                    )}
+                    {variant.mainImage ? (
+                      variant.mainImage.url ? (
+                        <img
+                          src={variant.mainImage.url}
+                          alt={variant.name}
+                          className="mt-2 w-24 h-auto border border-gray-300 rounded"
+                        />
+                      ) : (
+                        <img
+                          src={variant.mainImage}
+                          alt={variant.name}
+                          className="mt-2 w-24 h-auto border border-gray-300 rounded"
+                        />
+                      )
+                    ) : null}
                     <input
                       type="file"
                       accept="image/*"
@@ -191,6 +278,7 @@ const VariantPage = () => {
                     />
                   </div>
 
+                  {/* Additional images upload */}
                   <div className="mt-4">
                     <strong>Additional Images:</strong>
                     <div className="mt-2">
@@ -198,7 +286,7 @@ const VariantPage = () => {
                         variant.images.map((img, index) => (
                           <img
                             key={index}
-                            src={img}
+                            src={img.url}
                             alt={`Additional ${index}`}
                             className="mt-2 w-24 h-auto border border-gray-300 rounded"
                           />
@@ -216,6 +304,44 @@ const VariantPage = () => {
                       onChange={(e) =>
                         handleAdditionalImageUpload(e, variant._id)
                       }
+                      className="mt-2 border border-gray-400 rounded p-1"
+                    />
+                  </div>
+
+                  {/* 3D model upload */}
+                  <div className="mt-4">
+                    <strong>3D Model (GLB/GLTF):</strong>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "300px",
+                        border: "1px solid #ccc",
+                      }}
+                    >
+                      {variant.threeDModel ? (
+                        <Suspense fallback={<div>Loading model...</div>}>
+                          <Canvas>
+                            <ambientLight intensity={0.5} />
+                            <Model
+                              url={
+                                variant.threeDModel instanceof File
+                                  ? variant.url
+                                  : variant.threeDModel.url
+                              }
+                            />
+                            <pointLight position={[10, 10, 10]} />
+                            <Environment preset="sunset" background />
+                            <OrbitControls />
+                          </Canvas>
+                        </Suspense>
+                      ) : (
+                        <p>Upload a model to preview it.</p>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".glb,.gltf"
+                      onChange={(e) => handleFileChange(e, variant._id)}
                       className="mt-2 border border-gray-400 rounded p-1"
                     />
                   </div>

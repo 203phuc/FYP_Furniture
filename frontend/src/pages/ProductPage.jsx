@@ -37,10 +37,12 @@ const ProductsPage = () => {
 
   useEffect(() => {
     if (dataToUse) {
+      console.log(dataToUse);
       const { products } = dataToUse; // Use `products` field from the backend response
       if (!categoryData) {
         setFilteredData(products);
       } else {
+        console.log("products", products);
         const filtered = products.filter(
           (product) => product.department.toLowerCase() === categoryData
         );

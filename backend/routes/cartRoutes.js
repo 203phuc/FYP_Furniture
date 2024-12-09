@@ -1,7 +1,7 @@
 import express from "express";
 import {
+  deleteCart,
   getCart,
-  removeCartItem,
   syncCart,
 } from "../controllers/cartController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -15,6 +15,6 @@ router.post("/", protect, syncCart);
 router.get("/:user_id", protect, getCart);
 
 // Route to remove an item from the cart
-router.delete("/:user_id/:product_id", protect, removeCartItem);
+router.delete("/:user_id", protect, deleteCart);
 
 export default router;

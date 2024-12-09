@@ -53,10 +53,15 @@ const Header = ({ allProducts }) => {
   const [openCart, setOpenCart] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState(null);
+  const [searchDropdown, setSearchDropdown] = useState(false);
 
   // Use the custom hook for both dropdowns
   const dropdownRef = useOutsideClick(() => setIsDropdownOpen(false));
   const dropdown1Ref = useOutsideClick(() => setIsDropdown1Open(false));
+  const dropdown2Ref = useOutsideClick(() => setSearchDropdown(false));
+  const toggleWishlistSidebar = () => {
+    setOpenWishlist(!openWishlist);
+  };
 
   const logoutHandler = async () => {
     try {
@@ -71,15 +76,21 @@ const Header = ({ allProducts }) => {
   const handleSearchChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
-
+    console.log(allProducts);
     const filteredProducts =
-      allProducts &&
-      allProducts.filter((product) =>
+      allProducts.products &&
+      allProducts.products.filter((product) =>
         product.name.toLowerCase().includes(term.toLowerCase())
       );
     setSearchData(filteredProducts);
+    setSearchDropdown(true);
   };
 
+  const handleSearchBlur = (e) => {
+    // Delay hiding to allow clicks inside the dropdown
+    setTimeout(() => {}, 150);
+    setIsDropdownOpen(false);
+  };
   return (
     <>
       <div className="border-b border-[#EFEEEB]">
@@ -92,6 +103,7 @@ const Header = ({ allProducts }) => {
                 placeholder={placeholder}
                 value={searchTerm}
                 onChange={handleSearchChange}
+                onBlur={handleSearchBlur}
                 className="w-full h-10 px-4 "
                 onClick={() => setPlaceholder("hello")}
               />
@@ -99,8 +111,11 @@ const Header = ({ allProducts }) => {
                 size={30}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
               />
-              {searchData && searchData.length !== 0 && (
-                <div className="absolute bg-white shadow-lg mt-2 w-full max-h-60 overflow-auto z-10">
+              {searchData && searchData.length !== 0 && searchDropdown && (
+                <div
+                  ref={dropdown2Ref}
+                  className="absolute bg-white shadow-lg mt-2 w-full max-h-60 overflow-auto z-10"
+                >
                   {searchData.map((product) => (
                     <Link
                       key={product._id}
@@ -109,7 +124,7 @@ const Header = ({ allProducts }) => {
                     >
                       <div className="flex items-center">
                         <img
-                          src={`${product.images[0]?.url}`}
+                          src={`${product.variants[0]?.mainImage.url}`}
                           alt={product.name}
                           className="w-10 h-10 mr-2"
                         />
@@ -290,6 +305,44 @@ const Header = ({ allProducts }) => {
           </div>
         </div>
       </div>
+      {/* Wishlist Sidebar */}
+      {openWishlist && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
+          <div className="w-[300px] bg-white p-4 fixed top-0 right-0 h-full overflow-auto">
+            <h3 className="font-bold text-xl mb-4">Wishlist</h3>
+            <ul>
+              {wishlist.length > 0 ? (
+                wishlist.map((item, index) => (
+                  <li key={index} className="mb-2">
+                    <div className="flex items-center">
+                      <img
+                        src={`${item.variants[0].mainImage.url}`}
+                        alt={item.name}
+                        className="w-12 h-12 mr-4"
+                      />
+                      <div>
+                        <h4 className="text-xl font-thin text-gray-900">
+                          {item.name}
+                        </h4>
+                        <p className="text-gray-600">Department: </p>
+                        <p className="text-gray-600">{item.department}</p>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <p>No items in wishlist</p>
+              )}
+            </ul>
+            <button
+              onClick={toggleWishlistSidebar}
+              className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

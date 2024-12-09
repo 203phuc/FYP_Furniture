@@ -8,19 +8,18 @@ import { toast } from "react-toastify";
 import { useSyncCartMutation } from "../../redux/slices/cartApiSlice";
 import { addToCart } from "../../redux/slices/cartSlice";
 
-// Assuming ProductDetailCard is adapted to work with this new design
-
 export default function ProductCard({ data }) {
-  console.log("ProductCard rendered");
   const dispatch = useDispatch();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const userInfo = useSelector((state) => state.auth.userInfo);
   const { cart } = useSelector((state) => state.cart);
   const [syncCart] = useSyncCartMutation();
-  const [initialCart, setInitialCart] = useState({ ...cart });
-  console.log(cart);
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
+  // State
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [initialCart, setInitialCart] = useState(cart);
+  const [selectedOptionValue, setSelectedOptionValue] = useState(null);
+
+  // Option with the most images
   const optionWithMostImages = useMemo(() => {
     return data.options.reduce(
       (prev, current) => {
@@ -32,11 +31,15 @@ export default function ProductCard({ data }) {
     );
   }, [data.options]);
 
-  const [selectedOptionValue, setSelectedOptionValue] = useState(
-    optionWithMostImages.values.find((v) => v.image)?.value ||
-      optionWithMostImages.values[0]?.value
-  );
+  // Reset `selectedOptionValue` whenever `data.options` changes
+  useEffect(() => {
+    const initialOptionValue =
+      optionWithMostImages.values.find((v) => v.image)?.value ||
+      optionWithMostImages.values[0]?.value;
+    setSelectedOptionValue(initialOptionValue || null);
+  }, [optionWithMostImages]);
 
+  // Selected variant based on `selectedOptionValue`
   const selectedVariant = useMemo(() => {
     return data.variants.find(
       (variant) =>
@@ -45,10 +48,13 @@ export default function ProductCard({ data }) {
     );
   }, [data.variants, optionWithMostImages, selectedOptionValue]);
 
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
   const handleOptionSelect = (value) => {
     setSelectedOptionValue(value);
   };
 
+  // Add to Cart Handler
   const addToCartHandler = () => {
     if (!userInfo) {
       toast.error("Please log in to add items to the cart.");
@@ -65,8 +71,7 @@ export default function ProductCard({ data }) {
       return;
     }
 
-    const localCart = JSON.parse(localStorage.getItem("cart")) || { items: [] };
-    const existingCartItem = localCart.items.find(
+    const existingCartItem = cart.items.find(
       (item) =>
         item.productId._id === data._id &&
         item.variantId === selectedVariant._id
@@ -82,58 +87,36 @@ export default function ProductCard({ data }) {
       return;
     }
 
-    try {
-      dispatch(
-        addToCart({
-          productId: data._id,
-          variantId: selectedVariant._id,
-          productName: data.name,
-          attributes: selectedVariant.attributes,
-          quantity: 1,
-          price: selectedVariant.price,
-          stockQuantity: selectedVariant.stockQuantity,
-          mainImage: selectedVariant.mainImage,
-        })
-      );
-      toast.success("Item added to cart locally!");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error("Failed to add item to cart.");
-    }
+    dispatch(
+      addToCart({
+        productId: data._id,
+        variantId: selectedVariant._id,
+        productName: data.name,
+        attributes: selectedVariant.attributes,
+        quantity: 1,
+        price: selectedVariant.price,
+        stockQuantity: selectedVariant.stockQuantity,
+        mainImage: selectedVariant.mainImage,
+      })
+    );
+    toast.success("Item added to cart locally!");
   };
-  // const { isSyncing } = useCartSync(cart, syncCart);
+
+  // Sync cart changes to backend
   useEffect(() => {
-    console.log("ProductCard useEffect triggered", initialCart, cart);
-
-    // Ensure cart data is valid before proceeding
-    if (!cart?.items?.length) {
-      console.log("Cart is empty or invalid. Skipping initial cart setup.");
-      return;
+    if (!cart?.items?.length || isEqual(initialCart, cart)) {
+      return; // Skip sync if cart is empty or unchanged
     }
 
-    // Set the initial cart only once if not already set
-    if (!initialCart) {
-      console.log("Initializing cart...");
-      setInitialCart(JSON.parse(JSON.stringify(cart))); // Deep copy of cart
-      return;
-    }
-
-    // Skip syncing if cart hasn't changed
-    if (isEqual(initialCart, cart)) {
-      console.log("Cart is unchanged. Skipping sync.");
-      return;
-    }
-
-    console.log("Cart content has changed. Syncing...");
     syncCart(cart)
       .unwrap()
       .then(() => {
-        console.log("Cart synchronized successfully.");
-        setInitialCart(JSON.parse(JSON.stringify(cart))); // Update reference after sync
+        setInitialCart(cart); // Update initial cart reference after sync
         toast.success("Cart synchronized successfully.");
       })
       .catch((error) => {
         console.error("Failed to sync cart:", error);
+        toast.error("Failed to synchronize cart.");
       });
   }, [cart, initialCart, syncCart]);
 
@@ -175,63 +158,61 @@ export default function ProductCard({ data }) {
         )}
       </div>
 
-      <div className="">
-        <div>
-          <Link
-            href={`/shop/preview/${data.shopId}`}
-            className="text-sm font-thin text-gray-900 hover:underline"
-          >
-            {data.shop.name}
-          </Link>
-          <Link
-            href={`/product/${data._id}`}
-            className="block text-lg font-thin text-gray-900 hover:underline"
-          >
-            {data.name}
-          </Link>
-        </div>
+      <div>
+        <Link
+          to={`/shop/preview/${data.shopId}`}
+          className="text-sm font-thin text-gray-900 hover:underline"
+        >
+          {data.shop.name}
+        </Link>
+        <Link
+          to={`/product/${data._id}`}
+          className="block text-lg font-thin text-gray-900 hover:underline"
+        >
+          {data.name}
+        </Link>
+      </div>
 
-        {optionWithMostImages.values.length > 0 && (
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-thin text-gray-900">
-              {optionWithMostImages.name}:
-            </h3>
-            <div className="flex flex-wrap gap-1">
-              {optionWithMostImages.values.map((option) => (
-                <button
-                  key={option._id}
-                  onClick={() => handleOptionSelect(option.value)}
-                  className={`w-6 h-6 overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-black m-1 ${
-                    selectedOptionValue === option.value
-                      ? "ring-2 ring-offset-4 ring-black"
-                      : ""
-                  }`}
-                  style={{
-                    backgroundImage: option.image
-                      ? `url(${option.image})`
-                      : "none",
-                    backgroundColor: option.image ? "transparent" : "#e5e7eb",
-                  }}
-                >
-                  {!option.image && (
-                    <span className="text-xs font-medium">
-                      {option.value.substring(0, 2)}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+      {optionWithMostImages.values.length > 0 && (
         <div className="flex justify-between items-center">
-          <span className="text-lg font-bold text-gray-900">
-            ${selectedVariant?.price || "N/A"}
-          </span>
-          <span className="text-sm text-gray-500">
-            {selectedVariant?.stockQuantity || 0} in stock
-          </span>
+          <h3 className="text-sm font-thin text-gray-900">
+            {optionWithMostImages.name}:
+          </h3>
+          <div className="flex flex-wrap gap-1">
+            {optionWithMostImages.values.map((option) => (
+              <button
+                key={option._id}
+                onClick={() => handleOptionSelect(option.value)}
+                className={`w-6 h-6 overflow-hidden focus:outline-none ${
+                  selectedOptionValue === option.value
+                    ? "ring-2 ring-black"
+                    : ""
+                }`}
+                style={{
+                  backgroundImage: option.image
+                    ? `url(${option.image})`
+                    : "none",
+                  backgroundColor: option.image ? "transparent" : "#e5e7eb",
+                }}
+              >
+                {!option.image && (
+                  <span className="text-xs font-medium">
+                    {option.value.substring(0, 2)}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
+      )}
+
+      <div className="flex justify-between items-center">
+        <span className="text-lg font-bold text-gray-900">
+          ${selectedVariant?.price || "N/A"}
+        </span>
+        <span className="text-sm text-gray-500">
+          {selectedVariant?.stockQuantity || 0} in stock
+        </span>
       </div>
     </div>
   );

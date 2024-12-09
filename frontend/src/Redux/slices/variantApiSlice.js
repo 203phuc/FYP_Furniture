@@ -13,10 +13,10 @@ export const variantApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Product"], // Invalidate product cache after adding variant
     }),
     updateVariantDetails: builder.mutation({
-      query: (variantDetails, Id) => ({
+      query: (formData, Id) => ({
         url: `${VARIANT_URL}/${Id}`,
         method: "PUT",
-        body: variantDetails,
+        body: formData,
       }),
       invalidatesTags: (result, error, { variantId }) => [
         { type: "Variant", id: variantId },

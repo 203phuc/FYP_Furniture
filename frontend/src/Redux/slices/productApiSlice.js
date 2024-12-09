@@ -23,8 +23,10 @@ export const productApiSlice = apiSlice.injectEndpoints({
         };
       },
       providesTags: (result) =>
-        result
+        Array.isArray(result)
           ? result.map(({ _id }) => ({ type: "Product", id: _id }))
+          : result
+          ? [{ type: "Product", id: result._id }]
           : ["Product"],
     }),
 

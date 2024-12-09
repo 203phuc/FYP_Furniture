@@ -114,8 +114,8 @@ const AdminAllProducts = () => {
   ];
 
   useEffect(() => {
-    if (products.length) {
-      const mappedRows = products.map((product) => ({
+    if (products.products.length) {
+      const mappedRows = products.products.map((product) => ({
         id: product._id,
         name: product.name,
         description: product.description,

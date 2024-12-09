@@ -26,6 +26,13 @@ const LoginPage = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Check if email or password is empty
+    if (!email || !password) {
+      toast.error("Please fill in all fields!");
+      return;
+    }
+
     try {
       const res = await login({ email, password }).unwrap();
       dispatch(setCredentials({ ...res }));

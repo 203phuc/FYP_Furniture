@@ -55,7 +55,6 @@ const App = () => {
   // Update cart in Redux store
 
   const hiddenPaths = [
-    "/login",
     "/register",
     "/shop-create",
     "/shop-login",

@@ -5,6 +5,7 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import timeMiddleware from "./middleware/timeMiddleware.js"; // Corrected import name
 import cartRoutes from "./routes/cartRoutes.js";
 import checkOutRoute from "./routes/checkOutRoute.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import shopRoutes from "./routes/shopRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -30,6 +31,7 @@ app.use(cookieParser());
 app.use(timeMiddleware); // above all route handlers
 
 // Define route handlers
+app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/shops", shopRoutes);

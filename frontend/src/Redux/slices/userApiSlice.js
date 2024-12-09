@@ -62,6 +62,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    // Add the resetPassword mutation
+    resetPassword: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/reset-password`,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -75,4 +83,5 @@ export const {
   useLogoutMutation,
   useProfileMutation,
   useVerifyEmailMutation,
+  useResetPasswordMutation, // Export the new hook for resetPassword
 } = userApiSlice;

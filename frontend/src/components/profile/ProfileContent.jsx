@@ -11,6 +11,7 @@ import {
   useProfileMutation,
 } from "../../redux/slices/userApiSlice.js";
 import FormContainer from "../layout/FormContainer.jsx";
+import Orders from "./Orders.jsx";
 
 const ProfileContent = ({ active }) => {
   const [name, setName] = useState("");
@@ -193,6 +194,7 @@ const ProfileContent = ({ active }) => {
         </FormContainer>
       )}
       {active === 7 && <Address userInfo={userInfo} />}
+      {active === 2 && userInfo && <Orders userId={userInfo._id} />}
     </>
   );
 };

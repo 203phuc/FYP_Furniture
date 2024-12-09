@@ -89,6 +89,10 @@ const ShopCreatePage = () => {
         phoneNumber,
         address,
         zipCode,
+        availableBalance,
+        withdrawMethod,
+        avatar,
+        role,
       }).unwrap();
       dispatch(setCredentials({ ...res }));
       navigate("/");

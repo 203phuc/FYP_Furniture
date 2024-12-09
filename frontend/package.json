@@ -18,6 +18,7 @@
     "@mui/x-data-grid": "^7.20.0",
     "@react-three/drei": "^9.117.3",
     "@react-three/fiber": "^8.17.10",
+    "@react-three/xr": "^6.4.12",
     "@reduxjs/toolkit": "^2.2.8",
     "@stripe/stripe-js": "^4.9.0",
     "formik": "^2.4.6",
@@ -37,6 +38,7 @@
     "swiper": "^11.1.14",
     "three": "^0.170.0",
     "use-debounce": "^10.0.4",
+    "webxr-polyfill": "^2.0.3",
     "yup": "^1.4.0"
   },
   "devDependencies": {

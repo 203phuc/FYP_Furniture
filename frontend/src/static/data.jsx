@@ -4,7 +4,7 @@ export const navItems = [
     url: "/living", // URL for the department
   },
   {
-    title: "DINNING",
+    title: "DINING",
     url: "/dining", // URL for the department
   },
   {

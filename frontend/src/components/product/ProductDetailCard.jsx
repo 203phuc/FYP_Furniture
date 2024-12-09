@@ -8,7 +8,9 @@ import {
   ShoppingCart,
 } from "@mui/icons-material";
 import { IconButton, Tooltip, Typography } from "@mui/material";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -21,6 +23,7 @@ import {
 } from "../../redux/slices/wishlistSlice";
 
 export default function ProductDetailsCard() {
+  const [model, setModel] = useState(null);
   const dispatch = useDispatch();
   const { id } = useParams();
   const { data, error, isLoading } = useGetProductDetailsQuery(id); // Fetch product details
@@ -32,6 +35,7 @@ export default function ProductDetailsCard() {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [syncCart] = useSyncCartMutation();
   const previousCart = useRef(cart);
+  const [is3D, setIs3D] = useState(false); // New state to toggle between 3D and 2D view
 
   useEffect(() => {
     // Log the entire data object
@@ -77,6 +81,11 @@ export default function ProductDetailsCard() {
       )
     );
   }, [data?.variants, selectedOptions]);
+
+  const toggleView = () => {
+    setIs3D(!is3D);
+    change3D();
+  };
 
   const addToCartHandler = async () => {
     if (!userInfo) {
@@ -147,6 +156,14 @@ export default function ProductDetailsCard() {
   const handleOptionChange = (optionName, value) => {
     setSelectedOptions((prev) => ({ ...prev, [optionName]: value }));
   };
+  const change3D = () => {
+    console.log(selectedVariant);
+    if (selectedVariant.threeDModel?.url) {
+      setModel(selectedVariant.threeDModel.url);
+    } else {
+      toast.error("No 3D model available");
+    }
+  };
 
   const renderOptionValue = (option, value) => {
     if (option.name === "Dimensions") {
@@ -180,7 +197,20 @@ export default function ProductDetailsCard() {
     }
     return value;
   };
+  const Model = ({ url }) => {
+    console.log("url", url);
+    const { scene, error, isLoading } = useGLTF(url);
 
+    if (isLoading) {
+      return <div>Loading model...</div>;
+    }
+
+    if (error) {
+      return <div>Error loading GLTF model: {error.message}</div>;
+    }
+
+    return <primitive object={scene} />;
+  };
   useEffect(() => {
     // Log the image URLs
     console.log("Product main image URL:", data?.mainImage?.url);
@@ -202,11 +232,29 @@ export default function ProductDetailsCard() {
     <div className=" mx-auto shadow-lg">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="w-full md:w-3/4">
-          <img
-            src={selectedVariant?.mainImage?.url || data.mainImage?.url}
-            alt={data.name}
-            className="w-full h-auto object-cover"
-          />
+          {is3D ? (
+            model ? (
+              // Render 3D model if 'model' is set
+              <Suspense fallback={<div>Loading 3D model...</div>}>
+                <Canvas className="w-200px aspect-[4/3]">
+                  <ambientLight intensity={0.5} />
+                  <Model url={model} />
+                  <pointLight position={[10, 10, 10]} />
+                  <Environment preset="sunset" background />
+                  <OrbitControls />
+                </Canvas>
+              </Suspense>
+            ) : (
+              <div>Loading 3D model...</div>
+            )
+          ) : (
+            // Fallback to 2D image
+            <img
+              src={selectedVariant?.mainImage?.url || data.mainImage?.url}
+              alt={data.name}
+              className="w-full h-auto object-cover"
+            />
+          )}
           <div className="mt-4 flex items-center">
             <Link
               to={`/shop/preview/${data.shop._id}`}
@@ -288,15 +336,7 @@ export default function ProductDetailsCard() {
               {click ? <Favorite color="error" /> : <FavoriteBorder />}
             </IconButton>
           </div>
-          <div className="mt-4">
-            <button
-              color="secondary"
-              className="w-full font-bold bg-slate-600 text-white py-2 px-4 hover:bg-gray-800 flex items-center justify-center"
-              onClick={() => setShow3DViewer(true)} // This sets a state to display the 3D viewer
-            >
-              View in 3D
-            </button>
-          </div>
+
           <button
             startIcon={<ShoppingCart />}
             className="mt-4 w-full font-bold bg-black text-white py-2 px-4 hover:bg-gray-800 flex items-center justify-center"
@@ -304,6 +344,23 @@ export default function ProductDetailsCard() {
           >
             Add to Cart
           </button>
+          {selectedVariant?.threeDModel?.url && (
+            <>
+              <button
+                onClick={toggleView}
+                className="mt-4 px-4 py-2 border rounded-md"
+              >
+                {is3D ? "Switch to 2D" : "Switch to 3D"}
+              </button>
+              <Link
+                to="/ar-view"
+                state={model}
+                className="mt-4 px-4 py-2 border rounded-md"
+              >
+                AR View
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

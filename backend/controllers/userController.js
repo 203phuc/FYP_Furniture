@@ -241,7 +241,9 @@ const getUserInfoById = asyncHandler(async (req, res) => {
 // @route   GET /api/users
 // @access  Private/Admin
 const getAllUsers = asyncHandler(async (req, res) => {
+  console.log("into the get all users");
   const users = await User.find().sort({ createdAt: -1 });
+  console.log(users);
   res.status(200).json(users);
 });
 
@@ -261,16 +263,92 @@ const deleteUser = asyncHandler(async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   res.status(200).json({ message: "User deleted successfully" });
 });
+const createResetToken = (user) => {
+  return jwt.sign(
+    { email: user.email, _id: user._id },
+    process.env.RESET_PASSWORD_SECRET,
+    { expiresIn: "1h" }
+  );
+};
+
+// @desc    Request password reset link
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  if (!user.isVerified) {
+    res
+      .status(400)
+      .json({ message: "Email not verified. Cannot reset password. please update to a valid email and verify" });
+    return;
+  }
+
+  // Generate reset token
+  const resetToken = createResetToken(user);
+
+  // Send reset link to user's email
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  await sendMail(user.email, resetLink, "Password Reset Request");
+
+  res
+    .status(200)
+    .json({ message: "Password reset link has been sent to your email." });
+});
+
+// @desc    Reset password using reset token
+// @route   POST /api/users/reset-password
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword, confirmPassword } = req.body;
+
+  if (!token) {
+    res.status(400).json({ message: "Token is required" });
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    res.status(400).json({ message: "Passwords do not match" });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.RESET_PASSWORD_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Update user's password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+});
 
 export {
   authUser,
   deleteUser,
   deleteUserAddress,
+  forgotPassword,
   getAllUsers,
   getUserInfoById,
   getUserProfile,
   logoutUser,
   registerUser,
+  resetPassword,
   updateUserProfile,
   verifyEmail,
 };

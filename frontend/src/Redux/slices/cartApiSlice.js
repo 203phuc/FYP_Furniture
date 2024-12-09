@@ -15,7 +15,19 @@ export const cartApiSlice = apiSlice.injectEndpoints({
       query: (userId) => `${CART_URL}/${userId}`,
       providesTags: ["Cart"], // Provide the cart data for caching
     }),
+    deleteCart: builder.mutation({
+      query: (userId) => ({
+        url: `${CART_URL}/${userId}`,
+        method: "DELETE",
+      }),
+      // Invalidate the cart data after deletion to trigger a re-fetch
+      invalidatesTags: ["Cart"],
+    }),
   }),
 });
 
-export const { useSyncCartMutation, useFetchCartQuery } = cartApiSlice;
+export const {
+  useSyncCartMutation,
+  useFetchCartQuery,
+  useDeleteCartMutation
+} = cartApiSlice;

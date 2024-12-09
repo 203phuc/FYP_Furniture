@@ -14,35 +14,8 @@ const orderSchema = new mongoose.Schema(
     },
     items: [
       {
-        productId: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: [true, "Please provide the product ID"],
-          ref: "Product", // Assuming there is a Product model
-        },
-        name: {
-          type: String,
-          required: [true, "Please provide the product name"],
-        },
-        price: {
-          type: Number,
-          required: [true, "Please provide the product price"],
-          min: [0, "Price cannot be negative"],
-        },
-        quantity: {
-          type: Number,
-          required: [true, "Please provide the quantity"],
-          min: [1, "Quantity must be at least 1"],
-        },
-        totalCost: {
-          type: Number,
-          required: [true, "Please provide the total cost"],
-          min: [0, "Total cost cannot be negative"],
-        },
-        shopId: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: [true, "Please provide the shop ID"],
-          ref: "Shop", // Assuming there is a Shop model
-        },
+        type: Object, // Using Object type instead of Mixed for generic object data
+        required: [true, "Please provide the product details"], // Optional validation if needed
       },
     ],
     totalProduct: {
@@ -68,13 +41,17 @@ const orderSchema = new mongoose.Schema(
         type: String,
         required: [true, "Please provide the city"],
       },
-      zipcode: {
+      zipCode: {
         type: Number,
         required: [true, "Please provide the zipcode"],
       },
       country: {
         type: String,
         required: [true, "Please provide the country"],
+      },
+      addressType: {
+        type: String,
+        required: [false], // Optional field
       },
     },
     paidAt: {
@@ -88,6 +65,10 @@ const orderSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    totalPrice: {
+      type: Number,
+      required: [true, "Please provide the total price"],
     },
   },
   {

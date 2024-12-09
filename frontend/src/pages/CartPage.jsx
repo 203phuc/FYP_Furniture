@@ -17,7 +17,7 @@ import {
 import Grid from "@mui/material/Grid";
 import { loadStripe } from "@stripe/stripe-js";
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,6 +55,7 @@ function CartPage() {
     isLoading,
     isError,
   } = useFetchCartQuery(userInfo?._id);
+  const dispatch = useDispatch();
   const [syncCart] = useSyncCartMutation();
   const [quantities, setQuantities] = useState({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -126,7 +127,7 @@ function CartPage() {
       quantity: quantities[item.variantId] || item.quantity,
     }));
     try {
-      await updateCart(cartData);
+      dispatch(updateCart({ user_id: userInfo.id, items: updatedItems }));
       await syncCart({ user_id: userInfo.id, items: updatedItems });
     } catch (err) {
       console.log(err);
@@ -134,11 +135,18 @@ function CartPage() {
   };
 
   const handleRemoveItem = async (variantId) => {
+    // Remove the item from the cart
     const updatedItems = cartData.cart.items.filter(
       (item) => item.variantId !== variantId
     );
+
+    // Dispatch an action to update the cart state in Redux
+    dispatch(updateCart({ user_id: userInfo.id, items: updatedItems }));
+
+    // Sync the updated cart to the backend
     await syncCart({ user_id: userInfo.id, items: updatedItems });
   };
+
   const handleCheckout = async () => {
     // navigate("/checkout");
     // return;

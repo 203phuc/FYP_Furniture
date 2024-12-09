@@ -5,7 +5,7 @@ import styles from "../../styles/styles";
 
 const Navbar = ({ active }) => {
   const [open, setOpen] = useState(false);
-
+  console.log(active);
   return (
     <div
       className={`block 800px:${styles.normalFlex} h-full `}
@@ -19,15 +19,19 @@ const Navbar = ({ active }) => {
             <div className="flex h-full items-center" key={index}>
               <Link
                 to={{
-                  pathname: "/product", // Base path (e.g., "/living", "/dinning", etc.)
+                  pathname: "/product", // Base path
                   search: new URLSearchParams({ department }).toString(), // Add department query parameter
                 }}
                 className={`relative h-full content-center ${
-                  active === index + 1
-                    ? "text-black"
+                  new URLSearchParams(window.location.search).get(
+                    "department"
+                  ) &&
+                  new URLSearchParams(window.location.search)
+                    .get("department")
+                    .toUpperCase() === item.title
+                    ? "text-black before:w-full"
                     : "text-black 800px:text-black"
-                } text-sm pb-[30px] 800px:pb-0 font-[400] px-6 cursor-pointer hover:text-[#1E372F] transition-all duration-300
-                before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-0 before:h-[2px] before:bg-[#1E372F] before:transition-all before:duration-300 before:ease-in-out hover:before:w-full`}
+                } text-sm pb-[30px] 800px:pb-0 font-[400] px-6 cursor-pointer hover:text-[#1E372F] transition-all duration-300 before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-0 before:h-[2px] before:bg-[#1E372F] before:transition-all before:duration-300 before:ease-in-out hover:before:w-full`}
               >
                 {item.title}
               </Link>

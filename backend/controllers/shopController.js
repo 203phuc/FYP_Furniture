@@ -1,7 +1,7 @@
+import cloudinary from "cloudinary";
 import asyncHandler from "express-async-handler";
 import Shop from "../models/shopModel.js";
 import generateToken from "../utils/generateToken.js";
-import cloudinary from "cloudinary";
 
 //@desc    Auth shop/ set token
 //@route   POST /api/shops/auth
@@ -18,6 +18,15 @@ const authShop = asyncHandler(async (req, res) => {
       email: shop.email,
       role: shop.role,
       token: shop.token,
+      createdAt: shop.createdAt,
+      updatedAt: shop.updatedAt,
+      address: shop.address,
+      phoneNumber: shop.phoneNumber,
+      zipCode: shop.zipCode,
+      image: shop.image, // Brand image
+      avatar: shop.avatar, // Shop owner or shop avatar
+      withdrawMethod: shop.withdrawMethod,
+      availableBalance: shop.availableBalance,
     });
   } else {
     res.status(401);
@@ -204,10 +213,10 @@ const getShops = asyncHandler(async (req, res) => {
 
 export {
   authShop,
-  registerShop,
-  updateShop,
   deleteShop,
   getShop,
   getShops,
   logoutShop,
+  registerShop,
+  updateShop,
 };

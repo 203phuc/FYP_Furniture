@@ -50,7 +50,8 @@ const cartSlice = createSlice({
             state.cart.items.push({ ...item });
           });
         } else {
-          console.error("Invalid payload format: 'items' is not an array.");
+          // Add the single item from the payload to the cart
+          state.cart.items.push({ ...action.payload });
         }
       }
       // Sync to local storage
@@ -73,8 +74,45 @@ const cartSlice = createSlice({
     },
 
     updateCart: (state, action) => {
-      // Replace the entire cart items
-      state.cart.items = action.payload;
+      // Replace the entire cart object
+      state.user_id = action.payload.user_id;
+      state.createdAt = action.payload.createdAt;
+
+      // Ensure 'items' is an array and replace the existing cart items with the new ones
+      if (Array.isArray(action.payload.items)) {
+        // Remove items that are no longer in the payload
+        state.cart.items = state.cart.items.filter((item) =>
+          action.payload.items.some(
+            (newItem) => newItem.variantId === item.variantId
+          )
+        );
+
+        // Add new items or update existing ones
+        action.payload.items.forEach((item) => {
+          const existingItemIndex = state.cart.items.findIndex(
+            (cartItem) => cartItem.variantId === item.variantId
+          );
+
+          if (existingItemIndex === -1) {
+            // Item does not exist, so add it to the cart
+            state.cart.items.push(item);
+          } else {
+            // Item exists, update the quantity and other details
+            state.cart.items[existingItemIndex] = {
+              ...state.cart.items[existingItemIndex],
+              ...item,
+            };
+          }
+        });
+      } else {
+        console.error("Invalid payload format: 'items' is not an array.");
+      }
+
+      // Optionally update other state properties if needed
+      state.totalPrice = state.cart.items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      );
 
       // Sync to local storage
       localStorage.setItem("cart", JSON.stringify(state.cart));

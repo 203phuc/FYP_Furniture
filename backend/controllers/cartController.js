@@ -54,30 +54,28 @@ const getCart = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Remove item from cart
-// @route   DELETE /api/carts/:user_id/:productId
+// @desc    Delete the entire cart for the user
+// @route   DELETE /api/carts/:user_id
 // @access  Private
-const removeCartItem = asyncHandler(async (req, res) => {
-  const { user_id, productId } = req.params;
+const deleteCart = asyncHandler(async (req, res) => {
+  const { user_id } = req.params;
+  console.log("Deleting cart for user:", user_id);
+  try {
+    // Find and delete the cart for the user
+    const cart = await Cart.findOneAndDelete({ user_id });
+    console.log("Cart deleted successfully:", cart);
 
-  const cart = await Cart.findOne({ user_id });
-
-  if (cart) {
-    cart.items = cart.items.filter(
-      (item) => item.productId.toString() !== productId
-    );
-
-    if (cart.items.length === 0) {
-      await cart.remove();
-      res.json({ message: "Cart deleted" });
+    if (cart) {
+      // Send the deleted cart data in the response for the frontend to use in creating the order
+      res.json({ message: "Cart deleted successfully", deletedCart: cart });
     } else {
-      const updatedCart = await cart.save();
-      res.json(updatedCart);
+      res.status(404);
+      throw new Error("Cart not found");
     }
-  } else {
-    res.status(404);
-    throw new Error("Cart not found");
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
-export { getCart, removeCartItem, syncCart };
+// Fix the export statement to include the correct function name
+export { deleteCart, getCart, syncCart };

@@ -8,8 +8,11 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import App from "./App";
+import ThreeDModelViewer from "./components/product/ThreeDModelViewer";
+import OrderDetail from "./components/profile/OrderDetail";
 import ProtectedRoute from "./components/route/ProtectedRoute";
 import EditProductPage from "./components/Shop/EditProduct";
+import Success from "./components/Success.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 import CartPage from "./pages/cartPage";
 import HomePage from "./pages/HomePage.jsx";
@@ -36,13 +39,22 @@ const router = createBrowserRouter(
       <Route path="/verify-email" element={<VerifyPage />} />
       <Route path="/shop-create" element={<ShopCreatePage />} />
       <Route path="/shop-login" element={<ShopLoginPage />} />
-
+      {/* <Route path="/ar" element={<ARHitTest />} /> */}
+      <Route path="/ar-view" element={<ThreeDModelViewer />} />
       {/* Protected Routes */}
       <Route
         path="/profile"
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/:id"
+        element={
+          <ProtectedRoute>
+            <OrderDetail />
           </ProtectedRoute>
         }
       />
@@ -67,6 +79,14 @@ const router = createBrowserRouter(
         element={
           <ProtectedRoute>
             <OrderPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/success"
+        element={
+          <ProtectedRoute>
+            <Success />
           </ProtectedRoute>
         }
       />

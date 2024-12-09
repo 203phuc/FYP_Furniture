@@ -15,7 +15,6 @@ const AdminAllUsers = () => {
   const { data, isLoading, isError, error } = useGetAllUsersQuery();
   const [deleteUser] = useDeleteUserMutation();
   const [rows, setRows] = useState([]);
-  const users = data?.users;
 
   const handleDelete = async (id) => {
     try {
@@ -64,21 +63,7 @@ const AdminAllUsers = () => {
       flex: 1,
       renderCell: (params) => new Date(params.value).toLocaleDateString(),
     },
-    {
-      field: "resetPassword",
-      headerName: "Reset Password",
-      minWidth: 150,
-      flex: 1,
-      renderCell: (params) => (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => handlePasswordReset(params.id)}
-        >
-          Reset Password
-        </Button>
-      ),
-    },
+
     {
       field: "delete",
       flex: 0.8,
@@ -94,9 +79,9 @@ const AdminAllUsers = () => {
   ];
 
   useEffect(() => {
-    console.log(users);
-    if (users) {
-      const mappedRows = users.map((user) => ({
+    if (data) {
+      console.log(data);
+      const mappedRows = data.map((user) => ({
         id: user._id,
         name: user.name,
         email: user.email,
@@ -105,7 +90,7 @@ const AdminAllUsers = () => {
       }));
       setRows(mappedRows);
     }
-  }, [users]);
+  }, [data]);
 
   return (
     <>

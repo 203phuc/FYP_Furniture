@@ -186,9 +186,7 @@ const getApprovedProducts = asyncHandler(async (req, res) => {
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
   const { department, tags } = req.query;
-  console.log(
-    "getting approved products from get products" + department + tags
-  );
+  console.log("getting products from get products" + department);
 
   // Build the filter object
   const filter = {};
@@ -204,7 +202,7 @@ const getProducts = asyncHandler(async (req, res) => {
   try {
     // Fetch products with applied filters and populate variants
     const products = await Product.find(filter).populate("variants");
-    res.status(200).json(products);
+    res.status(200).json({ products });
   } catch (error) {
     console.error("Error fetching products:", error);
     res
