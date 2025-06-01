@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
@@ -151,7 +151,7 @@ const Header = ({ allProducts }) => {
                     : "/shop-create"
                 }`}
               >
-                <h1 className="text-[#fff] flex items-center">
+                <h1 className="text-[#fff] flex items-center font-light text-lg">
                   {userInfo && userInfo.role === "admin"
                     ? "Go Dashboard"
                     : userInfo && userInfo.role === "seller"

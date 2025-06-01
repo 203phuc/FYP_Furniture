@@ -33,7 +33,7 @@ const generateCombinations = (
     // If there are values, iterate over them and recursively generate combinations
     optionsForKey.forEach((option) => {
       current[key] = { value: option.value, image: option.image };
-      console.log(`Current combination at index ${index}:`, current); // Debug log for current combination
+      console.log(`Current combination at index ${index}:`, current); // Debug log for current combination/++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++/////////
       generateCombinations(
         keys,
         index + 1,

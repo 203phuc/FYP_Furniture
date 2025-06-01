@@ -1,7 +1,7 @@
 "use client";
-import { isEqual } from "lodash";
 import { MoreVertical, ShoppingCart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import isEqual from "react-fast-compare";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -18,6 +18,8 @@ export default function ProductCard({ data }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [initialCart, setInitialCart] = useState(cart);
   const [selectedOptionValue, setSelectedOptionValue] = useState(null);
+  const [syncExecutionCount, setSyncExecutionCount] = useState(0);
+  const [cartReferenceChangeCount, setCartReferenceChangeCount] = useState(0);
 
   // Option with the most images
   const optionWithMostImages = useMemo(() => {
@@ -99,26 +101,32 @@ export default function ProductCard({ data }) {
         mainImage: selectedVariant.mainImage,
       })
     );
-    toast.success("Item added to cart locally!");
   };
-
-  // Sync cart changes to backend
   useEffect(() => {
-    if (!cart?.items?.length || isEqual(initialCart, cart)) {
-      return; // Skip sync if cart is empty or unchanged
+    if (isEqual(initialCart, cart)) {
+      console.log("Cart reference unchanged. Skipping sync.");
     }
-
-    syncCart(cart)
-      .unwrap()
-      .then(() => {
-        setInitialCart(cart); // Update initial cart reference after sync
-        toast.success("Cart synchronized successfully.");
-      })
-      .catch((error) => {
-        console.error("Failed to sync cart:", error);
-        toast.error("Failed to synchronize cart.");
-      });
-  }, [cart, initialCart, syncCart]);
+    if (!isEqual(initialCart, cart)) {
+      setCartReferenceChangeCount((prevCount) => prevCount + 1);
+      syncCart(cart)
+        .unwrap()
+        .then(() => {
+          setInitialCart(cart); // Update initial cart reference after sync
+          console.log("Cart synchronized successfully.");
+        })
+        .catch((error) => {
+          console.error("Failed to sync cart:", error);
+        });
+    }
+  }, []);
+  // Sync cart changes to backend
+  // useEffect(() => {
+  //   if (!cart?.items?.length || isEqual(initialCart, cart)) {
+  //     return; // Skip sync if cart is empty or unchanged
+  //   }
+  //   setSyncExecutionCount((prevCount) => prevCount + 1); // Increment count
+  //   console.log(`Sync useEffect executed: ${syncExecutionCount + 1} times`); // Log execution count
+  // }, [cart, initialCart, syncCart]);
 
   return (
     <div className="max-w-[500px] mx-auto">

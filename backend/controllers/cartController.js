@@ -37,7 +37,7 @@ const getCart = asyncHandler(async (req, res) => {
     "items.productId",
     "name price"
   );
-
+  console.log("into the backend and api");
   // Check if a cart exists
   if (cart) {
     // If cart exists, return the cart and total price

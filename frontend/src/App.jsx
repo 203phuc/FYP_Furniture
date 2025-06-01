@@ -44,7 +44,11 @@ const App = () => {
       cartData.cart.items.length > 0 &&
       cart.items.length === 0
     ) {
-      dispatch(addToCart(cartData.cart));
+      dispatch(addToCart(cartData.cart))
+        .then(console.log("change local with api"))
+        .error((error) => {
+          console.error("Error adding to cart:", error);
+        });
     }
     if (cartError) {
       toast.error("Error fetching cart data. Please try again.");
