@@ -99,6 +99,7 @@ export default function ProductCard({ data }) {
         price: selectedVariant.price,
         stockQuantity: selectedVariant.stockQuantity,
         mainImage: selectedVariant.mainImage,
+        updatedAt: new Date().toISOString(), // 👈 add this line
       })
     );
   };

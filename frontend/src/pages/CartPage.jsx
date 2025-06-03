@@ -73,13 +73,13 @@ function CartPage() {
   const [cart, setCart] = useState(null); // internal state that triggers re-render
 
   useEffect(() => {
-    if (cartData || localCart) {
-      console.log(userInfo._id);
-      console.log(cartData);
-      console.log(localCart);
-      setCart(cartData || localCart); // triggers re-render
-      console.log(cart);
+    if (cartData?.cart?.items?.length > 0) {
+      setCart(cartData); // triggers re-render
     }
+    if (localCart) {
+      setCart(localCart);
+    }
+    console.log(cart);
   }, [cartData, localCart]); // dependency array
 
   const handleQuantityChange = (variantId, newQuantity) => {
@@ -228,83 +228,84 @@ function CartPage() {
       <Typography variant="h4" component="h1" gutterBottom>
         Your Cart
       </Typography>
-      {cart?.cart.items?.length === 0 ? (
+      {cart?.items?.length === 0 ? (
         <Typography>Your cart is empty.</Typography>
       ) : (
         <Grid container spacing={4}>
-          {cart.items.map((item) => {
+          {cart?.items?.map((item) => {
             // const localItem = localCart.items.find(
             //   (localItem) => localItem.variantId === item.variantId
             // );
             // const availableQuantity = localItem ? localItem.stockQuantity : 0;
-            // return (
-            <Grid item xs={12} key={item.variantId}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {item.productName}
-                  </Typography>
-                  <Typography>
-                    Available Quantity: {item.stockQuantity}
-                  </Typography>
-                  <Grid
-                    container
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Grid item>
-                      <Typography>Price: ${item.price.toFixed(2)}</Typography>
-                      <TextField
-                        label="Quantity"
-                        type="number"
-                        InputProps={{ inputProps: { min: 1 } }}
-                        value={
-                          quantities[item.variantId] !== undefined
-                            ? quantities[item.variantId]
-                            : item.quantity
-                        }
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || /^[0-9]*$/.test(value)) {
-                            handleQuantityChange(
-                              item.variantId,
-                              value === "" ? "" : parseInt(value, 10)
-                            );
+            return (
+              <Grid item xs={12} key={item.variantId}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {item.productName}
+                    </Typography>
+                    <Typography>
+                      Available Quantity: {item.stockQuantity}
+                    </Typography>
+                    <Grid
+                      container
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Grid item>
+                        <Typography>Price: ${item.price.toFixed(2)}</Typography>
+                        <TextField
+                          label="Quantity"
+                          type="number"
+                          InputProps={{ inputProps: { min: 1 } }}
+                          value={
+                            quantities[item.variantId] !== undefined
+                              ? quantities[item.variantId]
+                              : item.quantity
                           }
-                        }}
-                        onKeyPress={(e) => {
-                          if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                            e.preventDefault();
-                          }
-                        }}
-                        margin="normal"
-                      />
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || /^[0-9]*$/.test(value)) {
+                              handleQuantityChange(
+                                item.variantId,
+                                value === "" ? "" : parseInt(value, 10)
+                              );
+                            }
+                          }}
+                          onKeyPress={(e) => {
+                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                              e.preventDefault();
+                            }
+                          }}
+                          margin="normal"
+                        />
+                      </Grid>
+                      <Grid item>
+                        <img
+                          src={item.mainImage.url}
+                          alt={item.productName}
+                          style={{
+                            width: "80px",
+                            height: "80px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </Grid>
                     </Grid>
-                    <Grid item>
-                      <img
-                        src={item.mainImage.url}
-                        alt={item.productName}
-                        style={{
-                          width: "80px",
-                          height: "80px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    startIcon={<DeleteIcon />}
-                    onClick={() => handleRemoveItem(item.variantId)}
-                    color="error"
-                  >
-                    Remove
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>;
+                  </CardContent>
+                  <CardActions>
+                    <Button
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleRemoveItem(item.variantId)}
+                      color="error"
+                    >
+                      Remove
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
           })}
           <Grid item xs={12}>
             <Box
