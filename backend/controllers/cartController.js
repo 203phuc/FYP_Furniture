@@ -3,28 +3,54 @@ import Cart from "../models/cartModel.js";
 
 // @desc    Sync cart by adding new items or updating existing ones
 // @route   POST /api/carts
-// @access  Private
-// Sync cart by preserving existing _id fields
+// @access  Private 
 const syncCart = asyncHandler(async (req, res) => {
   const { items } = req.body;
   const user_id = req.user._id;
 
   try {
-    const cart = await Cart.findOneAndUpdate(
-      { user_id },
-      {
-        $setOnInsert: { user_id },
-        $set: { items }, // Directly replace the `items` field
-      },
-      { new: true, upsert: true }
+    // Step 1: Find existing cart
+    const existingCart = await Cart.findOne({ user_id });
+
+    // Step 2: Get latest updatedAt from items[]
+    const latestFrontendUpdatedAt = new Date(
+      items.reduce((latest, item) => {
+        const itemDate = new Date(item.updatedAt);
+        return itemDate > new Date(latest) ? item.updatedAt : latest;
+      }, items[0]?.updatedAt || new Date(0))
     );
 
-    res.status(201).json(cart);
+    // Step 3: No cart? → Create new
+    if (!existingCart) {
+      const newCart = await Cart.create({
+        user_id,
+        items,
+        updatedAt: latestFrontendUpdatedAt,
+      });
+      return res.status(201).json(newCart);
+    }
+
+    // Step 4: Compare timestamps and data
+    const dbUpdatedAt = new Date(existingCart.updatedAt);
+    const isFrontendNewer = latestFrontendUpdatedAt > dbUpdatedAt;
+    const isDataDifferent =
+      JSON.stringify(existingCart.items) !== JSON.stringify(items);
+
+    if (isFrontendNewer && isDataDifferent) {
+      existingCart.items = items;
+      existingCart.updatedAt = latestFrontendUpdatedAt;
+      await existingCart.save();
+      return res.status(200).json(existingCart);
+    }
+
+    // Step 5: No update needed
+    return res.status(200).json(existingCart);
   } catch (error) {
     console.error("Error syncing cart:", error);
     res.status(500).json({ error: "Failed to sync cart" });
   }
 });
+
 
 // @desc    Get cart by user ID
 // @route   GET /api/carts/:user_id

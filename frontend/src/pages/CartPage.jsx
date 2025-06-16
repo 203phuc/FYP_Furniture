@@ -133,7 +133,7 @@ function CartPage() {
   };
 
   const handleUpdateCart = async () => {
-    const updatedItems = cartData.items.map((item) => ({
+    const updatedItems = cart.items.map((item) => ({
       ...item,
       quantity: quantities[item.variantId] || item.quantity,
     }));
