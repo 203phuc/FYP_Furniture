@@ -3,7 +3,7 @@ import Cart from "../models/cartModel.js";
 
 // @desc    Sync cart by adding new items or updating existing ones
 // @route   POST /api/carts
-// @access  Private 
+// @access  Private
 const syncCart = asyncHandler(async (req, res) => {
   const { items } = req.body;
   const user_id = req.user._id;
@@ -19,7 +19,7 @@ const syncCart = asyncHandler(async (req, res) => {
         return itemDate > new Date(latest) ? item.updatedAt : latest;
       }, items[0]?.updatedAt || new Date(0))
     );
-
+    console.log(latestFrontendUpdatedAt);
     // Step 3: No cart? → Create new
     if (!existingCart) {
       const newCart = await Cart.create({
@@ -35,7 +35,7 @@ const syncCart = asyncHandler(async (req, res) => {
     const isFrontendNewer = latestFrontendUpdatedAt > dbUpdatedAt;
     const isDataDifferent =
       JSON.stringify(existingCart.items) !== JSON.stringify(items);
-
+    console.log(dbUpdatedAt, latestFrontendUpdatedAt);
     if (isFrontendNewer && isDataDifferent) {
       existingCart.items = items;
       existingCart.updatedAt = latestFrontendUpdatedAt;
@@ -50,7 +50,6 @@ const syncCart = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Failed to sync cart" });
   }
 });
-
 
 // @desc    Get cart by user ID
 // @route   GET /api/carts/:user_id

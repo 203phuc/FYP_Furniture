@@ -73,11 +73,10 @@ function CartPage() {
   const [cart, setCart] = useState(null); // internal state that triggers re-render
 
   useEffect(() => {
-    if (cartData?.cart?.items?.length > 0) {
-      setCart(cartData); // triggers re-render
-    }
     if (localCart) {
       setCart(localCart);
+    } else if (cartData?.cart?.items?.length > 0) {
+      setCart(cartData); // triggers re-render
     }
     console.log(cart);
   }, [cartData, localCart]); // dependency array
@@ -133,10 +132,13 @@ function CartPage() {
   };
 
   const handleUpdateCart = async () => {
+    const now = new Date().toISOString();
     const updatedItems = cart.items.map((item) => ({
       ...item,
       quantity: quantities[item.variantId] || item.quantity,
+      updatedAt: now,
     }));
+
     try {
       dispatch(updateCart({ user_id: userInfo.id, items: updatedItems }));
       await syncCart({ user_id: userInfo.id, items: updatedItems });
@@ -238,8 +240,8 @@ function CartPage() {
             // );
             // const availableQuantity = localItem ? localItem.stockQuantity : 0;
             return (
-              <Grid item xs={12} key={item.variantId}>
-                <Card>
+              <Grid item xs={12} key={item.variantId} className="">
+                <Card className="border p-4 rounded-md shadow-sm">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
                       {item.productName}
@@ -285,10 +287,9 @@ function CartPage() {
                           src={item.mainImage.url}
                           alt={item.productName}
                           style={{
-                            width: "80px",
-                            height: "80px",
+                            width: "100px",
+                            height: "100px",
                             objectFit: "cover",
-                            borderRadius: "4px",
                           }}
                         />
                       </Grid>
