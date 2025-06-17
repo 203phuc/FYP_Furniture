@@ -2,15 +2,17 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Button,
-  Card,
-  CardActions,
-  CardContent,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -20,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import "react-toastify/dist/Reacttoasty.css";
 import {
   useFetchCartQuery,
   useSyncCartMutation,
@@ -79,7 +81,7 @@ function CartPage() {
       setCart(cartData); // triggers re-render
     }
     console.log(cart);
-  }, [cartData, localCart]); // dependency array
+  }, [cartData, localCart, cart]); // dependency array
 
   const handleQuantityChange = (variantId, newQuantity) => {
     const item = localCart.items.find((item) => item.variantId === variantId);
@@ -233,33 +235,84 @@ function CartPage() {
       {cart?.items?.length === 0 ? (
         <Typography>Your cart is empty.</Typography>
       ) : (
-        <Grid container spacing={4}>
+        <Grid container>
           {cart?.items?.map((item) => {
             // const localItem = localCart.items.find(
             //   (localItem) => localItem.variantId === item.variantId
             // );
             // const availableQuantity = localItem ? localItem.stockQuantity : 0;
             return (
-              <Grid item xs={12} key={item.variantId} className="">
-                <Card className="border p-4 rounded-md shadow-sm">
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {item.productName}
-                    </Typography>
-                    <Typography>
-                      Available Quantity: {item.stockQuantity}
-                    </Typography>
-                    <Grid
-                      container
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Grid item>
-                        <Typography>Price: ${item.price.toFixed(2)}</Typography>
+              <Table className="mt-5">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product</TableCell>
+                    <TableCell>Available Quantity</TableCell>
+                    <TableCell>Price/Unit</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {cart.items.map((item) => (
+                    <TableRow key={item.variantId}>
+                      <TableCell>
+                        <div style={{ display: "flex", gap: "1rem" }}>
+                          <img
+                            src={item.mainImage.url}
+                            alt={item.productName}
+                            style={{
+                              width: "100px",
+                              height: "100px",
+                              objectFit: "cover",
+                              borderRadius: "4px",
+                            }}
+                          />
+                          <div>
+                            <div style={{ fontWeight: "bold" }}>
+                              {item.productName}
+                            </div>
+                            <div
+                              style={{ fontSize: "0.875rem", color: "#555" }}
+                            >
+                              <div>
+                                {Object.keys(item.attributes).map((key) => (
+                                  <div key={key}>
+                                    <strong>{key}:</strong>{" "}
+                                    {Array.isArray(item.attributes[key].value)
+                                      ? item.attributes[key].value.map(
+                                          (v, idx) => (
+                                            <div key={idx}>
+                                              {Object.keys(v).map((subKey) => (
+                                                <div key={subKey}>
+                                                  {subKey}: {v[subKey]}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )
+                                        )
+                                      : typeof item.attributes[key].value ===
+                                        "object"
+                                      ? Object.keys(
+                                          item.attributes[key].value
+                                        ).map((subKey) => (
+                                          <div key={subKey}>
+                                            {subKey}:{" "}
+                                            {item.attributes[key].value[subKey]}
+                                          </div>
+                                        ))
+                                      : item.attributes[key].value}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.stockQuantity}</TableCell>
+                      <TableCell>${item.price.toFixed(2)}</TableCell>
+                      <TableCell>
                         <TextField
-                          label="Quantity"
                           type="number"
-                          InputProps={{ inputProps: { min: 1 } }}
                           value={
                             quantities[item.variantId] !== undefined
                               ? quantities[item.variantId]
@@ -274,38 +327,27 @@ function CartPage() {
                               );
                             }
                           }}
+                          InputProps={{ inputProps: { min: 1 } }}
                           onKeyPress={(e) => {
                             if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                               e.preventDefault();
                             }
                           }}
-                          margin="normal"
                         />
-                      </Grid>
-                      <Grid item>
-                        <img
-                          src={item.mainImage.url}
-                          alt={item.productName}
-                          style={{
-                            width: "100px",
-                            height: "100px",
-                            objectFit: "cover",
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                  <CardActions>
-                    <Button
-                      startIcon={<DeleteIcon />}
-                      onClick={() => handleRemoveItem(item.variantId)}
-                      color="error"
-                    >
-                      Remove
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleRemoveItem(item.variantId)}
+                          color="error"
+                        >
+                          Remove
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             );
           })}
           <Grid item xs={12}>
@@ -318,12 +360,12 @@ function CartPage() {
               <Typography variant="h6">
                 Total: ${cartData.totalPrice.toFixed(2)}
               </Typography>
-              <Box>
+              <Box className="flex items-center gap-1 w-80">
                 <Button
                   onClick={handleUpdateCart}
                   variant="contained"
                   color="primary"
-                  style={{ marginRight: "8px" }}
+                  className="w-full mr-2"
                 >
                   Save Cart
                 </Button>
