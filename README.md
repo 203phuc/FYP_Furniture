@@ -81,7 +81,52 @@ Cozniture includes all standard e-commerce features along with advanced product 
 ---
 
 ## 🚀 Demo 
-###user role register: 
+
+Overall main functionality(this is my first time working with threejs a library that can use for 3D/AR product visualization no 3D modeling just upload):
+
+###User (customer) 
+register:
 
 ![user register](https://github.com/203phuc/FYP_Furniture/blob/950c47012b2fb5a766627b7e2748fc967c898bed/Screenshot%202024-12-01%20000812.png)
+
+login:
+
+![user login](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202024-12-01%20002639.png)
+
+
+profile:
+
+![user profile](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202024-12-01%20000846.png)
+
+cart:
+
+![user cart](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202025-06-18%20083531.png)
+
+order:
+
+![user order](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202024-12-01%20010127.png)
+
+###Seller
+
+management dashboard:
+
+![seller dashboard](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202024-12-01%20014158.png)
+
+create product:
+
+![seller create product](https://github.com/203phuc/FYP_Furniture/blob/5c20fa6fe4af9d8d2341fab3d79ef339ba6174db/Screenshot%202024-12-01%20014619.png)
+
+add 3D visualization/simulate AR:
+
+![seller create product 3D](https://github.com/203phuc/FYP_Furniture/blob/f6236e5740b23992d0c9a5c407745221a88877c4/Screenshot%202024-11-30%20152034.png)
+
+![seller create product 3D](https://github.com/203phuc/FYP_Furniture/blob/f6236e5740b23992d0c9a5c407745221a88877c4/Screenshot%202024-12-07%20161005.png)
+
+###admin
+
+monitoring:
+
+![admin approval](https://github.com/203phuc/FYP_Furniture/blob/f6236e5740b23992d0c9a5c407745221a88877c4/Screenshot%202024-12-01%20013617.png)
+
+
 
