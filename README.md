@@ -83,6 +83,4 @@ Cozniture includes all standard e-commerce features along with advanced product 
 ## 🚀 Demo (Optional)
 
 
----
-![alt text](<Screenshot 2024-12-01 000812.png>)
 
