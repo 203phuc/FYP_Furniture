@@ -80,7 +80,7 @@ Cozniture includes all standard e-commerce features along with advanced product 
 
 ---
 
-## 🚀 Demo (Optional)
-
-
+## 🚀 Demo 
+###user role register
+![user register](https://github.com/203phuc/FYP_Furniture/blob/950c47012b2fb5a766627b7e2748fc967c898bed/Screenshot%202024-12-01%20000812.png)
 
