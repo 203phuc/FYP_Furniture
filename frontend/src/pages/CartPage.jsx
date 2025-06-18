@@ -22,7 +22,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/Reacttoasty.css";
 import {
   useFetchCartQuery,
   useSyncCartMutation,

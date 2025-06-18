@@ -80,6 +80,7 @@ Cozniture includes all standard e-commerce features along with advanced product 
 
 ---
 
+<<<<<<< Updated upstream
 ## 🚀 Demo 
 
 Overall main functionality(this is my first time working with threejs a library that can use for 3D/AR product visualization no 3D modeling just upload):
@@ -130,3 +131,9 @@ monitoring:
 
 
 
+=======
+## 🚀 Demo (Optional)
+![alt text](<Screenshot 2024-12-01 000812-1.png>)
+
+---
+>>>>>>> Stashed changes
