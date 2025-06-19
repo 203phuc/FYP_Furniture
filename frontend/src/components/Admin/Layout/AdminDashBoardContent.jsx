@@ -1,9 +1,8 @@
-import React from "react";
 import AdminAllProducts from "../AdminAllProducts.jsx";
 // import CreateProduct from "../CreateProduct.jsx";
 // import DashboardHero from "../DashboardHero.jsx";
 import AdminAllUsers from "../AdminAllUsers.jsx";
-import AdminDashboardMain from "../AdminDashboardMain";
+import AdminDashboardMain from "../AdminDashboardMain.jsx";
 
 const AdminDashboardContent = ({ active }) => {
   const content = {

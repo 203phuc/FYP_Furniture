@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AdminDashboardContent from "../../components/Admin/Layout/AdminDashBoardContent.jsx";
+import AdminDashboardContent from "../../components/Admin/Layout/AdminDashboardContent.jsx";
 import AdminHeader from "../../components/Admin/Layout/AdminHeader.jsx";
 import AdminSideBar from "../../components/Admin/Layout/AdminSideBar.jsx";
 
