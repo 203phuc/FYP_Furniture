@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://github.com/203phuc/FYP_Furniture",
+      "https://203phuc.github.io/FYP_Furniture/",
     ], // Adjusted order of origins
     credentials: true,
   })
