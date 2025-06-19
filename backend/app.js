@@ -20,6 +20,7 @@ app.use(
       "http://localhost:3000",
       "https://203phuc.github.io/FYP_Furniture/",
     ], // Adjusted order of origins
+    methods: "GET, POST, PUT, DELETE, PATCH",
     credentials: true,
   })
 );
