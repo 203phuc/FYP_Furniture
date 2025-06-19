@@ -38,7 +38,9 @@ app.use("/api/shops", shopRoutes);
 app.use("/api/carts", cartRoutes);
 app.use("/api/variants", variantRoutes);
 app.use("/api/checkout", checkOutRoute);
-
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 // Define error handling middleware after all routes
 app.use(notFound);
 app.use(errorHandler);
