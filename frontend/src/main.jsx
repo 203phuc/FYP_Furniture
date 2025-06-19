@@ -13,7 +13,7 @@ import OrderDetail from "./components/profile/OrderDetail";
 import ProtectedRoute from "./components/route/ProtectedRoute";
 import EditProductPage from "./components/Shop/EditProduct";
 import Success from "./components/Success.jsx";
-import AdminDashboardPage from "./pages/admin/AdminDashBoardPage.jsx";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 import CartPage from "./pages/cartPage";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -131,7 +131,10 @@ const router = createBrowserRouter(
       {/* Public Product Page */}
       <Route path="/product" element={<ProductPage />} />
     </Route>
-  )
+  ),
+  {
+    basename: "/FYP_Furniture", // ← add this
+  }
 );
 
 ReactDOM.createRoot(document.getElementById("root")).render(
