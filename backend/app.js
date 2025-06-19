@@ -16,7 +16,10 @@ const app = express();
 // Optional: Enable CORS with specific origins if needed
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://localhost:3000"], // Adjusted order of origins
+    origin: [
+      "http://localhost:3000",
+      "https://github.com/203phuc/FYP_Furniture",
+    ], // Adjusted order of origins
     credentials: true,
   })
 );
