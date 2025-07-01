@@ -13,7 +13,7 @@ import OrderDetail from "./components/profile/OrderDetail";
 import ProtectedRoute from "./components/route/ProtectedRoute";
 import EditProductPage from "./components/Shop/EditProduct";
 import Success from "./components/Success.jsx";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminDashboardPage from "./pages/admin/temp.jsx";
 import CartPage from "./pages/cartPage";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
