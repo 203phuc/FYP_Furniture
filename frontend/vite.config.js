@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 // https://vitejs.dev/config/
 export default defineConfig({
   assetsInclude: ["**/*.hdr"],
-  base: "/FYP_Furniture/",
+  base: "/",
   plugins: [react()],
   server: {
     host: "0.0.0.0", // This makes Vite listen on all network interfaces
