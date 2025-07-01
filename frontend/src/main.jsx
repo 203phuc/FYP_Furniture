@@ -131,10 +131,7 @@ const router = createBrowserRouter(
       {/* Public Product Page */}
       <Route path="/product" element={<ProductPage />} />
     </Route>
-  ),
-  {
-    basename: "/FYP_Furniture", // ← add this
-  }
+  )
 );
 
 ReactDOM.createRoot(document.getElementById("root")).render(
