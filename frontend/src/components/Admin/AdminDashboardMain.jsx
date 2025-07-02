@@ -4,7 +4,7 @@ import { AiOutlineMoneyCollect } from "react-icons/ai";
 import { MdBorderClear } from "react-icons/md";
 import { Link } from "react-router-dom";
 import styles from "../../styles/styles";
-import Loader from "../Layout/Loader";
+import Loader from "../layout/Loader";
 
 // Mock Data for Products (Replace with real API data fetch)
 const mockProducts = [

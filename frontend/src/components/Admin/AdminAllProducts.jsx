@@ -10,7 +10,7 @@ import {
   useGetProductsQuery,
   useToggleProductApprovalMutation,
 } from "../../redux/slices/productApiSlice.js";
-import Loader from "../Layout/Loader";
+import Loader from "../layout/Loader";
 
 const AdminAllProducts = () => {
   const { userInfo } = useSelector((state) => state.auth);

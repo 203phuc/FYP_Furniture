@@ -13,7 +13,7 @@ import {
   useAddVariantMutation,
   useCheckIfProductHasVariantsQuery,
 } from "../../redux/slices/variantApiSlice";
-import Loader from "../Layout/Loader";
+import Loader from "../layout/Loader";
 
 const EditOptions = ({ productId }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);

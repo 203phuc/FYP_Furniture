@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { getAllProductsShop } from "../../redux/actions/product";
 import styles from "../../styles/styles";
-import Loader from "../Layout/Loader";
+import Loader from "../layout/Loader";
 
 // Fake Data for testing purposes
 const fakeUserInfo = {
