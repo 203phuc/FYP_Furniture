@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -8,7 +8,7 @@ import {
   useDeleteUserMutation,
   useGetAllUsersQuery,
 } from "../../redux/slices/userApiSlice.js";
-import Loader from "../Layout/Loader";
+import Loader from "../layout/Loader";
 
 const AdminAllUsers = () => {
   const { userInfo } = useSelector((state) => state.auth);
