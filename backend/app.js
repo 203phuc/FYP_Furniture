@@ -16,7 +16,10 @@ const app = express();
 // Optional: Enable CORS with specific origins if needed
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://203phuc.github.io"], // Adjusted order of origins
+    origin: [
+      "http://localhost:3000",
+      "https://exquisite-salmiakki-c22b32.netlify.app/",
+    ], // Adjusted order of origins
     methods: "GET, POST, PUT, DELETE, PATCH",
     credentials: true,
   })
