@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://exquisite-salmiakki-c22b32.netlify.app/",
+      "https://exquisite-salmiakki-c22b32.netlify.app",
     ], // Adjusted order of origins
     methods: "GET, POST, PUT, DELETE, PATCH",
     credentials: true,
