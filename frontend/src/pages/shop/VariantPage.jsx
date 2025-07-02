@@ -1,9 +1,9 @@
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import React, { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // To access route parameters
 import { toast } from "react-toastify";
-import Loader from "../../components/Layout/Loader"; // Assuming you have a Loader component
+import Loader from "../../components/layout/Loader"; // Assuming you have a Loader component
 import {
   useGetVariantsByProductQuery,
   useUpdateVariantDetailsMutation,
